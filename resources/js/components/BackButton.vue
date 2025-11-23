@@ -14,7 +14,7 @@ const onBackClick = () => {
                 @click="onBackClick"
             >
                 <ArrowLeft class="h-4 w-4" />
-                Back to Home
+                Back to Previous Page
             </button>
         </div>
     </section>

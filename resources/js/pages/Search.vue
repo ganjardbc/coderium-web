@@ -5,6 +5,7 @@ import { XIcon, Search as SearchIcon, FileText, Image as ImageIcon, Video, Slide
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PostCard from '@/components/PostCard.vue';
 import Pagination from '@/components/Pagination.vue';
+import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
 import { useDebounceFn } from '@/lib/utils';
 
@@ -102,12 +103,12 @@ const clearSearch = () => {
     performSearch();
 };
 
-const debouncedHandleInput = useDebounceFn(() => {
+const debouncedHandleSearch = useDebounceFn(() => {
     performSearch();
 }, 500);
 
-const handleInput = () => {
-    debouncedHandleInput();
+const handleSearch = () => {
+    debouncedHandleSearch();
 };
 </script>
 
@@ -115,51 +116,43 @@ const handleInput = () => {
     <Head title="Search - Coderium" />
 
     <FrontLayout>
-        <!-- Search Header -->
-        <section class="border-b bg-card/50 py-8">
+        <!-- Header -->
+        <section class="border-b bg-gradient-to-b from-card/50 to-background py-8">
             <div class="container mx-auto px-4">
-                <h1 class="mb-6 text-3xl font-bold text-center">Search Posts</h1>
-
-                <!-- Search Bar -->
-                <div class="mx-auto max-w-3xl">
-                    <form @submit.prevent="performSearch" class="relative">
-                        <SearchIcon class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="Search for articles, carousels, videos..."
-                            class="w-full rounded-lg border bg-background py-3 pl-12 pr-28 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            required
-                            @input="handleInput"
-                        />
-                        <Button
-                            type="submit"
-                            class="absolute right-2 top-1/2 -translate-y-1/2"
-                        >
-                            Search
-                        </Button>
-                    </form>
-
-                    <!-- Filter Toggle (Mobile) -->
-                    <Button
-                        @click="showFilters = !showFilters"
-                        variant="outline"
-                        class="mt-4 w-full md:hidden"
-                    >
-                        <SlidersHorizontal class="h-4 w-4" />
-                        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
-                    </Button>
-                </div>
+                <h1 class="text-2xl md:text-3xl font-bold text-center">Explore Posts</h1>
+                <p class="text-md md:text-lg text-muted-foreground text-center mt-2">
+                    Discover articles, carousels, and videos shared by our community of code enthusiasts
+                </p>
             </div>
         </section>
 
         <!-- Filters & Results -->
         <section class="py-8">
             <div class="container mx-auto px-4">
-                <div class="grid gap-8 lg:grid-cols-[320px_1fr]">
+                <!-- Search Posts -->
+                <div class="mb-8">
+                    <Searchbar
+                        v-model="searchQuery"
+                        placeholder="Search posts..."
+                        @search="handleSearch"
+                        @clear="clearSearch"
+                    />
+                    <Button
+                        @click="showFilters = !showFilters"
+                        variant="outline"
+                        class="w-full md:hidden mt-4"
+                    >
+                        <SlidersHorizontal class="h-4 w-4" />
+                        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+                    </Button>
+                </div>
 
+                <div class="grid gap-8 lg:grid-cols-[320px_1fr]">
                     <!-- Sidebar Filters -->
-                    <aside class="flex-1" :class="['space-y-4', showFilters ? 'block' : 'hidden md:block']">
+                    <aside
+                        class="flex-1 border rounded-lg p-4 h-fit"
+                        :class="['space-y-4', showFilters ? 'block' : 'hidden md:block']"
+                    >
                         <div class="flex justify-between items-center border-b pb-4">
                             <div class="text-md font-semibold">
                                 Filters
@@ -216,23 +209,6 @@ const handleInput = () => {
 
                     <!-- Results -->
                     <div class="flex-1">
-                        <!-- Results Header -->
-                        <div class="mb-6 flex items-center justify-between">
-                            <div>
-                                <h2 class="text-xl font-semibold">
-                                    <template v-if="filters.query">
-                                        Search results for "{{ filters.query }}"
-                                    </template>
-                                    <template v-else>
-                                        All Posts
-                                    </template>
-                                </h2>
-                                <p class="text-sm text-muted-foreground">
-                                    {{ posts.total }} {{ posts.total === 1 ? 'result' : 'results' }} found
-                                </p>
-                            </div>
-                        </div>
-
                         <!-- Posts Grid -->
                         <div v-if="posts.data.length > 0" class="space-y-6">
                             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

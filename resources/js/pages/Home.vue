@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { PlaySquare, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PostCard from '@/components/PostCard.vue';
 import PlaylistCard from '@/components/PlaylistCard.vue';
+import Pagination from '@/components/Pagination.vue';
+import DiscoverMode from '@/components/DiscoverMode.vue';
+import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
 
 interface Post {
@@ -29,12 +32,52 @@ interface Playlist {
     posts_count: number;
 }
 
-interface Props {
-    playlists: Playlist[];
-    recentPosts: Post[];
+interface PaginatedPosts {
+    data: Post[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
 }
 
-defineProps<Props>();
+interface Props {
+    playlists: Playlist[];
+    recentPosts: PaginatedPosts;
+    filters?: {
+        search?: string;
+    };
+}
+
+const ENABLE_PLAYLIST = true;
+const ENABLE_POST_SEARCH = false;
+const ENABLE_POST_PAGINATION = false;
+
+const props = defineProps<Props>();
+
+const searchQuery = ref(props.filters?.search || '');
+
+const handleSearch = (query: string) => {
+    router.get('/search', {
+        q: query || undefined,
+        sort: 'recent',
+        type: 'all',
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
+
+const handleClearSearch = () => {
+    router.get('/', {}, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
 
 const playlistScroll = ref<HTMLElement | null>(null);
 const canScrollLeft = ref(false);
@@ -107,13 +150,14 @@ const updateScrollButtons = () => {
         </template>
 
         <!-- Playlists Section -->
-        <section id="playlists" class="border-b py-8">
+        <section
+            v-if="ENABLE_PLAYLIST"
+            id="playlists"
+            class="border-b py-8"
+        >
             <div class="container mx-auto px-4">
                 <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-2">
-                    <div>
-                        <h2 class="text-2xl font-bold">Featured Playlists</h2>
-                        <p class="mt-1 text-md text-muted-foreground">Curated collections of posts on specific topics</p>
-                    </div>
+                    <h2 class="text-2xl font-bold">Featured Playlists</h2>
 
                     <!-- Scroll Navigation Buttons -->
                     <div
@@ -178,11 +222,8 @@ const updateScrollButtons = () => {
         <!-- Recent Posts Section -->
         <section class="py-8">
             <div class="container mx-auto px-4">
-                <div class="flex flex-col md:flex-row items-center gap-2 mb-8">
-                    <div class="flex-1">
-                        <h2 class="text-2xl font-bold">Recent Posts</h2>
-                        <p class="mt-1 text-md text-muted-foreground">Latest articles, carousels, and videos from the community</p>
-                    </div>
+                <div class="flex flex-col md:flex-row justify-between items-center gap-2 mb-8">
+                    <h2 class="text-2xl font-bold">Recent Posts</h2>
                     <Button
                         :as="Link"
                         href="/search"
@@ -195,9 +236,22 @@ const updateScrollButtons = () => {
                     </Button>
                 </div>
 
-                <div v-if="recentPosts.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Search Posts -->
+                <div
+                    v-if="ENABLE_POST_SEARCH"
+                    class="mb-8"
+                >
+                    <Searchbar
+                        v-model="searchQuery"
+                        placeholder="Search posts..."
+                        @search="handleSearch"
+                        @clear="handleClearSearch"
+                    />
+                </div>
+
+                <div v-if="recentPosts.data.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <PostCard
-                        v-for="post in recentPosts"
+                        v-for="post in recentPosts.data"
                         :key="post.id"
                         :post="post"
                         :show-tags="true"
@@ -208,7 +262,22 @@ const updateScrollButtons = () => {
                     <PlaySquare class="mx-auto mb-4 h-12 w-12" />
                     <p>No posts available yet</p>
                 </div>
+
+                <!-- Pagination -->
+                <div
+                    v-if="recentPosts.last_page > 1 && ENABLE_POST_PAGINATION"
+                    class="mt-8"
+                >
+                    <Pagination
+                        :current-page="recentPosts.current_page"
+                        :last-page="recentPosts.last_page"
+                        :links="recentPosts.links"
+                    />
+                </div>
             </div>
         </section>
+
+        <!-- Related Actions -->
+        <DiscoverMode />
     </FrontLayout>
 </template>

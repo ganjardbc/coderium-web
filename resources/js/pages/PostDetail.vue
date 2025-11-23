@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import BackButton from '@/components/BackButton.vue';
+import DiscoverMode from '@/components/DiscoverMode.vue';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 
@@ -180,7 +181,7 @@ const getTags = () => {
                             <img
                                 :src="post.cover"
                                 :alt="post.title"
-                                class="w-full h-auto object-cover"
+                                class="w-full object-cover"
                             />
                         </div>
 
@@ -291,6 +292,9 @@ const getTags = () => {
                 </div>
             </div>
         </article>
+
+        <!-- Related Actions -->
+        <DiscoverMode />
     </FrontLayout>
 </template>
 

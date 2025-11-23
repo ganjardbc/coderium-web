@@ -4,6 +4,7 @@ import { PlaySquare, User as UserIcon } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PostCard from '@/components/PostCard.vue';
 import BackButton from '@/components/BackButton.vue';
+import DiscoverMode from '@/components/DiscoverMode.vue';
 import { Button } from '@/components/ui/button';
 
 interface Post {
@@ -49,38 +50,37 @@ defineProps<Props>();
         <BackButton />
 
         <!-- Playlist Header -->
-        <section
-            class="relative border-b w-full overflow-hidden"
-            :style="{
-                backgroundImage: playlist.cover ? `url(${playlist.cover})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-            }"
-        >
+        <section class="relative border-b w-full">
+            <div class="relative top-0 left-0 w-full h-full px-4 py-8">
+                <div class="container mx-auto flex flex-col lg:flex-row-reverse items-center gap-8">
+                    <!-- Playlist Cover -->
+                    <img
+                        :src="playlist.cover"
+                        alt="Playlist Cover"
+                        class="w-full md:w-[300px] aspect-video rounded-lg object-cover"
+                    />
 
-            <div class="relative top-0 left-0 w-full h-full bg-black/60 px-4 py-18">
-                <div class="container mx-auto max-w-6xl grid gap-8 lg:grid-cols-[300px,1fr]">
                     <!-- Playlist Info -->
-                    <div class="flex flex-col justify-center">
-                        <div class="mb-2 flex items-center gap-2 text-sm text-white">
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                             <PlaySquare class="h-4 w-4" />
                             <span>Playlist</span>
                         </div>
-                        <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl text-white">
+                        <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
                             {{ playlist.title }}
                         </h1>
-                        <p class="mb-6 text-lg text-white">
+                        <p class="mb-6 text-lg text-muted-foreground">
                             {{ playlist.description }}
                         </p>
 
                         <div class="flex items-center gap-6 text-sm">
                             <div class="flex items-center gap-2">
-                                <UserIcon class="h-4 w-4 text-white" />
-                                <span class="font-medium text-white">{{ playlist.user.name }}</span>
+                                <UserIcon class="h-4 w-4" />
+                                <span class="font-medium">{{ playlist.user.name }}</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <PlaySquare class="h-4 w-4 text-white" />
-                                <span class="text-white">{{ playlist.posts_count }} {{ playlist.posts_count === 1 ? 'post' : 'posts' }}</span>
+                                <PlaySquare class="h-4 w-4" />
+                                <span class="">{{ playlist.posts_count }} {{ playlist.posts_count === 1 ? 'post' : 'posts' }}</span>
                             </div>
                         </div>
                     </div>
@@ -94,9 +94,6 @@ defineProps<Props>();
                 <div class="mx-auto max-w-6xl">
                     <div class="mb-8">
                         <h2 class="text-2xl font-bold">Posts in this Playlist</h2>
-                        <p class="mt-1 text-muted-foreground">
-                            {{ playlist.posts_count }} {{ playlist.posts_count === 1 ? 'post' : 'posts' }} • Curated by {{ playlist.user.name }}
-                        </p>
                     </div>
 
                     <!-- Posts Grid -->
@@ -127,27 +124,6 @@ defineProps<Props>();
         </section>
 
         <!-- Related Actions -->
-        <section class="border-t py-8">
-            <div class="container mx-auto px-4">
-                <div class="mx-auto max-w-6xl text-center">
-                    <h2 class="mb-4 text-2xl font-bold">Discover More</h2>
-                    <p class="mb-6 text-muted-foreground">
-                        Explore more playlists and posts from the community
-                    </p>
-                    <div class="flex items-center justify-center gap-4">
-                        <Button as-child variant="default">
-                            <Link href="/playlists">
-                                Browse Playlists
-                            </Link>
-                        </Button>
-                        <Button as-child variant="outline">
-                            <Link href="/search">
-                                Search Posts
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <DiscoverMode />
     </FrontLayout>
 </template>

@@ -4,19 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Playlist;
 use App\Models\Post;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class HomeController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->input('search');
+
         // Get published playlists ordered by order column
         $playlists = Playlist::query()
             ->where('is_published', true)
             ->withCount('posts')
             ->orderBy('order')
-            ->limit(6)
+            ->limit(4)
             ->get()
             ->map(function ($playlist) {
                 return [
@@ -29,32 +32,28 @@ class HomeController extends Controller
                 ];
             });
 
-        // Get recent published posts
+        // Get recent published posts with pagination and search
         $recentPosts = Post::query()
             ->where('is_published', true)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('subtitle', 'like', "%{$search}%")
+                        ->orWhere('content', 'like', "%{$search}%");
+                });
+            })
             ->orderBy('published_at', 'desc')
-            ->limit(12)
-            ->get()
-            ->map(function ($post) {
-                return [
-                    'id' => $post->id,
-                    'slug' => $post->slug,
-                    'title' => $post->title,
-                    'subtitle' => $post->subtitle,
-                    'cover' => $post->cover,
-                    'type' => $post->type,
-                    'tags' => $post->tags ?? [],
-                    'views_count' => $post->views_count,
-                    'likes_count' => $post->likes_count,
-                    'published_at' => $post->published_at->toISOString(),
-                ];
-            });
+            ->paginate(8)
+            ->withQueryString();
 
         return Inertia::render('Home', [
             'playlists' => $playlists,
             'recentPosts' => $recentPosts,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 }

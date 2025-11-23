@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { PlaySquare } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PlaylistCard from '@/components/PlaylistCard.vue';
 import Pagination from '@/components/Pagination.vue';
-import BackButton from '@/components/BackButton.vue';
+import Searchbar from '@/components/Searchbar.vue';
 
 interface Playlist {
     id: number;
@@ -30,25 +31,41 @@ interface PaginatedPlaylists {
 
 interface Props {
     playlists: PaginatedPlaylists;
+    filters?: {
+        search?: string;
+    };
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const searchQuery = ref(props.filters?.search || '');
+
+const handleSearch = (query: string) => {
+    router.get('/playlists', {
+        search: query || undefined,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
+
+const handleClearSearch = () => {
+    router.get('/playlists', {}, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
     <Head title="Browse Playlists - Coderium" />
 
     <FrontLayout>
-        <BackButton />
-
         <!-- Header -->
         <section class="border-b bg-gradient-to-b from-card/50 to-background py-8">
             <div class="container mx-auto px-4">
-                <div class="flex items-center gap-3 mb-4">
-                    <PlaySquare class="h-8 w-8 text-primary" />
-                    <h1 class="text-3xl md:text-4xl font-bold">Browse Playlists</h1>
-                </div>
-                <p class="text-md md:text-lg text-muted-foreground max-w-2xl">
+                <h1 class="text-2xl md:text-3xl font-bold text-center">Browse Playlists</h1>
+                <p class="text-md md:text-lg text-muted-foreground text-center mt-2">
                     Discover curated collections of posts organized by topics and themes
                 </p>
             </div>
@@ -57,14 +74,17 @@ defineProps<Props>();
         <!-- Playlists Grid -->
         <section class="py-8">
             <div class="container mx-auto px-4">
-                <div v-if="playlists.data.length > 0">
-                    <!-- Stats -->
-                    <div class="mb-6 text-sm text-muted-foreground">
-                        Showing {{ (playlists.current_page - 1) * playlists.per_page + 1 }} -
-                        {{ Math.min(playlists.current_page * playlists.per_page, playlists.total) }}
-                        of {{ playlists.total }} playlists
-                    </div>
+                <!-- Search Playlists -->
+                <div class="mb-8">
+                    <Searchbar
+                        v-model="searchQuery"
+                        placeholder="Search playlists..."
+                        @search="handleSearch"
+                        @clear="handleClearSearch"
+                    />
+                </div>
 
+                <div v-if="playlists.data.length > 0">
                     <!-- Grid -->
                     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         <PlaylistCard

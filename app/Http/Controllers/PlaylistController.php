@@ -3,22 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Models\Playlist;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PlaylistController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->input('search');
+
         $playlists = Playlist::query()
             ->where('is_published', true)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
             ->withCount('posts')
             ->orderBy('order')
             ->orderBy('created_at', 'desc')
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
         return Inertia::render('Playlists', [
             'playlists' => $playlists,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 

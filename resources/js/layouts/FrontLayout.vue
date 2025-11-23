@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Search } from 'lucide-vue-next';
+import { Home, LogIn, CompassIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import ThemeToggle from '@/components/ThemeToggle.vue';
 </script>
 
 <template>
@@ -20,14 +21,18 @@ import { Button } from '@/components/ui/button';
                     </Link>
 
                     <nav class="flex items-center gap-2">
+                        <!-- Dark Mode Toggle -->
+                        <ThemeToggle />
+
+                        <!-- Search -->
                         <Button
                             :as="Link"
                             href="/search"
                             variant="outline"
                             class="rounded-full"
                         >
-                            <Search class="inline-block h-4 w-4 mr-1" />
-                            Search
+                            <CompassIcon class="inline-block h-4 w-4 mr-1" />
+                            Explore
                         </Button>
 
                         <Button
@@ -35,29 +40,21 @@ import { Button } from '@/components/ui/button';
                             :as="Link"
                             href="/admin/dashboard"
                             variant="default"
-                            class="hidden md:block"
+                            class="hidden md:block ml-2"
                         >
+                            <Home class="inline-block h-4 w-4 mr-1" />
                             Dashboard
                         </Button>
-
-                        <template v-else>
-                            <Button
-                                :as="Link"
-                                href="/login"
-                                variant="ghost"
-                                class="text-sm hidden md:block"
-                            >
-                                Login
-                            </Button>
-                            <Button
-                                :as="Link"
-                                href="/register"
-                                variant="default"
-                                class="hidden md:block"
-                            >
-                                Get Started
-                            </Button>
-                        </template>
+                        <Button
+                            v-else
+                            :as="Link"
+                            href="/login"
+                            variant="default"
+                            class="hidden md:block ml-2"
+                        >
+                            <LogIn class="inline-block h-4 w-4 mr-1" />
+                            Login
+                        </Button>
                     </nav>
                 </div>
             </div>
