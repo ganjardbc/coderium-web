@@ -58,12 +58,16 @@ const handleKeyup = (event: KeyboardEvent) => {
 </script>
 
 <template>
-    <div class="flex gap-2">
+    <form
+        class="flex gap-2"
+        @submit.prevent="handleSearch"
+    >
         <div class="relative flex-1">
             <Input
                 type="text"
                 :placeholder="placeholder"
                 v-model="searchQuery"
+                required
                 @input="handleInput"
                 @keyup="handleKeyup"
             />
@@ -77,9 +81,12 @@ const handleKeyup = (event: KeyboardEvent) => {
                 <XIcon class="h-4 w-4" />
             </Button>
         </div>
-        <Button @click="handleSearch" variant="outline">
+        <Button
+            type="submit"
+            variant="outline"
+        >
             <SearchIcon class="h-4 w-4" />
             Search
         </Button>
-    </div>
+    </form>
 </template>
