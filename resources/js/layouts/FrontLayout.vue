@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Home, LogIn, CompassIcon } from 'lucide-vue-next';
+import { Home, LogIn, CompassIcon, PlaySquareIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle.vue';
 </script>
@@ -31,30 +31,46 @@ import ThemeToggle from '@/components/ThemeToggle.vue';
                             variant="outline"
                             class="rounded-full"
                         >
-                            <CompassIcon class="inline-block h-4 w-4 mr-1" />
-                            Explore
+                            <CompassIcon class="inline-block h-4 w-4" />
+                            <span class="hidden md:block ml-1">
+                                Explore
+                            </span>
                         </Button>
 
                         <Button
-                            v-if="$page.props.auth.user"
                             :as="Link"
-                            href="/admin/dashboard"
-                            variant="default"
-                            class="hidden md:block ml-2"
+                            href="/playlists"
+                            variant="outline"
+                            class="rounded-full"
                         >
-                            <Home class="inline-block h-4 w-4 mr-1" />
-                            Dashboard
+                            <PlaySquareIcon class="inline-block h-4 w-4" />
+                            <span class="hidden md:block ml-1">
+                                Playlists
+                            </span>
                         </Button>
-                        <Button
-                            v-else
-                            :as="Link"
-                            href="/login"
-                            variant="default"
-                            class="hidden md:block ml-2"
-                        >
-                            <LogIn class="inline-block h-4 w-4 mr-1" />
-                            Login
-                        </Button>
+
+                        <div class="pl-4 ml-4 border-l hidden md:block">
+                            <Button
+                                v-if="$page.props.auth.user"
+                                :as="Link"
+                                href="/admin/dashboard"
+                                variant="default"
+                                class="hidden md:block ml-2"
+                            >
+                                <Home class="inline-block h-4 w-4 mr-1" />
+                                Dashboard
+                            </Button>
+                            <Button
+                                v-else
+                                :as="Link"
+                                href="/login"
+                                variant="default"
+                                class="hidden md:block ml-2"
+                            >
+                                <LogIn class="inline-block h-4 w-4 mr-1" />
+                                Login
+                            </Button>
+                        </div>
                     </nav>
                 </div>
             </div>

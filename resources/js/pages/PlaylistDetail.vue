@@ -51,8 +51,8 @@ defineProps<Props>();
 
         <!-- Playlist Header -->
         <section class="relative border-b w-full">
-            <div class="relative top-0 left-0 w-full h-full px-4 py-8">
-                <div class="container mx-auto flex flex-col lg:flex-row-reverse items-center gap-8">
+            <div class="relative container h-full px-4 py-8">
+                <div class="w-full flex flex-col md:flex-row-reverse items-center gap-8">
                     <!-- Playlist Cover -->
                     <img
                         :src="playlist.cover"
@@ -61,15 +61,15 @@ defineProps<Props>();
                     />
 
                     <!-- Playlist Info -->
-                    <div class="flex-1 flex flex-col justify-center">
+                    <div class="flex-1 w-full flex flex-col justify-center">
                         <div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                             <PlaySquare class="h-4 w-4" />
                             <span>Playlist</span>
                         </div>
-                        <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
+                        <h1 class="mb-4 text-2xl font-bold tracking-tight lg:text-3xl">
                             {{ playlist.title }}
                         </h1>
-                        <p class="mb-6 text-lg text-muted-foreground">
+                        <p class="mb-4 text-sm lg:text-lg text-muted-foreground">
                             {{ playlist.description }}
                         </p>
 
@@ -89,13 +89,9 @@ defineProps<Props>();
         </section>
 
         <!-- Playlist Posts -->
-        <section class="py-8 px-4 md:px-0">
+        <section class="py-8 px-4">
             <div class="container mx-auto">
                 <div class="mx-auto max-w-6xl">
-                    <div class="mb-8">
-                        <h2 class="text-2xl font-bold">Posts in this Playlist</h2>
-                    </div>
-
                     <!-- Posts Grid -->
                     <div v-if="playlist.posts.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         <PostCard
