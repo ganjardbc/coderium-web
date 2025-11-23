@@ -249,7 +249,7 @@ const updateScrollButtons = () => {
                     />
                 </div>
 
-                <div v-if="recentPosts.data.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div v-if="recentPosts.data.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     <PostCard
                         v-for="post in recentPosts.data"
                         :key="post.id"

@@ -13,10 +13,10 @@ import ThemeToggle from '@/components/ThemeToggle.vue';
                 <div class="flex items-center justify-between">
                     <Link href="/" class="flex items-center gap-2">
                         <div class="flex items-center gap-2">
-                            <svg class="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="h-6 w-6 md:h-8 md:w-8 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            <span class="text-2xl font-bold">Coderium</span>
+                            <span class="text-lg md:text-2xl font-bold">Coderium</span>
                         </div>
                     </Link>
 
