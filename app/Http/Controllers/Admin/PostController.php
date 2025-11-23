@@ -70,6 +70,11 @@ class PostController extends Controller
         $validated['slug'] = Str::slug($validated['title']);
         $validated['user_id'] = $request->user()->id;
 
+        // Encode tags as JSON
+        if (isset($validated['tags'])) {
+            $validated['tags'] = json_encode($validated['tags']);
+        }
+
         // Ensure unique slug
         $originalSlug = $validated['slug'];
         $counter = 1;
@@ -157,6 +162,11 @@ class PostController extends Controller
         // Extract media IDs before updating post
         $mediaIds = $validated['media_ids'] ?? null;
         unset($validated['media_ids']);
+
+        // Encode tags as JSON
+        if (isset($validated['tags'])) {
+            $validated['tags'] = json_encode($validated['tags']);
+        }
 
         $post->update($validated);
 

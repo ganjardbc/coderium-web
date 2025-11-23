@@ -224,7 +224,7 @@
 }
 
 .content-html p {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .content-html ul,
@@ -294,5 +294,17 @@
 
 .content-html a {
     color: var(--primary);
+    text-decoration: none;
+}
+
+.content-html a:hover {
     text-decoration: underline;
+}
+
+.content-html img {
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    max-width: 100%;
+    overflow: hidden;
 }

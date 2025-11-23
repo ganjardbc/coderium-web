@@ -23,7 +23,8 @@ import { Button } from '@/components/ui/button';
                         <Button
                             :as="Link"
                             href="/search"
-                            variant="ghost"
+                            variant="outline"
+                            class="rounded-full"
                         >
                             <Search class="inline-block h-4 w-4 mr-1" />
                             Search
