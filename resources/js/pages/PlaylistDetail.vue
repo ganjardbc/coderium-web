@@ -136,7 +136,7 @@ defineProps<Props>();
                     </p>
                     <div class="flex items-center justify-center gap-4">
                         <Button as-child variant="default">
-                            <Link href="/">
+                            <Link href="/playlists">
                                 Browse Playlists
                             </Link>
                         </Button>
