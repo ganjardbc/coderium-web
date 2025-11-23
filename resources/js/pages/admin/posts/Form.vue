@@ -242,12 +242,12 @@ const cancel = () => {
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex gap-3">
-                        <Button type="submit">
-                            {{ isEditing ? 'Update' : 'Create' }} Post
-                        </Button>
+                    <div class="flex gap-3 justify-end">
                         <Button type="button" variant="outline" @click="cancel">
                             Cancel
+                        </Button>
+                        <Button type="submit">
+                            {{ isEditing ? 'Update' : 'Create' }} Post
                         </Button>
                     </div>
                 </form>
