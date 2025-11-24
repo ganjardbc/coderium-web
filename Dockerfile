@@ -51,11 +51,22 @@ RUN npm install
 # Copy existing application directory contents
 COPY . .
 
-# Build the Vue.js frontend
-RUN npm run build
-
 # Generate autoloader
 RUN composer dump-autoload --optimize
+
+# Set up environment file for build
+RUN cp .env.example .env || touch .env
+
+# Generate application key
+RUN php artisan key:generate --force
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
+
+# Build the Vue.js frontend
+RUN npm run build
 
 # Copy entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
