@@ -57,6 +57,15 @@ RUN composer dump-autoload --optimize
 # Set up environment file for build
 RUN cp .env.example .env || touch .env
 
+# Configure environment for build (use array driver to avoid database dependency)
+RUN sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env && \
+    sed -i 's/CACHE_STORE=.*/CACHE_STORE=array/' .env && \
+    sed -i 's/SESSION_DRIVER=.*/SESSION_DRIVER=array/' .env && \
+    sed -i 's/QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env
+
+# Create SQLite database file
+RUN touch /var/www/database/database.sqlite
+
 # Generate application key
 RUN php artisan key:generate --force
 
