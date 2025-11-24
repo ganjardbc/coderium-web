@@ -5,10 +5,17 @@ echo "Waiting for database connection..."
 php artisan wait:db 2>/dev/null || sleep 5
 
 # Run database migrations
-echo "Running database migrations..."
-php artisan migrate --force
+# echo "Running database migrations..."
+# php artisan migrate --force
 
-# Clear and cache config
+# Clear all caches first
+echo "Clearing caches..."
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
+
+# Cache config and routes for production
 echo "Optimizing application..."
 php artisan config:cache
 php artisan route:cache
