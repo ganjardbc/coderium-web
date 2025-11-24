@@ -5,8 +5,8 @@ set -e
 echo "Waiting for database connection..."
 php artisan wait:db 2>/dev/null || sleep 5
 
-# echo "Running database migrations..."
-# php artisan migrate --force
+echo "Running database migrations..."
+php artisan migrate --force
 
 echo "Clearing caches..."
 php artisan config:clear
