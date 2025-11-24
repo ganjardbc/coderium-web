@@ -1,28 +1,40 @@
 #!/bin/sh
+set -e
 
-# Wait for database to be ready
+# Wait for database to be ready (best-effort)
 echo "Waiting for database connection..."
 php artisan wait:db 2>/dev/null || sleep 5
 
-# Run database migrations
 echo "Running database migrations..."
 php artisan migrate --force
 
-# Clear all caches first
 echo "Clearing caches..."
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 php artisan cache:clear
 
-# Cache config and routes for production
-echo "Optimizing application..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# Ensure storage directories exist
+echo "Ensuring storage directories..."
+mkdir -p storage/app/public
 
-# Set permissions for storage and bootstrap/cache directories
-chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Create storage symlink idempotently
+if [ ! -L public/storage ]; then
+	if [ -e public/storage ]; then
+		echo "public/storage exists and is not a symlink — renaming to public/storage.bak"
+		mv public/storage public/storage.bak || true
+	fi
 
-# Execute the Docker CMD
+	echo "Creating storage symlink..."
+	php artisan storage:link || true
+else
+	echo "Storage symlink already exists."
+fi
+
+# Set owner/permissions (adjust user/group if needed)
+echo "Setting permissions for storage and bootstrap/cache..."
+chown -R www-data:www-data storage bootstrap/cache || true
+chmod -R 775 storage bootstrap/cache || true
+
+# Execute the container CMD
 exec "$@"
