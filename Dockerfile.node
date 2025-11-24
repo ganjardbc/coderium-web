@@ -1,0 +1,12 @@
+FROM node:20
+
+# Install PHP and dependencies
+RUN apt-get update && apt-get install -y \
+    php \
+    php-mysql \
+    php-mbstring \
+    php-xml \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www

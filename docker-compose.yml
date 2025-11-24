@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www
+      - /var/www/vendor
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=db_coderium
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - node
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: db_coderium
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/mysql
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    entrypoint: /var/www/entrypoint-node.sh
+    tty: true
+volumes:
+  db_data:
