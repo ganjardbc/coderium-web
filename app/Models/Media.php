@@ -59,7 +59,16 @@ class Media extends Model
      */
     public function getUrlAttribute(): string
     {
-        return Storage::disk($this->disk)->url($this->path);
+        // For S3/R2, Storage::url() returns the full URL
+        // For local, it returns /storage/path
+        $url = Storage::disk($this->disk)->url($this->path);
+
+        // If it's a relative path (local storage), prepend APP_URL
+        if (!str_starts_with($url, 'http')) {
+            return config('app.url') . $url;
+        }
+
+        return $url;
     }
 
     /**

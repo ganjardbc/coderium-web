@@ -56,8 +56,39 @@ class MediaController extends Controller
         // Generate unique filename
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-        // Store file
-        $path = $file->storeAs('media', $filename, 'public');
+        // Get the configured disk
+        $disk = config('filesystems.default');
+
+        try {
+            // Store file with proper Laravel syntax
+            if ($disk === 's3') {
+                // Don't use ACL, rely on bucket policy instead
+                $path = Storage::disk('s3')->putFileAs('media', $file, $filename);
+            } else {
+                $path = $file->storeAs('media', $filename, $disk);
+            }
+
+            if (!$path) {
+                \Log::error('File upload failed: storeAs returned empty path', [
+                    'disk' => $disk,
+                    'filename' => $filename,
+                ]);
+                return response()->json([
+                    'message' => 'Failed to upload file.',
+                    'error' => 'File storage returned empty path',
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            \Log::error('File upload exception: ' . $e->getMessage(), [
+                'disk' => $disk,
+                'filename' => $filename,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Failed to upload file.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
 
         // Create media record
         $media = Media::create([
@@ -65,7 +96,7 @@ class MediaController extends Controller
             'file_name' => $filename,
             'mime_type' => $file->getMimeType(),
             'path' => $path,
-            'disk' => 'public',
+            'disk' => $disk,
             'collection_name' => $request->input('collection'),
             'size' => $file->getSize(),
             'custom_properties' => $request->input('custom_properties', []),
@@ -91,12 +122,29 @@ class MediaController extends Controller
 
         $uploadedMedia = [];
 
+        // Get the configured disk
+        $disk = config('filesystems.default');
+
         foreach ($request->file('files') as $file) {
             // Generate unique filename
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-            // Store file
-            $path = $file->storeAs('media', $filename, 'public');
+            try {
+                // Store file
+                if ($disk === 's3') {
+                    // Don't use ACL, rely on bucket policy instead
+                    $path = Storage::disk('s3')->putFileAs('media', $file, $filename);
+                } else {
+                    $path = $file->storeAs('media', $filename, $disk);
+                }
+
+                if (!$path) {
+                    continue; // Skip failed uploads
+                }
+            } catch (\Exception $e) {
+                \Log::error('File upload failed in uploadMultiple: ' . $e->getMessage());
+                continue; // Skip failed uploads
+            }
 
             // Create media record
             $media = Media::create([
@@ -104,7 +152,7 @@ class MediaController extends Controller
                 'file_name' => $filename,
                 'mime_type' => $file->getMimeType(),
                 'path' => $path,
-                'disk' => 'public',
+                'disk' => $disk,
                 'collection_name' => $request->input('collection'),
                 'size' => $file->getSize(),
                 'custom_properties' => [],
