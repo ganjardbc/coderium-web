@@ -115,8 +115,14 @@ class PostController extends Controller
     {
         $post = Post::with('media')->where('slug', $slug)->firstOrFail();
 
+        // Parse tags from JSON string to array
+        $postData = $post->toArray();
+        if (isset($postData['tags']) && is_string($postData['tags'])) {
+            $postData['tags'] = json_decode($postData['tags'], true) ?? [];
+        }
+
         return Inertia::render('admin/posts/Form', [
-            'post' => $post,
+            'post' => $postData,
         ]);
     }
 
