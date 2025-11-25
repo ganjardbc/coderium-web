@@ -16,7 +16,7 @@ const breadcrumbs = [
 </script>
 
 <template>
-    <Head title="Admin Dashboard - Coderium" />
+    <Head title="Admin Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">

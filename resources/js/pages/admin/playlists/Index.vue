@@ -91,7 +91,7 @@ const actions: Action<Playlist>[] = [
 </script>
 
 <template>
-    <Head title="Playlists - Admin - Coderium" />
+    <Head title="Playlists - Admin" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">

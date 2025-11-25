@@ -113,7 +113,7 @@ const handleSearch = () => {
 </script>
 
 <template>
-    <Head title="Search - Coderium" />
+    <Head title="Explore Posts" />
 
     <FrontLayout>
         <!-- Header -->

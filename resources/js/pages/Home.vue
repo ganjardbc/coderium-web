@@ -111,7 +111,7 @@ const updateScrollButtons = () => {
 </script>
 
 <template>
-    <Head title="Coderium - Share Your Code Stories" />
+    <Head title="The Code Heroes Journey" />
 
     <FrontLayout>
         <!-- Hero Section -->

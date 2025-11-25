@@ -58,7 +58,7 @@ const handleClearSearch = () => {
 </script>
 
 <template>
-    <Head title="Browse Playlists - Coderium" />
+    <Head title="Browse Playlists" />
 
     <FrontLayout>
         <!-- Header -->

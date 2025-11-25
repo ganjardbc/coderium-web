@@ -114,7 +114,7 @@ const getTags = () => {
 
 <template>
     <Head>
-        <title>{{ post.title }} - Coderium</title>
+        <title>{{ post.title }}</title>
         <meta name="description" :content="post.subtitle || post.title" />
         <meta property="og:title" :content="post.title" />
         <meta property="og:description" :content="post.subtitle || post.title" />

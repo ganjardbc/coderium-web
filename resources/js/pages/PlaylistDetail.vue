@@ -43,7 +43,7 @@ defineProps<Props>();
 </script>
 
 <template>
-    <Head :title="`${playlist.title} - Coderium`" />
+    <Head :title="`${playlist.title}`" />
 
     <FrontLayout>
         <!-- Back Button -->

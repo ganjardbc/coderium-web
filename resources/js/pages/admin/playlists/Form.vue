@@ -115,7 +115,7 @@ const cancel = () => {
 </script>
 
 <template>
-    <Head :title="`${isEditing ? 'Edit' : 'Create'} Playlist - Admin - Coderium`" />
+    <Head :title="`${isEditing ? 'Edit' : 'Create'} Playlist - Admin`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">

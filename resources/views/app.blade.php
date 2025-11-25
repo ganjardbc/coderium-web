@@ -6,6 +6,8 @@
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
+            window.appName = '{{ config('app.name') }}';
+
             (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
 
@@ -30,7 +32,7 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', '') }}</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">

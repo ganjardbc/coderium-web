@@ -108,7 +108,7 @@ const actions: Action<Post>[] = [
 </script>
 
 <template>
-    <Head title="Posts - Admin - Coderium" />
+    <Head title="Posts - Admin" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
