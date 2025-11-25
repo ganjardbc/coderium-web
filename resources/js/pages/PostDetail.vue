@@ -5,6 +5,7 @@ import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight } from 'lucid
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import BackButton from '@/components/BackButton.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
+import PostCard from '@/components/PostCard.vue';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 
@@ -35,6 +36,7 @@ interface Post {
 interface Props {
     post: Post;
     isLiked: boolean;
+    relatedPosts: Post[];
 }
 
 const props = defineProps<Props>();
@@ -292,6 +294,23 @@ const getTags = () => {
                 </div>
             </div>
         </article>
+
+        <!-- Related Posts -->
+        <section v-if="props.relatedPosts && props.relatedPosts.length > 0" class="py-8 border-t">
+            <div class="container mx-auto px-4">
+                <div class="mx-auto w-full">
+                    <h2 class="mb-4 text-2xl font-bold">Related Posts</h2>
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        <PostCard
+                            v-for="relatedPost in props.relatedPosts"
+                            :key="relatedPost.id"
+                            :post="relatedPost"
+                            :show-tags="true"
+                        />
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Related Actions -->
         <DiscoverMode />

@@ -61,6 +61,48 @@ class PostController extends Controller
                 ->exists();
         }
 
+        $relatedPosts = collect();
+        $relatedLimit = 4;
+
+        // Fetch related posts randomly based on shared tags and title keywords
+        if (!empty($post->tags)) {
+            $tags = is_array($post->tags) ? $post->tags : [];
+            $relatedPosts = Post::query()
+                ->where('is_published', true)
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->where('id', '!=', $post->id)
+                ->where(function ($query) use ($tags, $post) {
+                    foreach ($tags as $tag) {
+                        $query->orWhereJsonContains('tags', $tag);
+                    }
+                    // Also match title keywords
+                    $titleKeywords = preg_split('/\s+/', $post->title);
+                    foreach ($titleKeywords as $keyword) {
+                        $query->orWhere('title', 'like', "%{$keyword}%");
+                    }
+                })
+                ->inRandomOrder()
+                ->orderBy('published_at', 'desc')
+                ->limit($relatedLimit)
+                ->get();
+        }
+
+        // show random posts if related posts are less than limit
+        if ($relatedPosts->count() < $relatedLimit) {
+            $additionalPosts = Post::query()
+                ->where('is_published', true)
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->where('id', '!=', $post->id)
+                ->whereNotIn('id', $relatedPosts->pluck('id')->toArray())
+                ->inRandomOrder()
+                ->limit($relatedLimit - $relatedPosts->count())
+                ->get();
+
+            $relatedPosts = $relatedPosts->merge($additionalPosts);
+        }
+
         return Inertia::render('PostDetail', [
             'post' => [
                 'id' => $post->id,
@@ -80,6 +122,7 @@ class PostController extends Controller
                 ],
             ],
             'isLiked' => $isLiked,
+            'relatedPosts' => $relatedPosts->toArray(),
         ]);
     }
 }
