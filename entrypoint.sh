@@ -14,6 +14,11 @@ php artisan route:clear
 php artisan view:clear
 php artisan cache:clear
 
+echo "Optimizing applications..."
+php artisan config:cache
+php artisan route:cache
+pho artisan view:cache
+
 # Ensure storage directories exist
 echo "Ensuring storage directories..."
 mkdir -p storage/app/public
