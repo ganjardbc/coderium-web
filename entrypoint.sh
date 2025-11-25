@@ -1,9 +1,19 @@
 #!/bin/sh
 set -e
 
-# Wait for database to be ready (best-effort)
+# Wait for database to be ready with retry logic
 echo "Waiting for database connection..."
-php artisan wait:db 2>/dev/null || sleep 5
+max_retries=30
+retry_count=0
+until php artisan migrate:status > /dev/null 2>&1 || [ $retry_count -eq $max_retries ]; do
+    echo "Database not ready yet... waiting (attempt $((retry_count+1))/$max_retries)"
+    sleep 2
+    retry_count=$((retry_count+1))
+done
+
+if [ $retry_count -eq $max_retries ]; then
+    echo "Warning: Could not connect to database after $max_retries attempts. Continuing anyway..."
+fi
 
 echo "Running database migrations..."
 php artisan migrate --force
@@ -17,7 +27,7 @@ php artisan cache:clear
 echo "Optimizing applications..."
 php artisan config:cache
 php artisan route:cache
-pho artisan view:cache
+php artisan view:cache
 
 # Ensure storage directories exist
 echo "Ensuring storage directories..."
