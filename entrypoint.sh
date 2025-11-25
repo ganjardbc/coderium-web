@@ -1,22 +1,22 @@
 #!/bin/sh
 set -e
 
-# Wait for database to be ready with retry logic
-echo "Waiting for database connection..."
-max_retries=30
-retry_count=0
-until php artisan migrate:status > /dev/null 2>&1 || [ $retry_count -eq $max_retries ]; do
-    echo "Database not ready yet... waiting (attempt $((retry_count+1))/$max_retries)"
-    sleep 2
-    retry_count=$((retry_count+1))
-done
+# # Wait for database to be ready with retry logic
+# echo "Waiting for database connection..."
+# max_retries=30
+# retry_count=0
+# until php artisan migrate:status > /dev/null 2>&1 || [ $retry_count -eq $max_retries ]; do
+#     echo "Database not ready yet... waiting (attempt $((retry_count+1))/$max_retries)"
+#     sleep 2
+#     retry_count=$((retry_count+1))
+# done
 
-if [ $retry_count -eq $max_retries ]; then
-    echo "Warning: Could not connect to database after $max_retries attempts. Continuing anyway..."
-fi
+# if [ $retry_count -eq $max_retries ]; then
+#     echo "Warning: Could not connect to database after $max_retries attempts. Continuing anyway..."
+# fi
 
-echo "Running database migrations..."
-php artisan migrate --force
+# echo "Running database migrations..."
+# php artisan migrate --force
 
 echo "Clearing caches..."
 php artisan config:clear
