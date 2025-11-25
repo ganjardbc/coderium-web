@@ -76,7 +76,7 @@ class PlaylistController extends Controller
         // Ensure unique slug
         $originalSlug = $validated['slug'];
         $counter = 1;
-        while (Playlist::where('slug', $validated['slug'])->exists()) {
+        while (Playlist::withTrashed()->where('slug', $validated['slug'])->exists()) {
             $validated['slug'] = $originalSlug . '-' . $counter;
             $counter++;
         }
@@ -143,7 +143,7 @@ class PlaylistController extends Controller
             $slug = Str::slug($validated['title']);
             $originalSlug = $slug;
             $counter = 1;
-            while (Playlist::where('slug', $slug)->where('id', '!=', $playlist->id)->exists()) {
+            while (Playlist::withTrashed()->where('slug', $slug)->where('id', '!=', $playlist->id)->exists()) {
                 $slug = $originalSlug . '-' . $counter;
                 $counter++;
             }

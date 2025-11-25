@@ -78,7 +78,7 @@ class PostController extends Controller
         // Ensure unique slug
         $originalSlug = $validated['slug'];
         $counter = 1;
-        while (Post::where('slug', $validated['slug'])->exists()) {
+        while (Post::withTrashed()->where('slug', $validated['slug'])->exists()) {
             $validated['slug'] = $originalSlug . '-' . $counter;
             $counter++;
         }
@@ -147,7 +147,7 @@ class PostController extends Controller
             $slug = Str::slug($validated['title']);
             $originalSlug = $slug;
             $counter = 1;
-            while (Post::where('slug', $slug)->where('id', '!=', $post->id)->exists()) {
+            while (Post::withTrashed()->where('slug', $slug)->where('id', '!=', $post->id)->exists()) {
                 $slug = $originalSlug . '-' . $counter;
                 $counter++;
             }
