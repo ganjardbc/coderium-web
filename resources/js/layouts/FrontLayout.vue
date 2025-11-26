@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Home, LogIn, CompassIcon, PlaySquareIcon } from 'lucide-vue-next';
+import { Home, LogIn, SearchIcon, PlaySquareIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle.vue';
 </script>
@@ -31,8 +31,8 @@ import ThemeToggle from '@/components/ThemeToggle.vue';
                             variant="outline"
                             class="rounded-full"
                         >
-                            <CompassIcon class="inline-block h-4 w-4" />
-                            <span class="hidden md:block ml-1">
+                            <SearchIcon class="inline-block h-4 w-4" />
+                            <span class="ml-1">
                                 Explore
                             </span>
                         </Button>
@@ -41,10 +41,10 @@ import ThemeToggle from '@/components/ThemeToggle.vue';
                             :as="Link"
                             href="/playlists"
                             variant="outline"
-                            class="rounded-full"
+                            class="rounded-full hidden md:inline-flex"
                         >
                             <PlaySquareIcon class="inline-block h-4 w-4" />
-                            <span class="hidden md:block ml-1">
+                            <span class="ml-1">
                                 Playlists
                             </span>
                         </Button>
