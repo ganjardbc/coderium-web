@@ -8,6 +8,7 @@ import Pagination from '@/components/Pagination.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
 import { useDebounceFn } from '@/lib/utils';
+import BackButton from '@/components/BackButton.vue';
 
 interface Post {
     id: number;
@@ -116,6 +117,9 @@ const handleSearch = () => {
     <Head title="Explore Posts" />
 
     <FrontLayout>
+        <!-- Breadcrumbs -->
+        <BackButton />
+
         <!-- Header -->
         <section class="border-b bg-gradient-to-b from-card/50 to-background py-8">
             <div class="container mx-auto px-4">

@@ -94,14 +94,13 @@ const handleClearSearch = () => {
     <FrontLayout>
         <!-- Hero Section -->
         <template #front-prepend>
-            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12">
+            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-8">
                 <div class="container mx-auto px-4 text-center">
-                    <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl text-white">
+                    <h1 class="mb-4 text-2xl font-bold tracking-tight lg:text-5xl text-white">
                         The <span class="font-extrabold text-white">Code Heroes</span> Journey
                     </h1>
-                    <p class="mx-auto max-w-3xl text-md lg:text-lg text-white">
-                        Discover tutorials, code snippets, and development insights shared by the community.<br />
-                        Learn, create, and grow together.
+                    <p class="mx-auto max-w-3xl text-md md:text-lg text-white">
+                        Discover tutorials, code snippets, and development insights shared by the community.
                     </p>
                 </div>
             </section>
