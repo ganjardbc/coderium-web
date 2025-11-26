@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { PlaySquare, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import emblaCarouselVue from 'embla-carousel-vue';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PostCard from '@/components/PostCard.vue';
 import PlaylistCard from '@/components/PlaylistCard.vue';
@@ -61,6 +62,31 @@ const props = defineProps<Props>();
 
 const searchQuery = ref(props.filters?.search || '');
 
+const [emblaRef, emblaApi] = emblaCarouselVue({
+    align: 'start',
+    containScroll: 'trimSnaps',
+    dragFree: true,
+});
+
+const canScrollLeft = ref(false);
+const canScrollRight = ref(true);
+
+// Update scroll buttons based on embla state
+watchEffect(() => {
+    if (emblaApi.value) {
+        const updateScrollButtons = () => {
+            canScrollLeft.value = emblaApi.value?.canScrollPrev() || false;
+            canScrollRight.value = emblaApi.value?.canScrollNext() || false;
+        };
+
+        emblaApi.value.on('select', updateScrollButtons);
+        emblaApi.value.on('reInit', updateScrollButtons);
+
+        // Initialize button states
+        updateScrollButtons();
+    }
+});
+
 const handleSearch = (query: string) => {
     router.get('/search', {
         q: query || undefined,
@@ -79,34 +105,14 @@ const handleClearSearch = () => {
     });
 };
 
-const playlistScroll = ref<HTMLElement | null>(null);
-const canScrollLeft = ref(false);
-const canScrollRight = ref(true);
-
 const scrollPlaylists = (direction: 'left' | 'right') => {
-    if (!playlistScroll.value) return;
+    if (!emblaApi.value) return;
 
-    const scrollAmount = 400;
-    const newScrollLeft = direction === 'left'
-        ? playlistScroll.value.scrollLeft - scrollAmount
-        : playlistScroll.value.scrollLeft + scrollAmount;
-
-    playlistScroll.value.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth'
-    });
-
-    // Update button states after scroll
-    setTimeout(updateScrollButtons, 300);
-};
-
-const updateScrollButtons = () => {
-    if (!playlistScroll.value) return;
-
-    canScrollLeft.value = playlistScroll.value.scrollLeft > 0;
-    canScrollRight.value =
-        playlistScroll.value.scrollLeft <
-        (playlistScroll.value.scrollWidth - playlistScroll.value.clientWidth - 10);
+    if (direction === 'left') {
+        emblaApi.value.scrollPrev();
+    } else {
+        emblaApi.value.scrollNext();
+    }
 };
 </script>
 
@@ -187,29 +193,33 @@ const updateScrollButtons = () => {
 
                 <div
                     v-if="playlists.length > 0"
-                    ref="playlistScroll"
-                    @scroll="updateScrollButtons"
-                    class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
-                    style="scroll-padding: 0 1rem;"
+                    class="relative"
                 >
-                    <PlaylistCard
-                        v-for="playlist in playlists"
-                        :key="playlist.id"
-                        :playlist="playlist"
-                        style="width: 520px; min-width: 520px;"
-                    />
-                    <Button
-                        :as="Link"
-                        href="/playlists"
-                        size="lg"
-                        variant="outline"
-                        class="flex flex-col w-auto min-h-[156px] !px-10"
-                    >
-                        Browse Playlists
-                        <div class="w-[40px] h-[40px] flex justify-center items-center border rounded-full bg-primary text-background">
-                            <ChevronRight class="h-10 w-10" />
+                    <div ref="emblaRef" class="overflow-hidden">
+                        <div class="flex gap-6 touch-pan-y">
+                            <div
+                                v-for="playlist in playlists"
+                                :key="playlist.id"
+                                class="flex-[0_0_520px] min-w-0"
+                            >
+                                <PlaylistCard :playlist="playlist" />
+                            </div>
+                            <div class="flex-[0_0_auto] min-w-0">
+                                <Button
+                                    :as="Link"
+                                    href="/playlists"
+                                    size="lg"
+                                    variant="outline"
+                                    class="flex flex-col w-auto min-h-[156px] !px-10"
+                                >
+                                    Browse Playlists
+                                    <div class="w-[40px] h-[40px] flex justify-center items-center border rounded-full bg-primary text-background">
+                                        <ChevronRight class="h-10 w-10" />
+                                    </div>
+                                </Button>
+                            </div>
                         </div>
-                    </Button>
+                    </div>
                 </div>
 
                 <div v-else class="py-12 text-center text-muted-foreground">

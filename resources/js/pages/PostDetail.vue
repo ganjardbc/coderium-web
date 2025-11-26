@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import emblaCarouselVue from 'embla-carousel-vue';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import BackButton from '@/components/BackButton.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
@@ -41,9 +42,25 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const [emblaRef, emblaApi] = emblaCarouselVue();
 const currentImageIndex = ref(0);
 const isLiked = ref(props.isLiked);
 const likesCount = ref(props.post.likes_count);
+
+// Update current index when carousel scrolls
+watchEffect(() => {
+    if (emblaApi.value) {
+        const onSelect = () => {
+            currentImageIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
+        };
+
+        emblaApi.value.on('select', onSelect);
+        emblaApi.value.on('reInit', onSelect);
+
+        // Initialize the index
+        onSelect();
+    }
+});
 
 const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -64,21 +81,21 @@ const formatNumber = (num: number) => {
 };
 
 const nextImage = () => {
-    if (props.post.type === 'carousel' && props.post.media.length > 0) {
-        currentImageIndex.value = (currentImageIndex.value + 1) % props.post.media.length;
+    if (emblaApi.value) {
+        emblaApi.value.scrollNext();
     }
 };
 
 const prevImage = () => {
-    if (props.post.type === 'carousel' && props.post.media.length > 0) {
-        currentImageIndex.value = currentImageIndex.value === 0
-            ? props.post.media.length - 1
-            : currentImageIndex.value - 1;
+    if (emblaApi.value) {
+        emblaApi.value.scrollPrev();
     }
 };
 
 const goToImage = (index: number) => {
-    currentImageIndex.value = index;
+    if (emblaApi.value) {
+        emblaApi.value.scrollTo(index);
+    }
 };
 
 const toggleLike = async () => {
@@ -192,29 +209,41 @@ const getTags = () => {
                             v-else-if="post.type === 'carousel' && post.media.length > 0"
                             class="relative border border-gray-300 rounded-lg overflow-hidden h-[430px] md:h-[630px]"
                         >
-                            <div class="overflow-hidden rounded-lg bg-muted h-full flex items-center justify-center">
-                                <img
-                                    :src="post.media[currentImageIndex].url"
-                                    :alt="`${post.title} - Image ${currentImageIndex + 1}`"
-                                    class="max-w-full h-full object-contain"
-                                />
+                            <div ref="emblaRef" class="overflow-hidden rounded-lg h-full">
+                                <div class="flex h-full touch-pan-y">
+                                    <div
+                                        v-for="(media, index) in post.media"
+                                        :key="index"
+                                        class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
+                                    >
+                                        <img
+                                            :src="media.url"
+                                            :alt="`${post.title} - Image ${index + 1}`"
+                                            class="max-w-full h-full object-contain"
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Navigation Arrows -->
-                            <button
+                            <Button
                                 v-if="post.media.length > 1"
                                 @click="prevImage"
-                                class="absolute left-4 bottom-0 lg:bottom-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-all hover:bg-black/70 cursor-pointer"
+                                :disabled="currentImageIndex === 0"
+                                variant="default"
+                                class="absolute left-4 bottom-0 lg:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
                             >
                                 <ChevronLeft class="h-5 w-5" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 v-if="post.media.length > 1"
                                 @click="nextImage"
-                                class="absolute right-4 bottom-0 lg:bottom-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-all hover:bg-black/70 cursor-pointer"
+                                :disabled="currentImageIndex === post.media.length - 1"
+                                variant="default"
+                                class="absolute right-4 bottom-0 lg:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
                             >
                                 <ChevronRight class="h-5 w-5" />
-                            </button>
+                            </Button>
 
                             <!-- Image Counter -->
                             <div class="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur-sm">
