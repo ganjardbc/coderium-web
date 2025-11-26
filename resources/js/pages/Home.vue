@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlaySquare, ChevronLeft, ChevronRight } from 'lucide-vue-next';
-import emblaCarouselVue from 'embla-carousel-vue';
+import { PlaySquare, Tag } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PostCard from '@/components/PostCard.vue';
-import PlaylistCard from '@/components/PlaylistCard.vue';
+import SidePlaylistCard from '@/components/SidePlaylistCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
 import Searchbar from '@/components/Searchbar.vue';
@@ -46,46 +45,29 @@ interface PaginatedPosts {
     }>;
 }
 
+interface PopularTag {
+    name: string;
+    count: number;
+}
+
 interface Props {
     playlists: Playlist[];
     recentPosts: PaginatedPosts;
+    popularTags: PopularTag[];
     filters?: {
         search?: string;
     };
 }
 
 const ENABLE_PLAYLIST = true;
-const ENABLE_POST_SEARCH = false;
-const ENABLE_POST_PAGINATION = false;
+const ENABLE_POST_SEARCH = true;
+const ENABLE_POST_PAGINATION = true;
+const ENABLE_POPULAR_TAGS = true;
+const ENABLE_DISCOVER_MODE = true;
 
 const props = defineProps<Props>();
 
 const searchQuery = ref(props.filters?.search || '');
-
-const [emblaRef, emblaApi] = emblaCarouselVue({
-    align: 'start',
-    containScroll: 'trimSnaps',
-    dragFree: true,
-});
-
-const canScrollLeft = ref(false);
-const canScrollRight = ref(true);
-
-// Update scroll buttons based on embla state
-watchEffect(() => {
-    if (emblaApi.value) {
-        const updateScrollButtons = () => {
-            canScrollLeft.value = emblaApi.value?.canScrollPrev() || false;
-            canScrollRight.value = emblaApi.value?.canScrollNext() || false;
-        };
-
-        emblaApi.value.on('select', updateScrollButtons);
-        emblaApi.value.on('reInit', updateScrollButtons);
-
-        // Initialize button states
-        updateScrollButtons();
-    }
-});
 
 const handleSearch = (query: string) => {
     router.get('/search', {
@@ -104,16 +86,6 @@ const handleClearSearch = () => {
         preserveScroll: true,
     });
 };
-
-const scrollPlaylists = (direction: 'left' | 'right') => {
-    if (!emblaApi.value) return;
-
-    if (direction === 'left') {
-        emblaApi.value.scrollPrev();
-    } else {
-        emblaApi.value.scrollNext();
-    }
-};
 </script>
 
 <template>
@@ -122,172 +94,140 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
     <FrontLayout>
         <!-- Hero Section -->
         <template #front-prepend>
-            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-8">
+            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12">
                 <div class="container mx-auto px-4 text-center">
                     <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl text-white">
                         The <span class="font-extrabold text-white">Code Heroes</span> Journey
                     </h1>
-                    <p class="mx-auto mb-8 max-w-3xl text-md lg:text-lg text-white">
+                    <p class="mx-auto max-w-3xl text-md lg:text-lg text-white">
                         Discover tutorials, code snippets, and development insights shared by the community.<br />
                         Learn, create, and grow together.
                     </p>
-                    <div class="flex items-center justify-center gap-4">
-                        <Button
-                            :as="Link"
-                            href="/search"
-                            size="lg"
-                            variant="default"
-                            class="p-4 md:p-6 text-sm md:text-md rounded-full"
-                        >
-                            Explore Posts
-                        </Button>
-                        <Button
-                            :as="Link"
-                            href="/playlists"
-                            size="lg"
-                            variant="outline"
-                            class="p-4 md:p-6 text-sm md:text-md rounded-full"
-                        >
-                            Browse Playlists
-                        </Button>
-                    </div>
                 </div>
             </section>
         </template>
 
-        <!-- Playlists Section -->
-        <section
-            v-if="ENABLE_PLAYLIST"
-            id="playlists"
-            class="border-b py-8"
-        >
-            <div class="container mx-auto px-4">
-                <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-2">
-                    <h2 class="text-2xl font-bold">Featured Playlists</h2>
+        <!-- Main Content: Two Column Layout (Medium-style) -->
+        <section class="py-8">
+            <div class="container mx-auto max-w-7xl px-4">
+                <!-- Two Column Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Main Column: Posts List -->
+                    <div class="lg:col-span-8">
+                        <div class="mb-4">
+                            <h2 class="text-lg font-bold">Recent Posts</h2>
+                        </div>
 
-                    <!-- Scroll Navigation Buttons -->
-                    <div
-                        v-if="playlists.length > 0"
-                        class="flex gap-2"
-                    >
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            class="px-0 w-[40px] rounded-full"
-                            :disabled="!canScrollLeft"
-                            @click="scrollPlaylists('left')"
+                        <!-- Search Bar -->
+                        <div
+                            v-if="ENABLE_POST_SEARCH"
+                            class="mb-6"
                         >
-                            <ChevronLeft class="h-5 w-5" />
-                        </Button>
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            class="px-0 w-[40px] rounded-full"
-                            :disabled="!canScrollRight"
-                            @click="scrollPlaylists('right')"
+                            <Searchbar
+                                v-model="searchQuery"
+                                placeholder="Search posts..."
+                                @search="handleSearch"
+                                @clear="handleClearSearch"
+                            />
+                        </div>
+
+                        <div v-if="recentPosts.data.length > 0" class="grid sm:grid-cols-2 gap-8">
+                            <PostCard
+                                v-for="post in recentPosts.data"
+                                :key="post.id"
+                                :post="post"
+                                :show-tags="true"
+                            />
+                        </div>
+
+                        <div v-else class="py-12 text-center text-muted-foreground">
+                            <PlaySquare class="mx-auto mb-4 h-12 w-12" />
+                            <p>No posts available yet</p>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div
+                            v-if="recentPosts.last_page > 1 && ENABLE_POST_PAGINATION"
+                            class="mt-8"
                         >
-                            <ChevronRight class="h-5 w-5" />
-                        </Button>
+                            <Pagination
+                                :current-page="recentPosts.current_page"
+                                :last-page="recentPosts.last_page"
+                                :links="recentPosts.links"
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div
-                    v-if="playlists.length > 0"
-                    class="relative"
-                >
-                    <div ref="emblaRef" class="overflow-hidden">
-                        <div class="flex gap-6 touch-pan-y">
+                    <!-- Sidebar Column: Sticky Content -->
+                    <aside class="lg:col-span-4">
+                        <div class="sticky top-20 space-y-6">
+                            <!-- Featured Playlists Card -->
                             <div
-                                v-for="playlist in playlists"
-                                :key="playlist.id"
-                                class="flex-[0_0_520px] min-w-0"
+                                v-if="ENABLE_PLAYLIST && playlists.length > 0"
+                                class="w-full"
                             >
-                                <PlaylistCard :playlist="playlist" />
+                                <div class="mb-4 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">Featured Playlists</h3>
+                                    <Button
+                                        :as="Link"
+                                        href="/playlists"
+                                        variant="ghost"
+                                        size="sm"
+                                        class="text-xs"
+                                    >
+                                        View all
+                                    </Button>
+                                </div>
+                                <div class="space-y-4">
+                                    <SidePlaylistCard
+                                        v-for="playlist in playlists"
+                                        :key="playlist.id"
+                                        :playlist="playlist"
+                                    />
+                                </div>
                             </div>
-                            <div class="flex-[0_0_auto] min-w-0">
+
+                            <!-- Popular Tags Card -->
+                            <div
+                                v-if="ENABLE_POPULAR_TAGS && popularTags.length > 0"
+                                class="w-full"
+                            >
+                                <h3 class="mb-4 text-lg font-semibold">Popular Tags</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <Button
+                                        v-for="tag in popularTags.slice(0, 12)"
+                                        :key="tag.name"
+                                        :as="Link"
+                                        :href="`/search?q=${encodeURIComponent(tag.name)}&sort=recent&type=all`"
+                                        variant="outline"
+                                        size="sm"
+                                        class="group rounded-full text-xs"
+                                    >
+                                        <Tag class="h-3 w-3 mr-1" />
+                                        {{ tag.name }}
+                                        <span class="ml-1 text-muted-foreground">
+                                            {{ tag.count }}
+                                        </span>
+                                    </Button>
+                                </div>
                                 <Button
+                                    v-if="popularTags.length > 12"
                                     :as="Link"
-                                    href="/playlists"
-                                    size="lg"
-                                    variant="outline"
-                                    class="flex flex-col w-auto min-h-[156px] !px-10"
+                                    href="/search"
+                                    variant="ghost"
+                                    size="sm"
+                                    class="w-full mt-4 text-xs"
                                 >
-                                    Browse Playlists
-                                    <div class="w-[40px] h-[40px] flex justify-center items-center border rounded-full bg-primary text-background">
-                                        <ChevronRight class="h-10 w-10" />
-                                    </div>
+                                    View all tags
                                 </Button>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div v-else class="py-12 text-center text-muted-foreground">
-                    <PlaySquare class="mx-auto mb-4 h-12 w-12" />
-                    <p>No playlists available yet</p>
+                    </aside>
                 </div>
             </div>
         </section>
 
-        <!-- Recent Posts Section -->
-        <section class="py-8">
-            <div class="container mx-auto px-4">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-2 mb-8">
-                    <h2 class="text-2xl font-bold">Recent Posts</h2>
-                    <Button
-                        :as="Link"
-                        href="/search"
-                        size="lg"
-                        variant="outline"
-                        class="w-full md:w-auto"
-                    >
-                        Explore Posts
-                        <ChevronRight class="h-5 w-5" />
-                    </Button>
-                </div>
-
-                <!-- Search Posts -->
-                <div
-                    v-if="ENABLE_POST_SEARCH"
-                    class="mb-8"
-                >
-                    <Searchbar
-                        v-model="searchQuery"
-                        placeholder="Search posts..."
-                        @search="handleSearch"
-                        @clear="handleClearSearch"
-                    />
-                </div>
-
-                <div v-if="recentPosts.data.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    <PostCard
-                        v-for="post in recentPosts.data"
-                        :key="post.id"
-                        :post="post"
-                        :show-tags="true"
-                    />
-                </div>
-
-                <div v-else class="py-12 text-center text-muted-foreground">
-                    <PlaySquare class="mx-auto mb-4 h-12 w-12" />
-                    <p>No posts available yet</p>
-                </div>
-
-                <!-- Pagination -->
-                <div
-                    v-if="recentPosts.last_page > 1 && ENABLE_POST_PAGINATION"
-                    class="mt-8"
-                >
-                    <Pagination
-                        :current-page="recentPosts.current_page"
-                        :last-page="recentPosts.last_page"
-                        :links="recentPosts.links"
-                    />
-                </div>
-            </div>
-        </section>
-
-        <!-- Related Actions -->
-        <DiscoverMode />
+        <!-- Section Mode -->
+        <DiscoverMode v-if="ENABLE_DISCOVER_MODE" />
     </FrontLayout>
 </template>

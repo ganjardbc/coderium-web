@@ -21,9 +21,9 @@ defineProps<Props>();
 <template>
     <Link
         :href="`/playlists/${playlist.slug}`"
-        class="group grid grid-cols-[140px_1fr] overflow-hidden rounded-lg border bg-card transition-all hover:border-gray-200 hover:shadow-lg snap-start"
+        class="group overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md grid grid-cols-[80px_1fr]"
     >
-        <div class="aspect-video w-full h-full overflow-hidden bg-muted">
+        <div class="relative aspect-1/1 overflow-hidden bg-muted">
             <img
                 v-if="playlist.cover"
                 :src="playlist.cover"
@@ -31,20 +31,17 @@ defineProps<Props>();
                 class="h-full w-full object-cover transition-transform group-hover:scale-105"
             />
             <div v-else class="flex h-full items-center justify-center">
-                <PlaySquare class="h-16 w-16 text-muted-foreground" />
+                <PlaySquare class="h-12 w-12 text-muted-foreground" />
             </div>
         </div>
-        <div class="p-5">
-            <h3 class="mb-2 text-lg truncate font-semibold group-hover:text-primary transition-colors">
+        <div class="p-3">
+            <h3 class="mb-2 line-clamp-2 text-sm font-semibold group-hover:text-primary">
                 {{ playlist.title }}
             </h3>
-            <p class="h-[44px] mb-4 line-clamp-2 text-sm text-muted-foreground">
-                {{ playlist.description }}
-            </p>
-            <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <p class="text-xs text-muted-foreground flex items-center gap-1">
                 <PlaySquare class="h-4 w-4" />
-                <span>{{ playlist.posts_count }} posts</span>
-            </div>
+                {{ playlist.posts_count }} {{ playlist.posts_count === 1 ? 'post' : 'posts' }}
+            </p>
         </div>
     </Link>
 </template>

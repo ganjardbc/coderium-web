@@ -45,12 +45,46 @@ class HomeController extends Controller
                 });
             })
             ->orderBy('published_at', 'desc')
-            ->paginate(8)
+            ->paginate(12)
             ->withQueryString();
+
+        // Get popular tags (extract from posts' tags array and count occurrences)
+        $allTags = Post::query()
+            ->where('is_published', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->whereNotNull('tags')
+            ->pluck('tags');
+
+        $popularTags = collect($allTags)
+            ->flatMap(function ($tagJson) {
+                // Decode the JSON string to get the array of tags
+                $decoded = json_decode($tagJson, true);
+                return is_array($decoded) ? $decoded : [];
+            })
+            ->filter(function ($tag) {
+                // Remove empty values
+                return !empty($tag);
+            })
+            ->map(function ($tag) {
+                // Normalize: trim whitespace and convert to lowercase for consistency
+                return trim(strtolower($tag));
+            })
+            ->countBy() // Count occurrences of each tag
+            ->sortDesc() // Sort by count (highest first)
+            ->take(5) // Get top 20
+            ->map(function ($count, $tag) {
+                return [
+                    'name' => $tag,
+                    'count' => $count,
+                ];
+            })
+            ->values();
 
         return Inertia::render('Home', [
             'playlists' => $playlists,
             'recentPosts' => $recentPosts,
+            'popularTags' => $popularTags,
             'filters' => [
                 'search' => $search,
             ],

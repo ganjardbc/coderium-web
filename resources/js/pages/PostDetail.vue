@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight, User } from 'lucide-vue-next';
 import emblaCarouselVue from 'embla-carousel-vue';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import BackButton from '@/components/BackButton.vue';
@@ -176,8 +176,9 @@ const getTags = () => {
 
                     <!-- Meta Info -->
                     <div class="mb-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <div class="flex items-center gap-2">
-                            <span class="font-medium">By {{ post.user.name }}</span>
+                        <div class="flex items-center gap-1">
+                            <User class="h-4 w-4" />
+                            <span>{{ post.user.name }}</span>
                         </div>
                         <div class="flex items-center gap-1">
                             <Clock class="h-4 w-4" />

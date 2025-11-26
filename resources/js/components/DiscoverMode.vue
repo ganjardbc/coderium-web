@@ -6,7 +6,7 @@ import { Link } from '@inertiajs/vue3';
     <section class="border-t py-8">
         <div class="container mx-auto px-4">
             <div class="mx-auto max-w-6xl text-center">
-                <h2 class="mb-4 text-2xl font-bold">Discover More</h2>
+                <h2 class="mb-4 text-xl font-bold">Discover More</h2>
                 <p class="mb-6 text-muted-foreground">
                     Explore more playlists and posts from the community
                 </p>
