@@ -3,6 +3,10 @@ import { Link } from '@inertiajs/vue3';
 import { Home, LogIn, SearchIcon, PlaySquareIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle.vue';
+
+const ENABLE_DARK_MODE = true;
+const ENABLE_SEARCH = true;
+const ENABLE_PLAYLISTS = false;
 </script>
 
 <template>
@@ -22,10 +26,11 @@ import ThemeToggle from '@/components/ThemeToggle.vue';
 
                     <nav class="flex items-center gap-2">
                         <!-- Dark Mode Toggle -->
-                        <ThemeToggle />
+                        <ThemeToggle v-if="ENABLE_DARK_MODE" />
 
                         <!-- Search -->
                         <Button
+                            v-if="ENABLE_SEARCH"
                             :as="Link"
                             href="/search"
                             variant="outline"
@@ -38,6 +43,7 @@ import ThemeToggle from '@/components/ThemeToggle.vue';
                         </Button>
 
                         <Button
+                            v-if="ENABLE_PLAYLISTS"
                             :as="Link"
                             href="/playlists"
                             variant="outline"

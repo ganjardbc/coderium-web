@@ -113,6 +113,14 @@ class Post extends Model
     }
 
     /**
+     * Get stack gallery images for the post.
+     */
+    public function stackGalleryImages(): MorphToMany
+    {
+        return $this->media()->wherePivot('tag', 'stack_gallery');
+    }
+
+    /**
      * Increment the views count.
      */
     public function incrementViews(string $ipAddress, ?string $userAgent = null, ?string $referer = null): void

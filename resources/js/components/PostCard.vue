@@ -8,7 +8,7 @@ interface Post {
     title: string;
     subtitle: string;
     cover: string;
-    type: 'article' | 'carousel' | 'video';
+    type: 'article'  | 'carousel' | 'video' | 'stack_gallery';
     tags?: string[];
     views_count: number;
     likes_count: number;
@@ -75,39 +75,44 @@ const getPostTags = (post: Post): string[] => {
                         post.type === 'article' ? 'bg-blue-500/90 text-white' : '',
                         post.type === 'carousel' ? 'bg-green-500/90 text-white' : '',
                         post.type === 'video' ? 'bg-purple-500/90 text-white' : '',
+                        post.type === 'stack_gallery' ? 'bg-yellow-500/90 text-white' : '',
                     ]"
                 >
                     <FileText v-if="post.type === 'article'" class="h-3 w-3" />
                     <ImageIcon v-if="post.type === 'carousel'" class="h-3 w-3" />
                     <Video v-if="post.type === 'video'" class="h-3 w-3" />
-                    {{ post.type.charAt(0).toUpperCase() + post.type.slice(1) }}
+                    <ImageIcon v-if="post.type === 'stack_gallery'" class="h-3 w-3" />
+                    {{ post.type.charAt(0).toUpperCase() + post.type.slice(1).replace('_', ' ') }}
                 </span>
             </div>
         </div>
 
         <div class="p-5 flex flex-col justify-between">
             <div class="flex flex-col min-h-[124px]">
-                <h3 class="mb-2 text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                <h3 class="mb-2 text-md font-semibold truncate group-hover:text-primary transition-colors">
                     {{ post.title }}
                 </h3>
-                <p v-if="post.subtitle" class="mb-4 line-clamp-2 text-sm text-muted-foreground">
+                <p v-if="post.subtitle" class="mb-4 line-clamp-1 text-sm text-muted-foreground">
                     {{ post.subtitle }}
                 </p>
 
                 <!-- Tags -->
-                <div v-if="showTags && getPostTags(post) && getPostTags(post).length > 0" class="mb-3 flex flex-wrap gap-1">
+                <div
+                    v-if="showTags && getPostTags(post) && getPostTags(post).length > 0"
+                    class="mb-3 flex flex-wrap gap-1"
+                >
                     <span
-                        v-for="tag in getPostTags(post).slice(0, 2)"
+                        v-for="tag in getPostTags(post).slice(0, 1)"
                         :key="tag"
                         class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
                     >
                         {{ tag }}
                     </span>
                     <span
-                        v-if="getPostTags(post).length > 2"
+                        v-if="getPostTags(post).length > 1"
                         class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
                     >
-                        +{{ getPostTags(post).length - 2 }} more
+                        +{{ getPostTags(post).length - 1 }} more
                     </span>
                 </div>
             </div>

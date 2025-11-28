@@ -17,7 +17,7 @@ class SearchController extends Controller
     {
         $request->validate([
             'q' => 'required|string|min:2',
-            'type' => 'nullable|in:article,carousel,video',
+            'type' => 'nullable|in:article,carousel,video,stack_gallery',
         ]);
 
         $query = Post::query()

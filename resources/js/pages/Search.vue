@@ -151,7 +151,7 @@ const handleSearch = () => {
                     </Button>
                 </div>
 
-                <div class="grid gap-8 lg:grid-cols-[320px_1fr]">
+                <div class="grid gap-8 lg:grid-cols-[380px_1fr]">
                     <!-- Sidebar Filters -->
                     <aside
                         class="flex-1 border rounded-lg p-4 h-fit"

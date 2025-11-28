@@ -79,8 +79,25 @@ const getTypeColor = (type: string) => {
             return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
         case 'video':
             return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        case 'stack_gallery':
+            return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
         default:
             return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    }
+};
+
+const getTypeLabel = (type: string) => {
+    switch (type) {
+        case 'article':
+            return 'Article';
+        case 'carousel':
+            return 'Carousel';
+        case 'video':
+            return 'Video';
+        case 'stack_gallery':
+            return 'Stack Gallery';
+        default:
+            return 'Unknown';
     }
 };
 
@@ -176,7 +193,7 @@ const actions: Action<Post>[] = [
                         :class="getTypeColor(row.type)"
                         class="inline-flex rounded-full px-2 py-1 text-xs font-semibold capitalize"
                     >
-                        {{ row.type }}
+                        {{ getTypeLabel(row.type) }}
                     </span>
                 </template>
 

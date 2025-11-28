@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight, User } from 'lucide-vue-next';
+import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight, User, FileText, ImageIcon, Video } from 'lucide-vue-next';
 import emblaCarouselVue from 'embla-carousel-vue';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import BackButton from '@/components/BackButton.vue';
@@ -23,7 +23,7 @@ interface Post {
     subtitle: string;
     content: string;
     cover: string;
-    type: 'article' | 'carousel' | 'video';
+    type: 'article' | 'carousel' | 'video' | 'stack_gallery';
     tags: string[];
     views_count: number;
     likes_count: number;
@@ -129,6 +129,11 @@ const getTags = () => {
         return [];
     }
 };
+
+const showPostCover = computed(() => {
+    const listOfTypes = ['article', 'stack_gallery'];
+    return listOfTypes.includes(props.post.type) && !!props.post.cover;
+});
 </script>
 
 <template>
@@ -149,28 +154,33 @@ const getTags = () => {
         <!-- Article Content -->
         <article class="py-8">
             <div class="container mx-auto px-4">
-                <div class="mx-auto max-w-4xl">
+                <div class="mx-auto max-w-3xl">
                     <!-- Type Badge -->
                     <div class="mb-4">
                         <span
                             :class="[
-                                'inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold',
+                                'inline-flex items-center rounded-full px-4 py-1.5 gap-2 text-sm font-semibold',
                                 post.type === 'article' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '',
                                 post.type === 'carousel' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '',
                                 post.type === 'video' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : '',
+                                post.type === 'stack_gallery' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : '',
                             ]"
                         >
-                            {{ post.type.charAt(0).toUpperCase() + post.type.slice(1) }}
+                            <FileText v-if="post.type === 'article'" class="h-4 w-4" />
+                            <ImageIcon v-if="post.type === 'carousel'" class="h-4 w-4" />
+                            <Video v-if="post.type === 'video'" class="h-4 w-4" />
+                            <ImageIcon v-if="post.type === 'stack_gallery'" class="h-4 w-4" />
+                            {{ post.type.charAt(0).toUpperCase() + post.type.slice(1).replace('_', ' ') }}
                         </span>
                     </div>
 
                     <!-- Title -->
-                    <h1 class="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
+                    <h1 class="mb-2 text-xl lg:text-3xl font-bold tracking-tight">
                         {{ post.title }}
                     </h1>
 
                     <!-- Subtitle -->
-                    <p v-if="post.subtitle" class="mb-6 text-xl text-muted-foreground">
+                    <p v-if="post.subtitle" class="mb-6 text-sm lg:text-lg text-muted-foreground">
                         {{ post.subtitle }}
                     </p>
 
@@ -178,31 +188,60 @@ const getTags = () => {
                     <div class="mb-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <div class="flex items-center gap-1">
                             <User class="h-4 w-4" />
-                            <span>{{ post.user.name }}</span>
+                            <span class="text-sm">
+                                {{ post.user.name }}
+                            </span>
                         </div>
                         <div class="flex items-center gap-1">
                             <Clock class="h-4 w-4" />
-                            <span>{{ formatDate(post.published_at) }}</span>
+                            <span class="text-sm">
+                                {{ formatDate(post.published_at) }}
+                            </span>
                         </div>
                         <div class="flex items-center gap-1">
                             <Eye class="h-4 w-4" />
-                            <span>{{ formatNumber(post.views_count) }} views</span>
+                            <span class="text-sm">
+                                {{ formatNumber(post.views_count) }} views
+                            </span>
                         </div>
                         <div class="flex items-center gap-1">
                             <Heart class="h-4 w-4" />
-                            <span>{{ formatNumber(likesCount) }} likes</span>
+                            <span class="text-sm">
+                                {{ formatNumber(likesCount) }} likes
+                            </span>
                         </div>
                     </div>
 
                     <!-- Cover/Media Section -->
-                    <div class="mb-8">
+                    <div class="mb-8 flex flex-col gap-6">
                         <!-- Article: Single Cover Image -->
-                        <div v-if="post.type === 'article' && post.cover" class="overflow-hidden rounded-lg">
+                        <div
+                            v-if="showPostCover"
+                            class="overflow-hidden rounded-lg border"
+                        >
                             <img
                                 :src="post.cover"
                                 :alt="post.title"
                                 class="w-full object-cover"
                             />
+                        </div>
+
+                        <!-- Stack Gallery: Multiple Images -->
+                        <div
+                            v-if="post.type === 'stack_gallery' && post.media.length > 0"
+                            class="w-full space-y-6"
+                        >
+                            <div
+                                v-for="(media, index) in post.media"
+                                :key="index"
+                                class="overflow-hidden rounded-lg border"
+                            >
+                                <img
+                                    :src="media.url"
+                                    :alt="`${post.title} - Image ${index + 1}`"
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
                         </div>
 
                         <!-- Carousel: Multiple Images -->
@@ -212,6 +251,16 @@ const getTags = () => {
                         >
                             <div ref="emblaRef" class="overflow-hidden rounded-lg h-full">
                                 <div class="flex h-full touch-pan-y">
+                                    <!-- <div
+                                        v-if="post.cover"
+                                        class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
+                                    >
+                                        <img
+                                            :src="post.cover"
+                                            :alt="post.title"
+                                            class="max-w-full h-full object-contain"
+                                        />
+                                    </div> -->
                                     <div
                                         v-for="(media, index) in post.media"
                                         :key="index"
@@ -232,7 +281,7 @@ const getTags = () => {
                                 @click="prevImage"
                                 :disabled="currentImageIndex === 0"
                                 variant="default"
-                                class="absolute left-4 bottom-0 lg:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
+                                class="absolute left-4 bottom-0 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
                             >
                                 <ChevronLeft class="h-5 w-5" />
                             </Button>
@@ -241,7 +290,7 @@ const getTags = () => {
                                 @click="nextImage"
                                 :disabled="currentImageIndex === post.media.length - 1"
                                 variant="default"
-                                class="absolute right-4 bottom-0 lg:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
+                                class="absolute right-4 bottom-0 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
                             >
                                 <ChevronRight class="h-5 w-5" />
                             </Button>

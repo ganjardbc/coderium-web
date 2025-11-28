@@ -26,7 +26,7 @@ interface Props {
         subtitle: string;
         content: string;
         slug: string;
-        type: 'article' | 'carousel' | 'video';
+        type: 'article' | 'carousel' | 'video' | 'stack_gallery';
         cover: string;
         tags: string[];
         media: Media[];
@@ -61,15 +61,16 @@ const breadcrumbs = [
     { title: isEditing ? 'Edit' : 'Create', href: '#' },
 ];
 
-const showMediaField = computed(() => form.value.type === 'carousel' || form.value.type === 'video');
+const showMediaField = computed(() => form.value.type === 'carousel' || form.value.type === 'video' || form.value.type === 'stack_gallery');
 
 const mediaAccept = computed(() => {
     if (form.value.type === 'carousel') return 'image/*';
     if (form.value.type === 'video') return 'video/*';
+    if (form.value.type === 'stack_gallery') return 'image/*';
     return 'image/*,video/*';
 });
 
-const mediaMultiple = computed(() => form.value.type === 'carousel');
+const mediaMultiple = computed(() => form.value.type === 'carousel' || form.value.type === 'stack_gallery');
 
 const submit = () => {
     const data = {
@@ -148,6 +149,7 @@ const cancel = () => {
                             <option value="article">Article</option>
                             <option value="carousel">Carousel</option>
                             <option value="video">Video</option>
+                            <option value="stack_gallery">Stack Gallery</option>
                         </select>
                         <p v-if="errors?.type" class="text-sm text-destructive">{{ errors.type }}</p>
                     </div>
@@ -177,10 +179,10 @@ const cancel = () => {
                         <p v-if="errors?.cover" class="text-sm text-destructive">{{ errors.cover }}</p>
                     </div>
 
-                    <!-- Media Upload (for carousel/video) -->
+                    <!-- Media Upload (for carousel/video/stack_gallery) -->
                     <div v-if="showMediaField" class="space-y-2">
                         <Label>
-                            {{ form.type === 'carousel' ? 'Carousel Images' : 'Video File' }}
+                            {{ form.type === 'carousel' ? 'Carousel Images' : form.type === 'stack_gallery' ? 'Stack Gallery Images' : 'Video File' }}
                             <span v-if="form.type === 'video'"> *</span>
                         </Label>
                         <MediaUploader
@@ -190,7 +192,7 @@ const cancel = () => {
                             :max-size="50"
                         />
                         <p class="text-sm text-muted-foreground">
-                            {{ form.type === 'carousel' ? 'Upload multiple images for the carousel' : 'Upload a video file (max 50MB)' }}
+                            {{ form.type === 'carousel' ? 'Upload multiple images for the carousel' : form.type === 'stack_gallery' ? 'Upload multiple images for the stack gallery' : 'Upload a video file (max 50MB)' }}
                         </p>
                         <p v-if="errors?.media" class="text-sm text-destructive">{{ errors.media }}</p>
                     </div>

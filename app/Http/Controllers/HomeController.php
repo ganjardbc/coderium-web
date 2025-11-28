@@ -12,7 +12,7 @@ class HomeController extends Controller
 {
     public function index(Request $request): Response
     {
-        $search = $request->input('search');
+        $search = $request->input('q');
 
         // Get published playlists ordered by order column
         $playlists = Playlist::query()

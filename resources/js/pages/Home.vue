@@ -4,7 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { PlaySquare, Tag } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PostCard from '@/components/PostCard.vue';
-import SidePlaylistCard from '@/components/SidePlaylistCard.vue';
+import PlaylistCard from '@/components/PlaylistCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
 import Searchbar from '@/components/Searchbar.vue';
@@ -70,10 +70,10 @@ const props = defineProps<Props>();
 const searchQuery = ref(props.filters?.search || '');
 
 const handleSearch = (query: string) => {
-    router.get('/search', {
+    router.get('/', {
         q: query || undefined,
-        sort: 'recent',
-        type: 'all',
+        // sort: 'recent',
+        // type: 'all',
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -94,12 +94,12 @@ const handleClearSearch = () => {
     <FrontLayout>
         <!-- Hero Section -->
         <template #front-prepend>
-            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-8">
+            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12">
                 <div class="container mx-auto px-4 text-center">
-                    <h1 class="mb-4 text-2xl font-bold tracking-tight lg:text-5xl text-white">
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
                         The <span class="font-extrabold text-white">Code Heroes</span> Journey
                     </h1>
-                    <p class="mx-auto max-w-3xl text-md md:text-lg text-white">
+                    <p class="mx-auto max-w-3xl text-md md:text-lg text-white mt-2">
                         Discover tutorials, code snippets, and development insights shared by the community.
                     </p>
                 </div>
@@ -110,9 +110,9 @@ const handleClearSearch = () => {
         <section class="py-8">
             <div class="container mx-auto max-w-7xl px-4">
                 <!-- Two Column Layout -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8">
                     <!-- Main Column: Posts List -->
-                    <div class="lg:col-span-8">
+                    <div class="flex-1">
                         <div class="mb-4">
                             <h2 class="text-lg font-bold">Recent Posts</h2>
                         </div>
@@ -130,7 +130,11 @@ const handleClearSearch = () => {
                             />
                         </div>
 
-                        <div v-if="recentPosts.data.length > 0" class="grid sm:grid-cols-2 gap-8">
+                        <div
+                            v-if="recentPosts.data.length > 0"
+                            class="grid sm:grid-cols-2 gap-8"
+                        >
+                            <!-- xl:grid-cols-3  -->
                             <PostCard
                                 v-for="post in recentPosts.data"
                                 :key="post.id"
@@ -139,7 +143,10 @@ const handleClearSearch = () => {
                             />
                         </div>
 
-                        <div v-else class="py-12 text-center text-muted-foreground">
+                        <div
+                            v-else
+                            class="py-12 text-center text-muted-foreground"
+                        >
                             <PlaySquare class="mx-auto mb-4 h-12 w-12" />
                             <p>No posts available yet</p>
                         </div>
@@ -158,7 +165,7 @@ const handleClearSearch = () => {
                     </div>
 
                     <!-- Sidebar Column: Sticky Content -->
-                    <aside class="lg:col-span-4">
+                    <aside class="flex-1">
                         <div class="sticky top-20 space-y-6">
                             <!-- Featured Playlists Card -->
                             <div
@@ -170,15 +177,15 @@ const handleClearSearch = () => {
                                     <Button
                                         :as="Link"
                                         href="/playlists"
-                                        variant="ghost"
+                                        variant="outline"
                                         size="sm"
                                         class="text-xs"
                                     >
-                                        View all
+                                        View All
                                     </Button>
                                 </div>
                                 <div class="space-y-4">
-                                    <SidePlaylistCard
+                                    <PlaylistCard
                                         v-for="playlist in playlists"
                                         :key="playlist.id"
                                         :playlist="playlist"
@@ -208,17 +215,17 @@ const handleClearSearch = () => {
                                             {{ tag.count }}
                                         </span>
                                     </Button>
+                                     <Button
+                                        v-if="popularTags.length > 4"
+                                        :as="Link"
+                                        href="/search"
+                                        variant="outline"
+                                        size="sm"
+                                        class="group rounded-full text-xs"
+                                    >
+                                        View All
+                                    </Button>
                                 </div>
-                                <Button
-                                    v-if="popularTags.length > 12"
-                                    :as="Link"
-                                    href="/search"
-                                    variant="ghost"
-                                    size="sm"
-                                    class="w-full mt-4 text-xs"
-                                >
-                                    View all tags
-                                </Button>
                             </div>
                         </div>
                     </aside>

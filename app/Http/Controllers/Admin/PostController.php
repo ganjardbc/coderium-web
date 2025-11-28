@@ -59,7 +59,7 @@ class PostController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string',
             'cover' => 'nullable|string|url',
-            'type' => 'required|in:article,carousel,video',
+            'type' => 'required|in:article,carousel,video,stack_gallery',
             'media_ids' => 'nullable|array',
             'media_ids.*' => 'integer|exists:media,id',
             'is_published' => 'boolean',
@@ -97,8 +97,14 @@ class PostController extends Controller
         // Attach media files if provided
         if (!empty($mediaIds)) {
             foreach ($mediaIds as $index => $mediaId) {
+                $tag = match($validated['type']) {
+                    'carousel' => 'carousel',
+                    'video' => 'video',
+                    'stack_gallery' => 'stack_gallery',
+                    default => null,
+                };
                 $post->media()->attach($mediaId, [
-                    'tag' => $validated['type'] === 'carousel' ? 'carousel' : ($validated['type'] === 'video' ? 'video' : null),
+                    'tag' => $tag,
                     'order' => $index + 1,
                 ]);
             }
@@ -140,7 +146,7 @@ class PostController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string',
             'cover' => 'nullable|string|url',
-            'type' => 'sometimes|required|in:article,carousel,video',
+            'type' => 'sometimes|required|in:article,carousel,video,stack_gallery',
             'media_ids' => 'nullable|array',
             'media_ids.*' => 'integer|exists:media,id',
             'is_published' => 'boolean',
@@ -180,8 +186,14 @@ class PostController extends Controller
         if ($mediaIds !== null) {
             $syncData = [];
             foreach ($mediaIds as $index => $mediaId) {
+                $tag = match($validated['type']) {
+                    'carousel' => 'carousel',
+                    'video' => 'video',
+                    'stack_gallery' => 'stack_gallery',
+                    default => null,
+                };
                 $syncData[$mediaId] = [
-                    'tag' => $validated['type'] === 'carousel' ? 'carousel' : ($validated['type'] === 'video' ? 'video' : null),
+                    'tag' => $tag,
                     'order' => $index + 1,
                 ];
             }
