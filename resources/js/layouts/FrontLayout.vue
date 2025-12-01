@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import { Home, LogIn, SearchIcon, PlaySquareIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle.vue';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
 
 const ENABLE_DARK_MODE = true;
 const ENABLE_SEARCH = true;
@@ -16,11 +17,10 @@ const ENABLE_PLAYLISTS = false;
             <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <Link href="/" class="flex items-center gap-2">
-                        <div class="flex items-center gap-2">
-                            <svg class="h-6 w-6 md:h-8 md:w-8 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span class="text-lg md:text-2xl font-bold">Coderium</span>
+                        <div class="w-[136px] flex items-center gap-2">
+                            <AppLogoIcon
+                                class="fill-current text-[var(--foreground)] dark:text-white"
+                            />
                         </div>
                     </Link>
 
@@ -97,11 +97,10 @@ const ENABLE_PLAYLISTS = false;
         <footer class="border-t bg-card/50 py-8">
             <div class="container mx-auto px-4">
                 <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
-                    <div class="flex items-center gap-2">
-                        <svg class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span class="font-semibold">Coderium</span>
+                    <div class="w-[96px] flex items-center gap-2">
+                        <AppLogoIcon
+                            class="fill-current text-[var(--foreground)] dark:text-white"
+                        />
                     </div>
                     <p class="text-sm text-muted-foreground">
                         © {{ new Date().getFullYear() }} Coderium. All rights reserved.
