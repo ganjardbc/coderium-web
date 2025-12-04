@@ -281,7 +281,7 @@ const showPostCover = computed(() => {
                                 @click="prevImage"
                                 :disabled="currentImageIndex === 0"
                                 variant="default"
-                                class="absolute left-4 bottom-0 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
+                                class="absolute left-4 bottom-6 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
                             >
                                 <ChevronLeft class="h-5 w-5" />
                             </Button>
@@ -290,7 +290,7 @@ const showPostCover = computed(() => {
                                 @click="nextImage"
                                 :disabled="currentImageIndex === post.media.length - 1"
                                 variant="default"
-                                class="absolute right-4 bottom-0 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
+                                class="absolute right-4 bottom-6 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
                             >
                                 <ChevronRight class="h-5 w-5" />
                             </Button>
