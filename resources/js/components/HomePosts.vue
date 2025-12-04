@@ -155,7 +155,7 @@ const handleClearSearch = () => {
                             :key="post.id"
                             :post="post"
                             :show-tags="true"
-                            class="!min-w-[310px]"
+                            class="!min-w-[310px] !max-w-[310px]"
                         />
                         <div class="flex-[0_0_auto] min-w-0">
                             <Button
@@ -163,7 +163,7 @@ const handleClearSearch = () => {
                                 :href="`/search?q=${props.filters?.search || ''}&sort=${props.filters?.sort || ''}&type=all`"
                                 size="lg"
                                 variant="outline"
-                                class="flex flex-col !py-6 w-[310px] h-full bg-gray-50 dark:bg-gray-800"
+                                class="flex flex-col !py-6 !min-w-[310px] !max-w-[310px] h-full bg-gray-50 dark:bg-gray-800"
                             >
                                 <span class="mb-2 font-medium text-lg">
                                     Explore Posts
