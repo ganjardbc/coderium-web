@@ -19,7 +19,7 @@ class HomeController extends Controller
             ->where('is_published', true)
             ->withCount('posts')
             ->orderBy('order')
-            ->limit(4)
+            ->limit(8)
             ->get()
             ->map(function ($playlist) {
                 return [
@@ -45,7 +45,39 @@ class HomeController extends Controller
                 });
             })
             ->orderBy('published_at', 'desc')
-            ->paginate(12)
+            ->paginate(5)
+            ->withQueryString();
+
+        // Get popular published posts with pagination and search
+        $popularPosts = Post::query()
+            ->where('is_published', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('subtitle', 'like', "%{$search}%")
+                        ->orWhere('content', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('views_count', 'desc')
+            ->paginate(5)
+            ->withQueryString();
+
+        // Get oldest published posts with pagination and search
+        $oldestPosts = Post::query()
+            ->where('is_published', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('subtitle', 'like', "%{$search}%")
+                        ->orWhere('content', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('published_at', 'asc')
+            ->paginate(5)
             ->withQueryString();
 
         // Get popular tags (extract from posts' tags array and count occurrences)
@@ -72,7 +104,7 @@ class HomeController extends Controller
             })
             ->countBy() // Count occurrences of each tag
             ->sortDesc() // Sort by count (highest first)
-            ->take(5) // Get top 20
+            ->take(5) // Get top 5
             ->map(function ($count, $tag) {
                 return [
                     'name' => $tag,
@@ -81,9 +113,11 @@ class HomeController extends Controller
             })
             ->values();
 
-        return Inertia::render('Home', [
+        return Inertia::render('Home-2', [
             'playlists' => $playlists,
             'recentPosts' => $recentPosts,
+            'popularPosts' => $popularPosts,
+            'oldestPosts' => $oldestPosts,
             'popularTags' => $popularTags,
             'filters' => [
                 'search' => $search,
