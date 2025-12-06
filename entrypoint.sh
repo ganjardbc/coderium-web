@@ -18,6 +18,8 @@ set -e
 # echo "Running database migrations..."
 # php artisan migrate --force
 
+php artisan migrate --path=database/migrations/2025_11_28_153535_update_posts_table_add_stack_gallery_type.php
+
 echo "Clearing caches..."
 php artisan config:clear
 php artisan route:clear
