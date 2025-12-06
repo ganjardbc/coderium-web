@@ -57,7 +57,7 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
 <template>
     <section
         id="playlists"
-        class="border-b py-8"
+        class="py-8"
     >
         <div class="container mx-auto px-4">
             <div class="mb-4 flex flex-row items-center justify-between gap-2">
@@ -99,7 +99,7 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
                         >
                             <Button
                                 :as="Link"
-                                href="/playlists"
+                                :href="`/playlists/${playlist.slug}`"
                                 size="lg"
                                 variant="outline"
                                 class="flex flex-row w-auto !py-6"

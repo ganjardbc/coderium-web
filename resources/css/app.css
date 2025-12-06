@@ -194,7 +194,7 @@
 .content-html h5,
 .content-html h6 {
     font-weight: 600;
-    margin-top: 2rem;
+    margin-top: 1rem;
     margin-bottom: 1rem;
     line-height: 1.25;
 }
@@ -225,6 +225,14 @@
 
 .content-html p {
     margin-bottom: 1.25rem;
+}
+
+.content-html p:has(+ p) {
+    margin-bottom: 1.25rem;
+}
+
+.content-html p:not(:has(+ p)) {
+    margin-bottom: 0;
 }
 
 .content-html ul,

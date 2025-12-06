@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight, User, FileText, ImageIcon, Video } from 'lucide-vue-next';
+import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight, User } from 'lucide-vue-next';
 import emblaCarouselVue from 'embla-carousel-vue';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import BackButton from '@/components/BackButton.vue';
@@ -149,87 +149,155 @@ const showPostCover = computed(() => {
 
     <FrontLayout>
         <!-- Back Button -->
-        <BackButton />
+        <BackButton>
+            <template #append>
+                <!-- Type Badge -->
+                <div class="flex justify-end items-center gap-2">
+                    <Button
+                        @click="toggleLike"
+                        size="lg"
+                        :variant="isLiked ? 'default' : 'outline'"
+                        class="rounded-full !px-3"
+                    >
+                        <Heart :class="['h-5 w-5', isLiked ? 'fill-current' : '']" />
+                        <span class="hidden md:block">
+                            {{ isLiked ? 'Liked' : 'Like' }}
+                        </span>
+                    </Button>
+                    <Button
+                        @click="sharePost"
+                        size="lg"
+                        variant="outline"
+                        class="rounded-full !px-3"
+                    >
+                        <Share2 class="h-5 w-5" />
+                        <span class="hidden md:block">
+                            Share
+                        </span>
+                    </Button>
+                </div>
+            </template>
+        </BackButton>
 
         <!-- Article Content -->
-        <article class="py-8">
-            <div class="container mx-auto px-4">
-                <div class="mx-auto max-w-3xl">
-                    <!-- Type Badge -->
-                    <div class="mb-4">
-                        <span
-                            :class="[
-                                'inline-flex items-center rounded-full px-4 py-1.5 gap-2 text-sm font-semibold',
-                                post.type === 'article' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '',
-                                post.type === 'carousel' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '',
-                                post.type === 'video' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : '',
-                                post.type === 'stack_gallery' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : '',
-                            ]"
-                        >
-                            <FileText v-if="post.type === 'article'" class="h-4 w-4" />
-                            <ImageIcon v-if="post.type === 'carousel'" class="h-4 w-4" />
-                            <Video v-if="post.type === 'video'" class="h-4 w-4" />
-                            <ImageIcon v-if="post.type === 'stack_gallery'" class="h-4 w-4" />
-                            {{ post.type.charAt(0).toUpperCase() + post.type.slice(1).replace('_', ' ') }}
-                        </span>
-                    </div>
+        <article class="container mx-auto max-w-3xl px-0 lg:px-4">
+            <!-- Article: Single Cover Image -->
+            <div
+                v-if="showPostCover"
+                class="overflow-hidden aspect-video"
+            >
+                <img
+                    :src="post.cover"
+                    :alt="post.title"
+                    class="w-full object-cover aspect-video"
+                />
+            </div>
 
-                    <!-- Title -->
-                    <h1 class="mb-2 text-xl lg:text-3xl font-bold tracking-tight">
-                        {{ post.title }}
-                    </h1>
+            <div
+                v-if="post.type === 'video' && post.media.length > 0"
+                class="overflow-hidden bg-muted"
+            >
+                <video
+                    :src="post.media[0].url"
+                    controls
+                    class="w-full h-auto aspect-video"
+                >
+                    Your browser does not support the video tag.
+                </video>
+            </div>
 
-                    <!-- Subtitle -->
-                    <p v-if="post.subtitle" class="mb-6 text-sm lg:text-lg text-muted-foreground">
-                        {{ post.subtitle }}
-                    </p>
-
-                    <!-- Meta Info -->
-                    <div class="mb-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <div class="flex items-center gap-1">
-                            <User class="h-4 w-4" />
-                            <span class="text-sm">
-                                {{ post.user.name }}
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <Clock class="h-4 w-4" />
-                            <span class="text-sm">
-                                {{ formatDate(post.published_at) }}
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <Eye class="h-4 w-4" />
-                            <span class="text-sm">
-                                {{ formatNumber(post.views_count) }} views
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <Heart class="h-4 w-4" />
-                            <span class="text-sm">
-                                {{ formatNumber(likesCount) }} likes
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Cover/Media Section -->
-                    <div class="mb-8 flex flex-col gap-6">
-                        <!-- Article: Single Cover Image -->
+            <!-- Carousel: Multiple Images -->
+            <div
+                v-if="post.type === 'carousel' && post.media.length > 0"
+                class="relative overflow-hidden"
+            >
+                <div ref="emblaRef" class="h-full">
+                    <div class="flex h-full touch-pan-y">
                         <div
-                            v-if="showPostCover"
-                            class="overflow-hidden rounded-lg border"
+                            v-if="post.cover"
+                            class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
                         >
                             <img
                                 :src="post.cover"
                                 :alt="post.title"
-                                class="w-full object-cover"
+                                class="max-w-full h-full object-contain"
                             />
                         </div>
+                        <div
+                            v-for="(media, index) in post.media"
+                            :key="index"
+                            class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
+                        >
+                            <img
+                                :src="media.url"
+                                :alt="`${post.title} - Image ${index + 1}`"
+                                class="max-w-full h-full object-contain"
+                            />
+                        </div>
+                    </div>
+                </div>
 
-                        <!-- Stack Gallery: Multiple Images -->
+                <!-- Navigation Arrows -->
+                <Button
+                    v-if="post.media.length > 1"
+                    @click="prevImage"
+                    :disabled="currentImageIndex === 0"
+                    variant="default"
+                    class="absolute left-4 bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
+                >
+                    <ChevronLeft class="h-5 w-5" />
+                </Button>
+                <Button
+                    v-if="post.media.length > 1"
+                    @click="nextImage"
+                    :disabled="currentImageIndex === post.media.length - 1"
+                    variant="default"
+                    class="absolute right-4 bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
+                >
+                    <ChevronRight class="h-5 w-5" />
+                </Button>
+
+                <!-- Image Counter -->
+                <div class="absolute top-2 right-2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur-sm">
+                    {{ currentImageIndex + 1 }} / {{ post.media.length }}
+                </div>
+
+                <!-- Dot Indicators -->
+                <div v-if="post.media.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2">
+                    <button
+                        v-for="(_, index) in post.media"
+                        :key="index"
+                        @click="goToImage(index)"
+                        :class="[
+                            'h-2 rounded-full transition-all',
+                            index === currentImageIndex
+                                ? 'w-8 bg-primary'
+                                : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                        ]"
+                    />
+                </div>
+            </div>
+
+            <div class="px-4 lg:px-0 py-8">
+                <div class="mx-auto max-w-3xl">
+                    <div class="flex flex-col gap-4">
+                        <!-- Title -->
+                        <h1 class="text-xl lg:text-3xl font-bold tracking-tight">
+                            {{ post.title }}
+                        </h1>
+
+                        <!-- Subtitle -->
+                        <p
+                            v-if="post.subtitle"
+                            class="text-sm lg:text-lg text-muted-foreground"
+                        >
+                            {{ post.subtitle }}
+                        </p>
+
+                        <!-- Stacked Gallery -->
                         <div
                             v-if="post.type === 'stack_gallery' && post.media.length > 0"
-                            class="w-full space-y-6"
+                            class="w-full space-y-5"
                         >
                             <div
                                 v-for="(media, index) in post.media"
@@ -244,92 +312,64 @@ const showPostCover = computed(() => {
                             </div>
                         </div>
 
-                        <!-- Carousel: Multiple Images -->
+                        <!-- Content -->
                         <div
-                            v-else-if="post.type === 'carousel' && post.media.length > 0"
-                            class="relative border border-gray-300 rounded-lg overflow-hidden h-[430px] md:h-[630px]"
+                            class="prose prose-lg dark:prose-invert max-w-none content-html"
+                            v-html="post.content"
+                        ></div>
+
+                        <!-- Tags -->
+                        <div
+                            v-if="getTags().length > 0"
+                            class="flex items-center flex-wrap gap-2 border-t pt-4"
                         >
-                            <div ref="emblaRef" class="overflow-hidden rounded-lg h-full">
-                                <div class="flex h-full touch-pan-y">
-                                    <!-- <div
-                                        v-if="post.cover"
-                                        class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
-                                    >
-                                        <img
-                                            :src="post.cover"
-                                            :alt="post.title"
-                                            class="max-w-full h-full object-contain"
-                                        />
-                                    </div> -->
-                                    <div
-                                        v-for="(media, index) in post.media"
-                                        :key="index"
-                                        class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
-                                    >
-                                        <img
-                                            :src="media.url"
-                                            :alt="`${post.title} - Image ${index + 1}`"
-                                            class="max-w-full h-full object-contain"
-                                        />
-                                    </div>
+                            <Link
+                                v-for="tag in getTags()"
+                                :key="tag"
+                                :href="`/search?q=${encodeURIComponent(tag)}&sort=recent&type=all`"
+                                class="inline-flex items-center rounded-full border px-3 py-1 text-sm transition-colors hover:border-primary hover:bg-accent"
+                            >
+                                <Tag class="h-4 w-4 text-muted-foreground mr-2" />
+                                {{ tag }}
+                            </Link>
+                        </div>
+
+                        <!-- Meta Info -->
+                        <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center gap-1">
+                                    <User class="h-4 w-4 text-muted-foreground" />
+                                    <span class="text-sm text-muted-foreground">
+                                        {{ post.user.name }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <Clock class="h-4 w-4 text-muted-foreground" />
+                                    <span class="text-sm text-muted-foreground">
+                                        {{ formatDate(post.published_at) }}
+                                    </span>
                                 </div>
                             </div>
 
-                            <!-- Navigation Arrows -->
-                            <Button
-                                v-if="post.media.length > 1"
-                                @click="prevImage"
-                                :disabled="currentImageIndex === 0"
-                                variant="default"
-                                class="absolute left-4 bottom-6 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
-                            >
-                                <ChevronLeft class="h-5 w-5" />
-                            </Button>
-                            <Button
-                                v-if="post.media.length > 1"
-                                @click="nextImage"
-                                :disabled="currentImageIndex === post.media.length - 1"
-                                variant="default"
-                                class="absolute right-4 bottom-6 md:bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
-                            >
-                                <ChevronRight class="h-5 w-5" />
-                            </Button>
-
-                            <!-- Image Counter -->
-                            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur-sm">
-                                {{ currentImageIndex + 1 }} / {{ post.media.length }}
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center gap-1">
+                                    <Eye class="h-4 w-4 text-muted-foreground" />
+                                    <span class="text-sm text-muted-foreground">
+                                        {{ formatNumber(post.views_count) }} views
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <Heart class="h-4 w-4 text-muted-foreground" />
+                                    <span class="text-sm text-muted-foreground">
+                                        {{ formatNumber(likesCount) }} likes
+                                    </span>
+                                </div>
                             </div>
-
-                            <!-- Dot Indicators -->
-                            <div v-if="post.media.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2">
-                                <button
-                                    v-for="(_, index) in post.media"
-                                    :key="index"
-                                    @click="goToImage(index)"
-                                    :class="[
-                                        'h-2 rounded-full transition-all',
-                                        index === currentImageIndex
-                                            ? 'w-8 bg-primary'
-                                            : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                                    ]"
-                                />
-                            </div>
-                        </div>
-
-                        <!-- Video: Video Player -->
-                        <div v-else-if="post.type === 'video' && post.media.length > 0" class="overflow-hidden rounded-lg bg-muted">
-                            <video
-                                :src="post.media[0].url"
-                                controls
-                                class="w-full h-auto aspect-video"
-                            >
-                                Your browser does not support the video tag.
-                            </video>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="mb-8 flex items-center gap-3">
+                    <!-- <div class="mt-8 flex items-center gap-3 border-t pt-6">
                         <Button
                             @click="toggleLike"
                             :variant="isLiked ? 'default' : 'outline'"
@@ -346,30 +386,7 @@ const showPostCover = computed(() => {
                             <Share2 class="h-5 w-5" />
                             <span>Share</span>
                         </Button>
-                    </div>
-
-                    <!-- Content -->
-                    <div
-                        class="prose prose-lg dark:prose-invert max-w-none content-html"
-                        v-html="post.content"
-                    ></div>
-
-                    <!-- Tags -->
-                    <div v-if="getTags().length > 0" class="border-t pt-8 mt-8">
-                        <div class="flex items-start gap-3">
-                            <Tag class="h-5 w-5 text-muted-foreground mt-1" />
-                            <div class="flex flex-wrap gap-2">
-                                <Link
-                                    v-for="tag in getTags()"
-                                    :key="tag"
-                                    :href="`/search?q=${encodeURIComponent(tag)}&sort=recent&type=all`"
-                                    class="inline-flex items-center rounded-full border px-3 py-1 text-sm transition-colors hover:border-primary hover:bg-accent"
-                                >
-                                    {{ tag }}
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </article>
