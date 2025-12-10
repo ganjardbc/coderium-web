@@ -181,7 +181,7 @@ const actions: Action<Post>[] = [
 
                 <!-- Title Cell -->
                 <template #cell-title="{ row }">
-                    <div class="max-w-xs">
+                    <div class="w-[220px]">
                         <p class="font-medium line-clamp-1">{{ row.title }}</p>
                         <p class="text-sm text-muted-foreground line-clamp-1">{{ row.subtitle }}</p>
                     </div>
@@ -189,12 +189,14 @@ const actions: Action<Post>[] = [
 
                 <!-- Type Cell -->
                 <template #cell-type="{ row }">
-                    <span
-                        :class="getTypeColor(row.type)"
-                        class="inline-flex rounded-full px-2 py-1 text-xs font-semibold capitalize"
-                    >
-                        {{ getTypeLabel(row.type) }}
-                    </span>
+                    <div class="w-[100px]">
+                        <span
+                            :class="getTypeColor(row.type)"
+                            class="inline-flex rounded-full px-2 py-1 text-xs font-semibold capitalize"
+                        >
+                            {{ getTypeLabel(row.type) }}
+                        </span>
+                    </div>
                 </template>
 
                 <!-- Stats Cell -->
