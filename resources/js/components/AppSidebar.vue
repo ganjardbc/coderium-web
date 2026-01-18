@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { FileText, LayoutGrid, List, Home } from 'lucide-vue-next';
+import { FileText, Home, LayoutGrid, List, GraduationCap, BookOpen, Users, Award } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -32,6 +32,53 @@ const mainNavItems: NavItem[] = [
         href: '/admin/playlists',
         icon: List,
     },
+    {
+        title: 'Classroom',
+        href: '/admin/classroom',
+        icon: GraduationCap,
+        items: [
+            {
+                title: 'Overview',
+                href: '/admin/classroom',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Tracks',
+                href: '/admin/classroom/tracks',
+                icon: BookOpen,
+            },
+            {
+                title: 'Levels',
+                href: '/admin/classroom/levels',
+                icon: Users,
+            },
+            {
+                title: 'Modules',
+                href: '/admin/classroom/modules',
+                icon: FileText,
+            },
+            {
+                title: 'Lessons',
+                href: '/admin/classroom/lessons',
+                icon: BookOpen,
+            },
+            {
+                title: 'Assessments',
+                href: '/admin/classroom/assessments',
+                icon: Award,
+            },
+            {
+                title: 'Progress',
+                href: '/admin/classroom/progress',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Certificates',
+                href: '/admin/classroom/certificates',
+                icon: Award,
+            },
+        ]
+    }
 ];
 
 const footerNavItems: NavItem[] = [

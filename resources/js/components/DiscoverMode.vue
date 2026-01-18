@@ -12,14 +12,10 @@ import { Link } from '@inertiajs/vue3';
                 </p>
                 <div class="flex items-center justify-center gap-4">
                     <Button as-child variant="default">
-                        <Link href="/explore">
-                            Explore Posts
-                        </Link>
+                        <Link href="/explore"> Explore Posts </Link>
                     </Button>
                     <Button as-child variant="outline">
-                        <Link href="/playlists">
-                            Browse Playlists
-                        </Link>
+                        <Link href="/playlists"> Browse Playlists </Link>
                     </Button>
                 </div>
             </div>

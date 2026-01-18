@@ -36,7 +36,11 @@ return new class extends Migration
             $table->index('is_published');
             $table->index('published_at');
             $table->index(['user_id', 'is_published']);
-            $table->fullText(['title', 'subtitle', 'content']);
+
+            // Only create fulltext index for non-SQLite databases
+            if (config('database.default') !== 'sqlite') {
+                $table->fullText(['title', 'subtitle', 'content']);
+            }
         });
     }
 

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
-import FrontLayout from '@/layouts/FrontLayout.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
 import HomePlaylists from '@/components/HomePlaylists.vue';
-import HomeTags from '@/components/HomeTags.vue';
 import HomePosts from '@/components/HomePosts.vue';
+import HomeTags from '@/components/HomeTags.vue';
+import FrontLayout from '@/layouts/FrontLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 import { Button } from '@/components/ui/button';
 
@@ -78,21 +78,32 @@ const searchQuery = ref(props.filters?.search || '');
     <FrontLayout>
         <!-- Hero Section -->
         <template #front-prepend>
-            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-8">
+            <section
+                class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-8"
+            >
                 <div class="container mx-auto px-4 text-center">
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                        The <span class="font-extrabold text-white">Code Heroes</span> Journey
+                    <h1
+                        class="text-2xl font-bold tracking-tight text-white md:text-3xl"
+                    >
+                        The
+                        <span class="font-extrabold text-white"
+                            >Code Heroes</span
+                        >
+                        Journey
                     </h1>
-                    <p class="mx-auto max-w-3xl text-md md:text-lg text-white mt-2">
-                        Discover tutorials, code snippets, and development insights shared by the community.
+                    <p
+                        class="text-md mx-auto mt-2 max-w-3xl text-white md:text-lg"
+                    >
+                        Discover tutorials, code snippets, and development
+                        insights shared by the community.
                     </p>
-                    <div class="flex items-center justify-center gap-4 mt-8">
+                    <div class="mt-8 flex items-center justify-center gap-4">
                         <Button
                             :as="Link"
                             href="/search"
                             size="lg"
                             variant="default"
-                            class="p-4 text-sm md:text-md rounded-full"
+                            class="md:text-md rounded-full p-4 text-sm"
                         >
                             Explore Posts
                         </Button>
@@ -101,7 +112,7 @@ const searchQuery = ref(props.filters?.search || '');
                             href="/playlists"
                             size="lg"
                             variant="outline"
-                            class="p-4 text-sm md:text-md rounded-full"
+                            class="md:text-md rounded-full p-4 text-sm"
                         >
                             Browse Playlists
                         </Button>
@@ -125,7 +136,7 @@ const searchQuery = ref(props.filters?.search || '');
             :pagination="{
                 current_page: recentPosts.current_page,
                 last_page: recentPosts.last_page,
-                links: recentPosts.links
+                links: recentPosts.links,
             }"
         />
 
@@ -138,7 +149,7 @@ const searchQuery = ref(props.filters?.search || '');
             :pagination="{
                 current_page: popularPosts.current_page,
                 last_page: popularPosts.last_page,
-                links: popularPosts.links
+                links: popularPosts.links,
             }"
         />
 
@@ -151,7 +162,7 @@ const searchQuery = ref(props.filters?.search || '');
             :pagination="{
                 current_page: oldestPosts.current_page,
                 last_page: oldestPosts.last_page,
-                links: oldestPosts.links
+                links: oldestPosts.links,
             }"
         />
 

@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
-import { XIcon, Search as SearchIcon, FileText, Image as ImageIcon, Video, SlidersHorizontal, X as CloseIcon } from 'lucide-vue-next';
-import FrontLayout from '@/layouts/FrontLayout.vue';
-import PostGridCard from '@/components/PostGridCard.vue';
 import Pagination from '@/components/Pagination.vue';
+import PostGridCard from '@/components/PostGridCard.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
+import FrontLayout from '@/layouts/FrontLayout.vue';
+import { Head, router } from '@inertiajs/vue3';
+import {
+    X as CloseIcon,
+    FileText,
+    Image as ImageIcon,
+    Search as SearchIcon,
+    SlidersHorizontal,
+    Video,
+    XIcon,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Post {
     id: number;
@@ -61,9 +69,24 @@ const selectedSort = ref(props.filters.sortBy);
 const showFilters = ref(false);
 
 const typeOptions = computed(() => [
-    { value: 'all', label: 'All Posts', icon: FileText, count: props.counts.all },
-    { value: 'article', label: 'Articles', icon: FileText, count: props.counts.article },
-    { value: 'carousel', label: 'Carousels', icon: ImageIcon, count: props.counts.carousel },
+    {
+        value: 'all',
+        label: 'All Posts',
+        icon: FileText,
+        count: props.counts.all,
+    },
+    {
+        value: 'article',
+        label: 'Articles',
+        icon: FileText,
+        count: props.counts.article,
+    },
+    {
+        value: 'carousel',
+        label: 'Carousels',
+        icon: ImageIcon,
+        count: props.counts.carousel,
+    },
     { value: 'video', label: 'Videos', icon: Video, count: props.counts.video },
 ]);
 
@@ -75,14 +98,18 @@ const sortOptions = [
 ];
 
 const performSearch = () => {
-    router.get('/explore', {
-        q: searchQuery.value,
-        type: selectedType.value,
-        sort: selectedSort.value,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/explore',
+        {
+            q: searchQuery.value,
+            type: selectedType.value,
+            sort: selectedSort.value,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const updateType = (type: string) => {
@@ -112,20 +139,27 @@ const handleSearch = () => {
 
     <FrontLayout>
         <!-- Header -->
-        <section class="border-b bg-gradient-to-b from-card/50 to-background py-8">
+        <section
+            class="border-b bg-gradient-to-b from-card/50 to-background py-8"
+        >
             <div class="container mx-auto px-4">
-                <h1 class="text-2xl md:text-3xl font-bold text-center">Explore Posts</h1>
-                <p class="text-md md:text-lg text-muted-foreground text-center mt-2">
-                    Discover articles, carousels, and videos shared by our community of code enthusiasts
+                <h1 class="text-center text-2xl font-bold md:text-3xl">
+                    Explore Posts
+                </h1>
+                <p
+                    class="text-md mt-2 text-center text-muted-foreground md:text-lg"
+                >
+                    Discover articles, carousels, and videos shared by our
+                    community of code enthusiasts
                 </p>
             </div>
         </section>
 
         <!-- Filters & Results -->
         <section class="w-full py-8">
-            <div class="max-w-6xl mx-auto px-4 space-y-6">
+            <div class="mx-auto max-w-6xl space-y-6 px-4">
                 <!-- Search Posts -->
-                <div class="w-full flex-1 flex flex-col md:flex-row gap-2">
+                <div class="flex w-full flex-1 flex-col gap-2 md:flex-row">
                     <Searchbar
                         v-model="searchQuery"
                         placeholder="Search posts..."
@@ -144,19 +178,23 @@ const handleSearch = () => {
                     </Button>
                 </div>
 
-                <div class="grid gap-6 grid-cols-1">
+                <div class="grid grid-cols-1 gap-6">
                     <!-- Sidebar Filters -->
                     <aside
-                        class="flex-1 border rounded-lg p-4 h-fit"
+                        class="h-fit flex-1 rounded-lg border p-4"
                         :class="['space-y-4', showFilters ? 'block' : 'hidden']"
                     >
-                        <div class="flex justify-between items-center border-b pb-4">
-                            <div class="text-md font-semibold">
-                                Filters
-                            </div>
+                        <div
+                            class="flex items-center justify-between border-b pb-4"
+                        >
+                            <div class="text-md font-semibold">Filters</div>
 
                             <Button
-                                v-if="filters.query || filters.type !== 'all' || filters.sortBy !== 'recent'"
+                                v-if="
+                                    filters.query ||
+                                    filters.type !== 'all' ||
+                                    filters.sortBy !== 'recent'
+                                "
                                 @click="clearSearch"
                                 variant="outline"
                                 size="sm"
@@ -169,33 +207,54 @@ const handleSearch = () => {
 
                         <!-- Type Filter -->
                         <div>
-                            <h3 class="mb-3 text-sm font-semibold text-muted-foreground">Type</h3>
+                            <h3
+                                class="mb-3 text-sm font-semibold text-muted-foreground"
+                            >
+                                Type
+                            </h3>
                             <div class="space-y-2">
                                 <Button
                                     v-for="option in typeOptions"
                                     :key="option.value"
                                     @click="updateType(option.value)"
-                                    :variant="selectedType === option.value ? 'default' : 'ghost'"
+                                    :variant="
+                                        selectedType === option.value
+                                            ? 'default'
+                                            : 'ghost'
+                                    "
                                     class="w-full justify-between"
                                 >
                                     <div class="flex items-center gap-2">
-                                        <component :is="option.icon" class="h-4 w-4" />
+                                        <component
+                                            :is="option.icon"
+                                            class="h-4 w-4"
+                                        />
                                         <span>{{ option.label }}</span>
                                     </div>
-                                    <span class="text-xs opacity-75">{{ option.count }}</span>
+                                    <span class="text-xs opacity-75">{{
+                                        option.count
+                                    }}</span>
                                 </Button>
                             </div>
                         </div>
 
                         <!-- Sort Filter -->
                         <div>
-                            <h3 class="mb-3 text-sm font-semibold text-muted-foreground">Sort By</h3>
+                            <h3
+                                class="mb-3 text-sm font-semibold text-muted-foreground"
+                            >
+                                Sort By
+                            </h3>
                             <div class="space-y-2">
                                 <Button
                                     v-for="option in sortOptions"
                                     :key="option.value"
                                     @click="updateSort(option.value)"
-                                    :variant="selectedSort === option.value ? 'default' : 'ghost'"
+                                    :variant="
+                                        selectedSort === option.value
+                                            ? 'default'
+                                            : 'ghost'
+                                    "
                                     class="w-full justify-start"
                                 >
                                     {{ option.label }}
@@ -209,7 +268,7 @@ const handleSearch = () => {
                         <!-- Posts Grid -->
                         <div v-if="posts.data.length > 0" class="space-y-6">
                             <!-- grid-cols-2 xl:grid-cols-3 -->
-                            <div class="grid gap-2 grid-cols-2 md:grid-cols-3">
+                            <div class="grid grid-cols-2 gap-2 md:grid-cols-3">
                                 <PostGridCard
                                     v-for="post in posts.data"
                                     :key="post.id"
@@ -227,15 +286,21 @@ const handleSearch = () => {
                         </div>
 
                         <!-- Empty State -->
-                        <div v-else class="rounded-lg border border-dashed py-16 text-center">
-                            <SearchIcon class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                            <h3 class="mb-2 text-lg font-semibold">No posts found</h3>
+                        <div
+                            v-else
+                            class="rounded-lg border border-dashed py-16 text-center"
+                        >
+                            <SearchIcon
+                                class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
+                            />
+                            <h3 class="mb-2 text-lg font-semibold">
+                                No posts found
+                            </h3>
                             <p class="mb-4 text-sm text-muted-foreground">
-                                Try adjusting your search or filters to find what you're looking for.
+                                Try adjusting your search or filters to find
+                                what you're looking for.
                             </p>
-                            <Button
-                                @click="clearSearch"
-                            >
+                            <Button @click="clearSearch">
                                 Clear Filters
                             </Button>
                         </div>

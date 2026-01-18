@@ -34,7 +34,7 @@ class Mediable extends Model
     ];
 
     /**
-     * Get the media.
+     * Get the media that owns this mediable.
      */
     public function media(): BelongsTo
     {

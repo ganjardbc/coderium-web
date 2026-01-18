@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import { useAppearance } from '@/composables/useAppearance';
 import { Monitor, Moon, Sun } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
 
 const { appearance, updateAppearance } = useAppearance();
 

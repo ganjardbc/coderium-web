@@ -21,7 +21,7 @@ defineProps<{
                         class="flex flex-col items-center gap-2 font-medium"
                     >
                         <div
-                            class="w-[126px] flex items-center justify-center rounded-md"
+                            class="flex w-[126px] items-center justify-center rounded-md"
                         >
                             <AppLogoIcon
                                 class="fill-current text-[var(--foreground)] dark:text-white"

@@ -21,7 +21,7 @@ defineProps<Props>();
 <template>
     <Link
         :href="`/playlists/${playlist.slug}`"
-        class="group overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md grid grid-cols-[80px_1fr]"
+        class="group grid grid-cols-[80px_1fr] overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md"
     >
         <div class="relative aspect-1/1 overflow-hidden bg-muted">
             <img
@@ -35,12 +35,15 @@ defineProps<Props>();
             </div>
         </div>
         <div class="p-3">
-            <h3 class="mb-2 line-clamp-2 text-sm font-semibold group-hover:text-primary">
+            <h3
+                class="mb-2 line-clamp-2 text-sm font-semibold group-hover:text-primary"
+            >
                 {{ playlist.title }}
             </h3>
-            <p class="text-xs text-muted-foreground flex items-center gap-1">
+            <p class="flex items-center gap-1 text-xs text-muted-foreground">
                 <PlaySquare class="h-4 w-4" />
-                {{ playlist.posts_count }} {{ playlist.posts_count === 1 ? 'post' : 'posts' }}
+                {{ playlist.posts_count }}
+                {{ playlist.posts_count === 1 ? 'post' : 'posts' }}
             </p>
         </div>
     </Link>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
 import DashboardAnalytics from '@/components/admin/DashboardAnalytics.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
 
 interface Props {
@@ -22,7 +22,9 @@ const breadcrumbs = [
         <div class="p-6">
             <div class="mb-6">
                 <h1 class="text-3xl font-bold">Dashboard</h1>
-                <p class="text-muted-foreground">Overview of your Coderium content</p>
+                <p class="text-muted-foreground">
+                    Overview of your Coderium content
+                </p>
             </div>
 
             <DashboardAnalytics :analytics="analytics" />

@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Admin User',
-            'email' => 'admin@coderium.com',
+            'email' => 'admin@coderium.id',
+            'password' => 'password',
+            'role' => 'admin',
         ]);
 
         $this->call([
@@ -25,6 +27,9 @@ class DatabaseSeeder extends Seeder
             PostSeeder::class,
             MediaSeeder::class,
             PlaylistPostSeeder::class,
+            AchievementSeeder::class,
+            CertificateTemplateSeeder::class,
+            ClassroomSeeder::class,
         ]);
     }
 }

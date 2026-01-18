@@ -17,10 +17,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
-            class="flex h-full flex-1 flex-col justify-center items-center gap-4 overflow-x-auto rounded-xl p-4"
+            class="flex h-full flex-1 flex-col items-center justify-center gap-4 overflow-x-auto rounded-xl p-4"
         >
-            <h1 class="text-3xl font-bold text-center">Dashboard</h1>
-            <p class="text-muted-foreground text-center">
+            <h1 class="text-center text-3xl font-bold">Dashboard</h1>
+            <p class="text-center text-muted-foreground">
                 Overview of your Coderium content
             </p>
         </div>

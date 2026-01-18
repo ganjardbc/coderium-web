@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import MediaUploader from '@/components/admin/MediaUploader.vue';
+import RichTextEditor from '@/components/RichTextEditor.vue';
+import CustomSelect from '@/components/CustomSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import MediaUploader from '@/components/admin/MediaUploader.vue';
-import RichTextEditor from '@/components/RichTextEditor.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 interface Media {
     id: number;
@@ -45,9 +46,20 @@ const form = ref({
     subtitle: props.post?.subtitle || '',
     content: props.post?.content || '',
     type: props.post?.type || 'article',
-    cover: props.post?.cover ? [{ id: 0, name: 'cover', url: props.post.cover, type: 'image' as const, mime_type: 'image/jpeg', size: 0 }] : [] as Media[],
+    cover: props.post?.cover
+        ? [
+              {
+                  id: 0,
+                  name: 'cover',
+                  url: props.post.cover,
+                  type: 'image' as const,
+                  mime_type: 'image/jpeg',
+                  size: 0,
+              },
+          ]
+        : ([] as Media[]),
     tags: Array.isArray(props.post?.tags) ? props.post?.tags.join(', ') : '',
-    media: props.post?.media || [] as Media[],
+    media: props.post?.media || ([] as Media[]),
     is_published: props.post?.is_published ?? true,
     meta_description: props.post?.meta_description || '',
     meta_keywords: props.post?.meta_keywords || '',
@@ -61,7 +73,12 @@ const breadcrumbs = [
     { title: isEditing ? 'Edit' : 'Create', href: '#' },
 ];
 
-const showMediaField = computed(() => form.value.type === 'carousel' || form.value.type === 'video' || form.value.type === 'stack_gallery');
+const showMediaField = computed(
+    () =>
+        form.value.type === 'carousel' ||
+        form.value.type === 'video' ||
+        form.value.type === 'stack_gallery',
+);
 
 const mediaAccept = computed(() => {
     if (form.value.type === 'carousel') return 'image/*';
@@ -70,7 +87,9 @@ const mediaAccept = computed(() => {
     return 'image/*,video/*';
 });
 
-const mediaMultiple = computed(() => form.value.type === 'carousel' || form.value.type === 'stack_gallery');
+const mediaMultiple = computed(
+    () => form.value.type === 'carousel' || form.value.type === 'stack_gallery',
+);
 
 const submit = () => {
     const data = {
@@ -79,8 +98,13 @@ const submit = () => {
         content: form.value.content,
         type: form.value.type,
         cover: form.value.cover.length > 0 ? form.value.cover[0].url : '',
-        tags: form.value.tags ? form.value.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-        media_ids: form.value.media.map(m => m.id),
+        tags: form.value.tags
+            ? form.value.tags
+                  .split(',')
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+            : [],
+        media_ids: form.value.media.map((m) => m.id),
         is_published: form.value.is_published,
         meta_description: form.value.meta_description,
         meta_keywords: form.value.meta_keywords,
@@ -98,6 +122,13 @@ const submit = () => {
 const cancel = () => {
     router.visit('/admin/posts');
 };
+
+const postTypeOptions = [
+    { value: 'article', label: 'Article' },
+    { value: 'carousel', label: 'Carousel' },
+    { value: 'video', label: 'Video' },
+    { value: 'stack_gallery', label: 'Stack Gallery' },
+];
 </script>
 
 <template>
@@ -106,12 +137,19 @@ const cancel = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <div class="mb-6">
-                <h1 class="text-3xl font-bold">{{ isEditing ? 'Edit' : 'Create' }} Post</h1>
-                <p class="text-muted-foreground">{{ isEditing ? 'Update' : 'Add a new' }} post content</p>
+                <h1 class="text-3xl font-bold">
+                    {{ isEditing ? 'Edit' : 'Create' }} Post
+                </h1>
+                <p class="text-muted-foreground">
+                    {{ isEditing ? 'Update' : 'Add a new' }} post content
+                </p>
             </div>
 
             <div class="w-full">
-                <form @submit.prevent="submit" class="space-y-6 rounded-lg border bg-card p-6">
+                <form
+                    @submit.prevent="submit"
+                    class="space-y-6 rounded-lg border bg-card p-6"
+                >
                     <!-- Title -->
                     <div class="space-y-2">
                         <Label for="title">Title *</Label>
@@ -122,7 +160,12 @@ const cancel = () => {
                             placeholder="Enter post title"
                             required
                         />
-                        <p v-if="errors?.title" class="text-sm text-destructive">{{ errors.title }}</p>
+                        <p
+                            v-if="errors?.title"
+                            class="text-sm text-destructive"
+                        >
+                            {{ errors.title }}
+                        </p>
                     </div>
 
                     <!-- Subtitle -->
@@ -134,24 +177,28 @@ const cancel = () => {
                             type="text"
                             placeholder="Enter post subtitle"
                         />
-                        <p v-if="errors?.subtitle" class="text-sm text-destructive">{{ errors.subtitle }}</p>
+                        <p
+                            v-if="errors?.subtitle"
+                            class="text-sm text-destructive"
+                        >
+                            {{ errors.subtitle }}
+                        </p>
                     </div>
 
                     <!-- Type -->
                     <div class="space-y-2">
-                        <Label for="type">Post Type *</Label>
-                        <select
+                        <Label for="subtitle">Post Type *</Label>
+                        <CustomSelect
                             id="type"
                             v-model="form.type"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            :options="postTypeOptions"
+                            placeholder="Select post type"
                             required
-                        >
-                            <option value="article">Article</option>
-                            <option value="carousel">Carousel</option>
-                            <option value="video">Video</option>
-                            <option value="stack_gallery">Stack Gallery</option>
-                        </select>
-                        <p v-if="errors?.type" class="text-sm text-destructive">{{ errors.type }}</p>
+                            :error="!!errors?.type"
+                        />
+                        <p v-if="errors?.type" class="text-sm text-destructive">
+                            {{ errors.type }}
+                        </p>
                     </div>
 
                     <!-- Content -->
@@ -162,8 +209,15 @@ const cancel = () => {
                             placeholder="Write your post content here..."
                             class="content-html"
                         />
-                        <p class="text-sm text-muted-foreground">Use the toolbar to format your content</p>
-                        <p v-if="errors?.content" class="text-sm text-destructive">{{ errors.content }}</p>
+                        <p class="text-sm text-muted-foreground">
+                            Use the toolbar to format your content
+                        </p>
+                        <p
+                            v-if="errors?.content"
+                            class="text-sm text-destructive"
+                        >
+                            {{ errors.content }}
+                        </p>
                     </div>
 
                     <!-- Cover Image Upload -->
@@ -175,14 +229,27 @@ const cancel = () => {
                             :multiple="false"
                             :max-size="10"
                         />
-                        <p class="text-sm text-muted-foreground">Upload a cover image for the post (max 10MB)</p>
-                        <p v-if="errors?.cover" class="text-sm text-destructive">{{ errors.cover }}</p>
+                        <p class="text-sm text-muted-foreground">
+                            Upload a cover image for the post (max 10MB)
+                        </p>
+                        <p
+                            v-if="errors?.cover"
+                            class="text-sm text-destructive"
+                        >
+                            {{ errors.cover }}
+                        </p>
                     </div>
 
                     <!-- Media Upload (for carousel/video/stack_gallery) -->
                     <div v-if="showMediaField" class="space-y-2">
                         <Label>
-                            {{ form.type === 'carousel' ? 'Carousel Images' : form.type === 'stack_gallery' ? 'Stack Gallery Images' : 'Video File' }}
+                            {{
+                                form.type === 'carousel'
+                                    ? 'Carousel Images'
+                                    : form.type === 'stack_gallery'
+                                      ? 'Stack Gallery Images'
+                                      : 'Video File'
+                            }}
                             <span v-if="form.type === 'video'"> *</span>
                         </Label>
                         <MediaUploader
@@ -192,9 +259,20 @@ const cancel = () => {
                             :max-size="50"
                         />
                         <p class="text-sm text-muted-foreground">
-                            {{ form.type === 'carousel' ? 'Upload multiple images for the carousel' : form.type === 'stack_gallery' ? 'Upload multiple images for the stack gallery' : 'Upload a video file (max 50MB)' }}
+                            {{
+                                form.type === 'carousel'
+                                    ? 'Upload multiple images for the carousel'
+                                    : form.type === 'stack_gallery'
+                                      ? 'Upload multiple images for the stack gallery'
+                                      : 'Upload a video file (max 50MB)'
+                            }}
                         </p>
-                        <p v-if="errors?.media" class="text-sm text-destructive">{{ errors.media }}</p>
+                        <p
+                            v-if="errors?.media"
+                            class="text-sm text-destructive"
+                        >
+                            {{ errors.media }}
+                        </p>
                     </div>
 
                     <!-- Tags -->
@@ -206,20 +284,31 @@ const cancel = () => {
                             type="text"
                             placeholder="laravel, vue, web-development"
                         />
-                        <p class="text-sm text-muted-foreground">Separate tags with commas</p>
-                        <p v-if="errors?.tags" class="text-sm text-destructive">{{ errors.tags }}</p>
+                        <p class="text-sm text-muted-foreground">
+                            Separate tags with commas
+                        </p>
+                        <p v-if="errors?.tags" class="text-sm text-destructive">
+                            {{ errors.tags }}
+                        </p>
                     </div>
 
                     <!-- SEO Meta Description -->
                     <div class="space-y-2">
-                        <Label for="meta_description">Meta Description (SEO)</Label>
+                        <Label for="meta_description"
+                            >Meta Description (SEO)</Label
+                        >
                         <Textarea
                             id="meta_description"
                             v-model="form.meta_description"
                             placeholder="Enter meta description for SEO"
                             rows="3"
                         />
-                        <p v-if="errors?.meta_description" class="text-sm text-destructive">{{ errors.meta_description }}</p>
+                        <p
+                            v-if="errors?.meta_description"
+                            class="text-sm text-destructive"
+                        >
+                            {{ errors.meta_description }}
+                        </p>
                     </div>
 
                     <!-- SEO Keywords -->
@@ -231,20 +320,29 @@ const cancel = () => {
                             type="text"
                             placeholder="keyword1, keyword2, keyword3"
                         />
-                        <p v-if="errors?.meta_keywords" class="text-sm text-destructive">{{ errors.meta_keywords }}</p>
+                        <p
+                            v-if="errors?.meta_keywords"
+                            class="text-sm text-destructive"
+                        >
+                            {{ errors.meta_keywords }}
+                        </p>
                     </div>
 
                     <!-- Published Status -->
-                    <div class="flex items-center justify-between rounded-lg border p-4">
+                    <div
+                        class="flex items-center justify-between rounded-lg border p-4"
+                    >
                         <div class="space-y-0.5">
                             <Label>Published</Label>
-                            <p class="text-sm text-muted-foreground">Make this post visible to the public</p>
+                            <p class="text-sm text-muted-foreground">
+                                Make this post visible to the public
+                            </p>
                         </div>
-                        <Switch v-model:checked="form.is_published" />
+                        <Switch v-model="form.is_published" />
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex gap-3 justify-end">
+                    <div class="flex justify-end gap-3">
                         <Button type="button" variant="outline" @click="cancel">
                             Cancel
                         </Button>

@@ -29,7 +29,7 @@ withDefaults(defineProps<Props>(), {
                     'min-w-[40px] rounded-md border px-4 py-2 text-sm font-medium transition-colors',
                     link.active
                         ? 'border-primary bg-primary text-primary-foreground'
-                        : 'hover:bg-accent'
+                        : 'hover:bg-accent',
                 ]"
                 :preserve-scroll="preserveScroll"
             >
@@ -38,7 +38,7 @@ withDefaults(defineProps<Props>(), {
             <span
                 v-else
                 :class="[
-                    'min-w-[40px] rounded-md border px-4 py-2 text-sm font-medium opacity-50'
+                    'min-w-[40px] rounded-md border px-4 py-2 text-sm font-medium opacity-50',
                 ]"
                 v-html="link.label"
             />

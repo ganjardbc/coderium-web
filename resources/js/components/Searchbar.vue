@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { XIcon, SearchIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useDebounceFn } from '@/lib/utils';
+import { SearchIcon, XIcon } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
 
 interface Props {
     modelValue?: string;
@@ -27,9 +27,12 @@ const emit = defineEmits<Emits>();
 
 const searchQuery = ref(props.modelValue);
 
-watch(() => props.modelValue, (newValue) => {
-    searchQuery.value = newValue;
-});
+watch(
+    () => props.modelValue,
+    (newValue) => {
+        searchQuery.value = newValue;
+    },
+);
 
 const debouncedHandleInput = useDebounceFn(() => {
     handleSearch();
@@ -52,10 +55,7 @@ const handleClear = () => {
 </script>
 
 <template>
-    <form
-        class="flex gap-2"
-        @submit.prevent="handleSearch"
-    >
+    <form class="flex gap-2" @submit.prevent="handleSearch">
         <div class="relative flex-1">
             <Input
                 type="text"
@@ -69,15 +69,12 @@ const handleClear = () => {
                 @click="handleClear"
                 variant="outline"
                 size="sm"
-                class="absolute right-2 top-1/2 -translate-y-1/2 w-[24px] h-[24px] rounded-full"
+                class="absolute top-1/2 right-2 h-[24px] w-[24px] -translate-y-1/2 rounded-full"
             >
                 <XIcon class="h-4 w-4" />
             </Button>
         </div>
-        <Button
-            type="submit"
-            variant="outline"
-        >
+        <Button type="submit" variant="outline">
             <SearchIcon class="h-4 w-4" />
             Search
         </Button>
