@@ -12,12 +12,13 @@ Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('ho
 // Post List
 Route::get('/explore', [App\Http\Controllers\SearchController::class, 'index'])->name('postlists.index');
 
+// Public posts
+Route::get('/posts', [App\Http\Controllers\PostController::class, 'index'])->name('posts.index');
+Route::get('/posts/{slug}', [App\Http\Controllers\PostController::class, 'show'])->name('posts.show');
+
 // Public playlists
 Route::get('/playlists', [App\Http\Controllers\PlaylistController::class, 'index'])->name('playlists.index');
 Route::get('/playlists/{slug}', [App\Http\Controllers\PlaylistController::class, 'show'])->name('playlists.show');
-
-// Public post detail
-Route::get('/posts/{slug}', [App\Http\Controllers\PostController::class, 'show'])->name('posts.show');
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
@@ -80,8 +81,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
 */
 Route::prefix('classroom')->name('classroom.')->group(function () {
     // Public classroom routes
-    Route::get('/tracks', [App\Http\Controllers\ClassroomController::class, 'tracks'])->name('tracks.index');
-    Route::get('/tracks/{slug}', [App\Http\Controllers\ClassroomController::class, 'trackDetail'])->name('tracks.show');
+    Route::get('/', [App\Http\Controllers\ClassroomController::class, 'tracks'])->name('tracks.index');
+    Route::get('/{slug}', [App\Http\Controllers\ClassroomController::class, 'trackDetail'])->name('tracks.show');
 
     // Authenticated classroom routes
     Route::middleware(['auth', 'verified'])->group(function () {

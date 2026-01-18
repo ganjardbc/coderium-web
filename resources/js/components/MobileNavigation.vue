@@ -37,8 +37,8 @@ const navigationItems = [
         icon: Home,
     },
     {
-        title: 'Learning Tracks',
-        href: '/classroom/tracks',
+        title: 'Classroom',
+        href: '/classroom',
         icon: GraduationCap,
     },
     {

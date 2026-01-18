@@ -1,18 +1,19 @@
 <script setup lang="ts">
+import BackButton from '@/components/BackButton.vue';
+import FilterSidebar from '@/components/FilterSidebar.vue';
 import Pagination from '@/components/Pagination.vue';
-import PostGridCard from '@/components/PostGridCard.vue';
+import PostCard from '@/components/PostCard.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
 import FrontLayout from '@/layouts/FrontLayout.vue';
+import { useDebounceFn } from '@/lib/utils';
 import { Head, router } from '@inertiajs/vue3';
 import {
-    X as CloseIcon,
     FileText,
     Image as ImageIcon,
     Search as SearchIcon,
     SlidersHorizontal,
     Video,
-    XIcon,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -97,9 +98,32 @@ const sortOptions = [
     { value: 'oldest', label: 'Oldest First' },
 ];
 
+const filterSections = computed(() => [
+    {
+        key: 'type',
+        title: 'Type',
+        options: typeOptions.value,
+        selectedValue: selectedType.value,
+    },
+    {
+        key: 'sort',
+        title: 'Sort By',
+        options: sortOptions.map(option => ({ ...option, icon: undefined })),
+        selectedValue: selectedSort.value,
+    },
+]);
+
+const hasActiveFilters = computed(() => {
+    return (
+        props.filters.query ||
+        props.filters.type !== 'all' ||
+        props.filters.sortBy !== 'recent'
+    );
+});
+
 const performSearch = () => {
     router.get(
-        '/explore',
+        '/search',
         {
             q: searchQuery.value,
             type: selectedType.value,
@@ -122,6 +146,14 @@ const updateSort = (sort: string) => {
     performSearch();
 };
 
+const handleFilterUpdate = (key: string, value: string) => {
+    if (key === 'type') {
+        updateType(value);
+    } else if (key === 'sort') {
+        updateSort(value);
+    }
+};
+
 const clearSearch = () => {
     searchQuery.value = '';
     selectedType.value = 'all';
@@ -129,22 +161,29 @@ const clearSearch = () => {
     performSearch();
 };
 
-const handleSearch = () => {
+const debouncedHandleSearch = useDebounceFn(() => {
     performSearch();
+}, 500);
+
+const handleSearch = () => {
+    debouncedHandleSearch();
 };
 </script>
 
 <template>
-    <Head title="Search Content" />
+    <Head title="Explore Posts" />
 
     <FrontLayout>
+        <!-- Breadcrumbs -->
+        <BackButton />
+
         <!-- Header -->
         <section
             class="border-b bg-gradient-to-b from-card/50 to-background py-8"
         >
             <div class="container mx-auto px-4">
                 <h1 class="text-center text-2xl font-bold md:text-3xl">
-                    Search Content
+                    Explore Posts
                 </h1>
                 <p
                     class="text-md mt-2 text-center text-muted-foreground md:text-lg"
@@ -156,120 +195,44 @@ const handleSearch = () => {
         </section>
 
         <!-- Filters & Results -->
-        <section class="w-full py-8">
-            <div class="mx-auto max-w-6xl space-y-6 px-4">
+        <section class="py-8">
+            <div class="container mx-auto px-4">
                 <!-- Search Posts -->
-                <div class="flex w-full flex-1 flex-col gap-2 md:flex-row">
+                <div class="mb-8">
                     <Searchbar
                         v-model="searchQuery"
                         placeholder="Search posts..."
-                        class="w-full"
                         @search="handleSearch"
                         @clear="clearSearch"
                     />
                     <Button
                         @click="showFilters = !showFilters"
                         variant="outline"
-                        class="w-full md:w-[94px]"
+                        class="mt-4 w-full md:hidden"
                     >
-                        <CloseIcon v-if="showFilters" class="h-4 w-4" />
-                        <SlidersHorizontal v-else class="h-4 w-4" />
-                        {{ showFilters ? 'Hide' : 'Filters' }}
+                        <SlidersHorizontal class="h-4 w-4" />
+                        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
                     </Button>
                 </div>
 
-                <div class="grid grid-cols-1 gap-6">
+                <div class="grid gap-8 lg:grid-cols-[310px_1fr]">
                     <!-- Sidebar Filters -->
-                    <aside
-                        class="h-fit flex-1 rounded-lg border p-4"
-                        :class="['space-y-4', showFilters ? 'block' : 'hidden']"
-                    >
-                        <div
-                            class="flex items-center justify-between border-b pb-4"
-                        >
-                            <div class="text-md font-semibold">Filters</div>
-
-                            <Button
-                                v-if="
-                                    filters.query ||
-                                    filters.type !== 'all' ||
-                                    filters.sortBy !== 'recent'
-                                "
-                                @click="clearSearch"
-                                variant="outline"
-                                size="sm"
-                                class="rounded-full"
-                            >
-                                <XIcon class="h-4 w-4" />
-                                Clear
-                            </Button>
-                        </div>
-
-                        <!-- Type Filter -->
-                        <div>
-                            <h3
-                                class="mb-3 text-sm font-semibold text-muted-foreground"
-                            >
-                                Type
-                            </h3>
-                            <div class="space-y-2">
-                                <Button
-                                    v-for="option in typeOptions"
-                                    :key="option.value"
-                                    @click="updateType(option.value)"
-                                    :variant="
-                                        selectedType === option.value
-                                            ? 'default'
-                                            : 'ghost'
-                                    "
-                                    class="w-full justify-between"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <component
-                                            :is="option.icon"
-                                            class="h-4 w-4"
-                                        />
-                                        <span>{{ option.label }}</span>
-                                    </div>
-                                    <span class="text-xs opacity-75">{{
-                                        option.count
-                                    }}</span>
-                                </Button>
-                            </div>
-                        </div>
-
-                        <!-- Sort Filter -->
-                        <div>
-                            <h3
-                                class="mb-3 text-sm font-semibold text-muted-foreground"
-                            >
-                                Sort By
-                            </h3>
-                            <div class="space-y-2">
-                                <Button
-                                    v-for="option in sortOptions"
-                                    :key="option.value"
-                                    @click="updateSort(option.value)"
-                                    :variant="
-                                        selectedSort === option.value
-                                            ? 'default'
-                                            : 'ghost'
-                                    "
-                                    class="w-full justify-start"
-                                >
-                                    {{ option.label }}
-                                </Button>
-                            </div>
-                        </div>
-                    </aside>
+                    <FilterSidebar
+                        :sections="filterSections"
+                        :show-filters="showFilters"
+                        :has-active-filters="hasActiveFilters"
+                        @update-filter="handleFilterUpdate"
+                        @clear-filters="clearSearch"
+                    />
 
                     <!-- Results -->
                     <div class="flex-1">
                         <!-- Posts Grid -->
                         <div v-if="posts.data.length > 0" class="space-y-6">
-                            <!-- grid-cols-2 xl:grid-cols-3 -->
-                            <div class="grid grid-cols-2 gap-2 md:grid-cols-3">
-                                <PostGridCard
+                            <div
+                                class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
+                            >
+                                <PostCard
                                     v-for="post in posts.data"
                                     :key="post.id"
                                     :post="post"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import BackButton from '@/components/BackButton.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -111,15 +111,11 @@ const startNextModule = () => {
 
     <FrontLayout>
         <!-- Breadcrumbs -->
-        <div class="container mx-auto max-w-7xl px-4 py-3 sm:py-4">
-            <Breadcrumbs :items="breadcrumbs" class="text-sm" />
-        </div>
+        <BackButton />
 
         <!-- Level Header -->
-        <section
-            class="border-b bg-gradient-to-r from-blue-50 to-indigo-50 py-8 dark:from-blue-950 dark:to-indigo-950"
-        >
-            <div class="container mx-auto max-w-7xl px-4">
+        <section class="w-full py-8 border-b">
+            <div class="w-full px-4">
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <!-- Level Info -->
                     <div class="lg:col-span-2">
@@ -225,7 +221,7 @@ const startNextModule = () => {
 
         <!-- Modules Content -->
         <section class="py-8">
-            <div class="container mx-auto max-w-7xl px-4">
+            <div class="w-full px-4">
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <!-- Main Content -->
                     <div class="lg:col-span-2">

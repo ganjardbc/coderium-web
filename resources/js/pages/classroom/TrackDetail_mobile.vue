@@ -120,7 +120,7 @@ const startLearning = () => {
         <div class="container mx-auto max-w-7xl px-4 py-4">
             <Button
                 :as="Link"
-                href="/classroom/tracks"
+                href="/classroom"
                 variant="ghost"
                 class="mb-4 h-12 text-base"
             >

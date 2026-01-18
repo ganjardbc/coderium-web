@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BackButton from '@/components/BackButton.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,9 +15,8 @@ import { useApi } from '@/composables/useApi';
 import { globalLoading } from '@/composables/useLoading';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import type { Track } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import {
-    ArrowLeft,
     Award,
     BookOpen,
     CheckCircle,
@@ -54,7 +54,7 @@ const enrollInTrack = async () => {
 
         // Refresh the page to get updated enrollment data
         get(
-            `/classroom/tracks/${props.track.slug}`,
+            `/classroom/${props.track.slug}`,
             {},
             {
                 errorContext: 'Refresh track data',
@@ -143,24 +143,12 @@ const navigateToLevel = (levelId: number) => {
     <Head :title="`${track.title} - Classroom`" />
 
     <FrontLayout>
-        <!-- Back Navigation -->
-        <div class="container mx-auto max-w-7xl px-4 py-4">
-            <Button
-                :as="Link"
-                href="/classroom/tracks"
-                variant="ghost"
-                class="mb-4"
-            >
-                <ArrowLeft class="mr-2 h-4 w-4" />
-                Back to Tracks
-            </Button>
-        </div>
+        <!-- Breadcrumbs -->
+        <BackButton />
 
         <!-- Track Header -->
-        <section
-            class="border-b bg-gradient-to-r from-blue-50 to-purple-50 py-8 dark:from-blue-950 dark:to-purple-950"
-        >
-            <div class="container mx-auto max-w-7xl px-4">
+        <section class="w-full py-8 border-b">
+            <div class="w-full px-4">
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <!-- Track Info -->
                     <div class="lg:col-span-2">
@@ -220,7 +208,7 @@ const navigateToLevel = (levelId: number) => {
                             </div>
                             <div class="flex items-center gap-2">
                                 <GraduationCap class="h-4 w-4" />
-                                <span>by {{ track.instructor.name }}</span>
+                                <span>by {{ track.instructor?.name }}</span>
                             </div>
                         </div>
                     </div>
@@ -345,7 +333,7 @@ const navigateToLevel = (levelId: number) => {
 
         <!-- Track Content -->
         <section class="py-8">
-            <div class="container mx-auto max-w-7xl px-4">
+            <div class="w-full px-4">
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <!-- Main Content -->
                     <div class="space-y-8 lg:col-span-2">
@@ -474,7 +462,7 @@ const navigateToLevel = (levelId: number) => {
                                         </div>
                                         <div>
                                             <p class="font-medium">
-                                                {{ track.instructor.name }}
+                                                {{ track.instructor?.name }}
                                             </p>
                                             <p
                                                 class="text-sm text-muted-foreground"

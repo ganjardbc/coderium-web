@@ -90,11 +90,17 @@ class ClassroomController extends Controller
                 'estimated_duration' => $track->estimated_duration,
                 'enrollments_count' => $track->enrollments_count,
                 'levels_count' => $track->levels_count,
-                'instructor' => [
+            ];
+
+            // Add instructor data if available
+            if ($track->instructor) {
+                $trackData['instructor'] = [
                     'id' => $track->instructor->id,
                     'name' => $track->instructor->name,
-                ],
-            ];
+                ];
+            } else {
+                $trackData['instructor'] = null;
+            }
 
             // Add enrollment data if user is enrolled
             if ($track->enrollments->isNotEmpty()) {
@@ -115,7 +121,7 @@ class ClassroomController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'difficulty' => $request->difficulty,
-                'is_premium' => $request->boolean('is_premium'),
+                'is_premium' => $request->has('is_premium') ? $request->boolean('is_premium') : null,
                 'sort' => $sortBy,
             ],
         ]);
@@ -154,10 +160,6 @@ class ClassroomController extends Controller
             'is_published' => $track->is_published,
             'enrollments_count' => $track->enrollments_count,
             'levels_count' => $track->levels_count,
-            'instructor' => [
-                'id' => $track->instructor->id,
-                'name' => $track->instructor->name,
-            ],
             'levels' => $track->levels->map(function ($level) {
                 return [
                     'id' => $level->id,
@@ -169,6 +171,16 @@ class ClassroomController extends Controller
                 ];
             }),
         ];
+
+        // Add instructor data if available
+        if ($track->instructor) {
+            $trackData['instructor'] = [
+                'id' => $track->instructor->id,
+                'name' => $track->instructor->name,
+            ];
+        } else {
+            $trackData['instructor'] = null;
+        }
 
         // Add enrollment and progress data for authenticated users
         if ($request->user()) {
