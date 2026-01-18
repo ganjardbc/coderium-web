@@ -51,10 +51,23 @@ class ModuleController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'order_index' => 'required|integer|min:0',
+            'estimated_duration' => 'nullable|integer|min:1',
             'is_published' => 'boolean',
+            'media' => 'nullable|array',
+            'media.*.id' => 'required|exists:media,id',
         ]);
 
-        Module::create($validated);
+        // Extract media data before creating module
+        $mediaData = $validated['media'] ?? [];
+        unset($validated['media']);
+
+        $module = Module::create($validated);
+
+        // Attach media relationships
+        if (!empty($mediaData)) {
+            $mediaIds = collect($mediaData)->pluck('id')->toArray();
+            $module->media()->attach($mediaIds);
+        }
 
         return redirect()->route('admin.classroom.modules.index')
             ->with('success', 'Module created successfully.');
@@ -64,6 +77,9 @@ class ModuleController extends Controller
     {
         $level = $module->level()->with('track')->first();
         $maxOrderIndex = Module::where('level_id', $module->level_id)->max('order_index') ?? 0;
+
+        // Load the module with its media relationship
+        $module->load('media');
 
         return Inertia::render('admin/classroom/ModuleEditor', [
             'module' => $module,
@@ -79,10 +95,23 @@ class ModuleController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'order_index' => 'required|integer|min:0',
+            'estimated_duration' => 'nullable|integer|min:1',
             'is_published' => 'boolean',
+            'media' => 'nullable|array',
+            'media.*.id' => 'required|exists:media,id',
         ]);
 
+        // Extract media data before updating module
+        $mediaData = $validated['media'] ?? [];
+        unset($validated['media']);
+
         $module->update($validated);
+
+        // Sync media relationships
+        if (isset($mediaData)) {
+            $mediaIds = collect($mediaData)->pluck('id')->toArray();
+            $module->media()->sync($mediaIds);
+        }
 
         return redirect()->route('admin.classroom.modules.index')
             ->with('success', 'Module updated successfully.');

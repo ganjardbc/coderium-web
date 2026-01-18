@@ -53,15 +53,20 @@ class LessonController extends Controller
             'order_index' => 'required|integer|min:0',
             'estimated_duration' => 'required|integer|min:1',
             'is_published' => 'boolean',
-            'media' => 'array',
-            'media.*' => 'exists:media,id',
+            'media' => 'nullable|array',
+            'media.*.id' => 'required|exists:media,id',
         ]);
+
+        // Extract media data before creating lesson
+        $mediaData = $validated['media'] ?? [];
+        unset($validated['media']);
 
         $lesson = Lesson::create($validated);
 
-        // Attach media if provided
-        if (!empty($validated['media'])) {
-            $lesson->media()->attach($validated['media']);
+        // Attach media relationships
+        if (!empty($mediaData)) {
+            $mediaIds = collect($mediaData)->pluck('id')->toArray();
+            $lesson->media()->attach($mediaIds);
         }
 
         return redirect()->route('admin.classroom.lessons.index')
@@ -90,15 +95,20 @@ class LessonController extends Controller
             'order_index' => 'required|integer|min:0',
             'estimated_duration' => 'required|integer|min:1',
             'is_published' => 'boolean',
-            'media' => 'array',
-            'media.*' => 'exists:media,id',
+            'media' => 'nullable|array',
+            'media.*.id' => 'required|exists:media,id',
         ]);
+
+        // Extract media data before updating lesson
+        $mediaData = $validated['media'] ?? [];
+        unset($validated['media']);
 
         $lesson->update($validated);
 
-        // Sync media if provided
-        if (isset($validated['media'])) {
-            $lesson->media()->sync($validated['media']);
+        // Sync media relationships
+        if (isset($mediaData)) {
+            $mediaIds = collect($mediaData)->pluck('id')->toArray();
+            $lesson->media()->sync($mediaIds);
         }
 
         return redirect()->route('admin.classroom.lessons.index')

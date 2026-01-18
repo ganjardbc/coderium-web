@@ -46,12 +46,24 @@ class TrackController extends Controller
             'is_premium' => 'boolean',
             'price' => 'nullable|numeric|min:0',
             'is_published' => 'boolean',
+            'media' => 'nullable|array',
+            'media.*.id' => 'required|exists:media,id',
         ]);
 
         // Ensure slug is properly formatted
         $validated['slug'] = Str::slug($validated['slug']);
 
-        Track::create($validated);
+        // Extract media data before creating track
+        $mediaData = $validated['media'] ?? [];
+        unset($validated['media']);
+
+        $track = Track::create($validated);
+
+        // Attach media relationships
+        if (!empty($mediaData)) {
+            $mediaIds = collect($mediaData)->pluck('id')->toArray();
+            $track->media()->attach($mediaIds);
+        }
 
         return redirect()->route('admin.classroom.tracks.index')
             ->with('success', 'Track created successfully.');
@@ -63,6 +75,9 @@ class TrackController extends Controller
             ->orWhere('role', 'admin')
             ->select('id', 'name', 'email')
             ->get();
+
+        // Load the track with its media relationship
+        $track->load('media');
 
         return Inertia::render('admin/classroom/TrackEditor', [
             'track' => $track,
@@ -82,12 +97,24 @@ class TrackController extends Controller
             'is_premium' => 'boolean',
             'price' => 'nullable|numeric|min:0',
             'is_published' => 'boolean',
+            'media' => 'nullable|array',
+            'media.*.id' => 'required|exists:media,id',
         ]);
 
         // Ensure slug is properly formatted
         $validated['slug'] = Str::slug($validated['slug']);
 
+        // Extract media data before updating track
+        $mediaData = $validated['media'] ?? [];
+        unset($validated['media']);
+
         $track->update($validated);
+
+        // Sync media relationships
+        if (isset($mediaData)) {
+            $mediaIds = collect($mediaData)->pluck('id')->toArray();
+            $track->media()->sync($mediaIds);
+        }
 
         return redirect()->route('admin.classroom.tracks.index')
             ->with('success', 'Track updated successfully.');
