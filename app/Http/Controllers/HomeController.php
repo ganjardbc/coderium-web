@@ -113,7 +113,7 @@ class HomeController extends Controller
             })
             ->values();
 
-        return Inertia::render('Home-2', [
+        return Inertia::render('Home', [
             'playlists' => $playlists,
             'recentPosts' => $recentPosts,
             'popularPosts' => $popularPosts,

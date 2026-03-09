@@ -92,49 +92,38 @@ const handleClearSearch = () => {
     <Head title="The Code Heroes Journey" />
 
     <FrontLayout>
-        <!-- Hero Section -->
-        <template #front-prepend>
-            <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12">
-                <div class="container mx-auto px-4 text-center">
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                        The <span class="font-extrabold text-white">Code Heroes</span> Journey
-                    </h1>
-                    <p class="mx-auto max-w-3xl text-md md:text-lg text-white mt-2">
-                        Discover tutorials, code snippets, and development insights shared by the community.
-                    </p>
-                </div>
-            </section>
-        </template>
-
         <!-- Main Content: Two Column Layout (Medium-style) -->
         <section class="py-8">
-            <div class="container mx-auto max-w-7xl px-4">
+            <div class="container mx-auto max-w-6xl px-4">
                 <!-- Two Column Layout -->
-                <div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
                     <!-- Main Column: Posts List -->
-                    <div class="flex-1">
-                        <div class="mb-4">
-                            <h2 class="text-lg font-bold">Recent Posts</h2>
-                        </div>
+                    <div class="flex-1 space-y-6">
+                        <!-- Hero Section -->
+                        <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12 rounded-lg">
+                            <div class="container mx-auto px-4 text-center">
+                                <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
+                                    The <span class="font-extrabold text-white">Code Heroes</span> Journey
+                                </h1>
+                                <p class="mx-auto max-w-3xl text-md md:text-lg text-white mt-2">
+                                    Discover tutorials, code snippets, and development insights shared by the community.
+                                </p>
+                            </div>
+                        </section>
 
                         <!-- Search Bar -->
-                        <div
+                        <Searchbar
                             v-if="ENABLE_POST_SEARCH"
-                            class="mb-6"
-                        >
-                            <Searchbar
-                                v-model="searchQuery"
-                                placeholder="Search posts..."
-                                @search="handleSearch"
-                                @clear="handleClearSearch"
-                            />
-                        </div>
+                            v-model="searchQuery"
+                            placeholder="Search posts..."
+                            @search="handleSearch"
+                            @clear="handleClearSearch"
+                        />
 
                         <div
                             v-if="recentPosts.data.length > 0"
-                            class="grid sm:grid-cols-2 gap-8"
+                            class="grid grid-cols-1 gap-8"
                         >
-                            <!-- xl:grid-cols-3  -->
                             <PostCard
                                 v-for="post in recentPosts.data"
                                 :key="post.id"
@@ -166,7 +155,7 @@ const handleClearSearch = () => {
 
                     <!-- Sidebar Column: Sticky Content -->
                     <aside class="flex-1">
-                        <div class="sticky top-20 space-y-6">
+                        <div class="sticky top-22 space-y-6">
                             <!-- Featured Playlists Card -->
                             <div
                                 v-if="ENABLE_PLAYLIST && playlists.length > 0"

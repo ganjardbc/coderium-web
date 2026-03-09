@@ -97,7 +97,7 @@ const ENABLE_PLAYLISTS = false;
         <footer class="border-t bg-card/50 py-8">
             <div class="container mx-auto px-4">
                 <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
-                    <div class="w-[96px] flex items-center gap-2">
+                    <div class="w-[136px] flex items-center gap-2">
                         <AppLogoIcon
                             class="fill-current text-[var(--foreground)] dark:text-white"
                         />
