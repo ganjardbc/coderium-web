@@ -9,6 +9,7 @@ import {
     PlaySquare,
     Video,
 } from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
 
 interface Post {
     id: number;
@@ -50,6 +51,21 @@ const formatNumber = (num: number) => {
     return num.toString();
 };
 
+const getPostTypeVariant = (type: string) => {
+    switch (type) {
+        case 'article':
+            return 'blue';
+        case 'carousel':
+            return 'success';
+        case 'video':
+            return 'purple';
+        case 'stack_gallery':
+            return 'yellow';
+        default:
+            return 'default';
+    }
+};
+
 const getPostTags = (post: Post): string[] => {
     try {
         return JSON.parse(post.tags as unknown as string) as string[];
@@ -77,38 +93,13 @@ const getPostTags = (post: Post): string[] => {
 
             <!-- Type Badge -->
             <div class="absolute top-3 left-3">
-                <span
-                    :class="[
-                        'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm',
-                        post.type === 'article'
-                            ? 'bg-blue-500/90 text-white'
-                            : '',
-                        post.type === 'carousel'
-                            ? 'bg-green-500/90 text-white'
-                            : '',
-                        post.type === 'video'
-                            ? 'bg-purple-500/90 text-white'
-                            : '',
-                        post.type === 'stack_gallery'
-                            ? 'bg-yellow-500/90 text-white'
-                            : '',
-                    ]"
-                >
+                <Badge :variant="getPostTypeVariant(post.type)" class="backdrop-blur-sm">
                     <FileText v-if="post.type === 'article'" class="h-3 w-3" />
-                    <ImageIcon
-                        v-if="post.type === 'carousel'"
-                        class="h-3 w-3"
-                    />
+                    <ImageIcon v-if="post.type === 'carousel'" class="h-3 w-3" />
                     <Video v-if="post.type === 'video'" class="h-3 w-3" />
-                    <ImageIcon
-                        v-if="post.type === 'stack_gallery'"
-                        class="h-3 w-3"
-                    />
-                    {{
-                        post.type.charAt(0).toUpperCase() +
-                        post.type.slice(1).replace('_', ' ')
-                    }}
-                </span>
+                    <ImageIcon v-if="post.type === 'stack_gallery'" class="h-3 w-3" />
+                    {{ post.type.charAt(0).toUpperCase() + post.type.slice(1).replace('_', ' ') }}
+                </Badge>
             </div>
         </div>
 

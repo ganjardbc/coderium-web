@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import DataTable, {
-    type Action,
     type Column,
 } from '@/components/DataTable.vue';
 import Searchbar from '@/components/Searchbar.vue';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { TrashIcon, EditIcon, PlusIcon } from 'lucide-vue-next';
 
 interface Playlist {
     id: number;
@@ -86,17 +86,6 @@ const columns: Column<Playlist>[] = [
     { key: 'is_published', label: 'Status', align: 'left' },
     { key: 'created_at', label: 'Created', align: 'left' },
 ];
-
-const actions: Action<Playlist>[] = [
-    {
-        href: (playlist) => `/admin/playlists/${playlist.slug}/edit`,
-        variant: 'outline',
-    },
-    {
-        onClick: (playlist) => deletePlaylist(playlist),
-        variant: 'outline',
-    },
-];
 </script>
 
 <template>
@@ -113,19 +102,7 @@ const actions: Action<Playlist>[] = [
                 </div>
                 <Link href="/admin/playlists/create">
                     <Button>
-                        <svg
-                            class="mr-2 h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 4v16m8-8H4"
-                            />
-                        </svg>
+                        <PlusIcon class="h-4 w-4" />
                         Create Playlist
                     </Button>
                 </Link>
@@ -145,7 +122,6 @@ const actions: Action<Playlist>[] = [
             <DataTable
                 :data="props.playlists.data"
                 :columns="columns"
-                :actions="actions"
                 :pagination="props.playlists"
                 empty-message="No playlists found"
             >
@@ -213,6 +189,20 @@ const actions: Action<Playlist>[] = [
                     <span class="text-sm text-muted-foreground">
                         {{ new Date(row.created_at).toLocaleDateString() }}
                     </span>
+                </template>
+
+                <!-- Actions -->
+                <template #actions="{ row }">
+                    <div class="flex gap-2">
+                        <Link :href="`/admin/playlists/${row.slug}/edit`">
+                            <Button variant="outline">
+                                <EditIcon class="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <Button variant="outline" @click="deletePlaylist(row)">
+                            <TrashIcon class="h-4 w-4" />
+                        </Button>
+                    </div>
                 </template>
             </DataTable>
         </div>

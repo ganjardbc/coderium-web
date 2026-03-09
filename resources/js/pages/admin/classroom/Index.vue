@@ -9,11 +9,13 @@ import {
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { Award, BarChart3, BookOpen, Settings, Users } from 'lucide-vue-next';
+import { Award, BarChart3, BookOpen, Settings, Users, GraduationCap, FileText } from 'lucide-vue-next';
 
 interface Props {
     stats: {
         total_tracks: number;
+        total_courses: number;
+        total_modules: number;
         total_enrollments: number;
         total_certificates: number;
         active_learners: number;
@@ -36,6 +38,27 @@ const quickActions = [
         color: 'bg-blue-500',
     },
     {
+        title: 'Create Course',
+        description: 'Build a new course with modules',
+        href: '/admin/classroom/courses/create',
+        icon: GraduationCap,
+        color: 'bg-indigo-500',
+    },
+    {
+        title: 'Module Library',
+        description: 'Browse and manage all modules',
+        href: '/admin/classroom/modules',
+        icon: BookOpen,
+        color: 'bg-teal-500',
+    },
+    {
+        title: 'Assignment Dashboard',
+        description: 'Manage module assignments',
+        href: '/admin/classroom/assignments',
+        icon: Settings,
+        color: 'bg-orange-500',
+    },
+    {
         title: 'Progress Dashboard',
         description: 'Monitor learner progress',
         href: '/admin/classroom/progress',
@@ -56,6 +79,13 @@ const quickActions = [
         icon: Settings,
         color: 'bg-purple-500',
     },
+    {
+        title: 'Manage Courses',
+        description: 'View and edit all courses',
+        href: '/admin/classroom/courses',
+        icon: Settings,
+        color: 'bg-pink-500',
+    },
 ];
 </script>
 
@@ -72,8 +102,8 @@ const quickActions = [
                 </p>
             </div>
 
-            <!-- Stats Overview -->
-            <div class="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <!-- Enhanced Stats Overview with Course Management -->
+            <div class="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-6">
                 <Card>
                     <CardHeader
                         class="flex flex-row items-center justify-between space-y-0 pb-2"
@@ -88,7 +118,45 @@ const quickActions = [
                             {{ stats.total_tracks }}
                         </div>
                         <p class="text-xs text-muted-foreground">
-                            Learning paths available
+                            Learning tracks
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Courses</CardTitle
+                        >
+                        <GraduationCap class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold">
+                            {{ stats.total_courses || 0 }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Course offerings
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Modules</CardTitle
+                        >
+                        <FileText class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold">
+                            {{ stats.total_modules || 0 }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Learning modules
                         </p>
                     </CardContent>
                 </Card>
@@ -192,8 +260,7 @@ const quickActions = [
                     <CardHeader>
                         <CardTitle>Getting Started</CardTitle>
                         <CardDescription>
-                            New to the classroom system? Follow these steps to
-                            get started
+                            New to the enhanced classroom system? Follow these steps to get started
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
@@ -205,11 +272,10 @@ const quickActions = [
                             </div>
                             <div>
                                 <p class="font-medium">
-                                    Create your first track
+                                    Create standalone modules
                                 </p>
                                 <p class="text-sm text-muted-foreground">
-                                    Set up a learning path with levels, modules,
-                                    and lessons
+                                    Build reusable learning modules that can be assigned to any learning path
                                 </p>
                             </div>
                         </div>
@@ -221,11 +287,10 @@ const quickActions = [
                             </div>
                             <div>
                                 <p class="font-medium">
-                                    Add content and assessments
+                                    Create tracks or courses
                                 </p>
                                 <p class="text-sm text-muted-foreground">
-                                    Create engaging lessons with rich content
-                                    and quizzes
+                                    Set up learning paths using tracks (traditional) or courses (flexible module-based)
                                 </p>
                             </div>
                         </div>
@@ -236,29 +301,54 @@ const quickActions = [
                                 3
                             </div>
                             <div>
-                                <p class="font-medium">Publish and monitor</p>
+                                <p class="font-medium">
+                                    Assign modules to learning paths
+                                </p>
                                 <p class="text-sm text-muted-foreground">
-                                    Make your track live and track learner
-                                    progress
+                                    Use the assignment dashboard to flexibly assign modules to tracks or courses
                                 </p>
                             </div>
                         </div>
-                        <Button
-                            class="mt-4 w-full"
-                            @click="
-                                $inertia.visit('/admin/classroom/tracks/create')
-                            "
-                        >
-                            Create Your First Track
-                        </Button>
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground"
+                            >
+                                4
+                            </div>
+                            <div>
+                                <p class="font-medium">Publish and monitor</p>
+                                <p class="text-sm text-muted-foreground">
+                                    Make your learning paths live and track unified progress across all formats
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <Button
+                                class="flex-1"
+                                @click="
+                                    $inertia.visit('/admin/classroom/tracks/create')
+                                "
+                            >
+                                Create Track
+                            </Button>
+                            <Button
+                                variant="outline"
+                                class="flex-1"
+                                @click="
+                                    $inertia.visit('/admin/classroom/courses/create')
+                                "
+                            >
+                                Create Course
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Management Tools</CardTitle>
+                        <CardTitle>Enhanced Management Tools</CardTitle>
                         <CardDescription>
-                            Access key management features for your classroom
+                            Access unified management features for tracks, courses, and modules
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-3">
@@ -269,6 +359,30 @@ const quickActions = [
                         >
                             <BookOpen class="mr-2 h-4 w-4" />
                             Manage All Tracks
+                        </Button>
+                        <Button
+                            variant="outline"
+                            class="w-full justify-start"
+                            @click="$inertia.visit('/admin/classroom/courses')"
+                        >
+                            <GraduationCap class="mr-2 h-4 w-4" />
+                            Manage All Courses
+                        </Button>
+                        <Button
+                            variant="outline"
+                            class="w-full justify-start"
+                            @click="$inertia.visit('/admin/classroom/modules')"
+                        >
+                            <FileText class="mr-2 h-4 w-4" />
+                            Module Library
+                        </Button>
+                        <Button
+                            variant="outline"
+                            class="w-full justify-start"
+                            @click="$inertia.visit('/admin/classroom/assignments')"
+                        >
+                            <Settings class="mr-2 h-4 w-4" />
+                            Assignment Dashboard
                         </Button>
                         <Button
                             variant="outline"
@@ -287,14 +401,6 @@ const quickActions = [
                         >
                             <Award class="mr-2 h-4 w-4" />
                             Certificate Management
-                        </Button>
-                        <Button
-                            variant="outline"
-                            class="w-full justify-start"
-                            @click="$inertia.visit('/admin/classroom/settings')"
-                        >
-                            <Settings class="mr-2 h-4 w-4" />
-                            Classroom Settings
                         </Button>
                     </CardContent>
                 </Card>

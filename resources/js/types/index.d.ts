@@ -258,3 +258,6 @@ export interface QuestionFeedback {
     correct_options?: number[];
     explanation?: string;
 }
+
+// Re-export enhanced classroom types
+export * from './enhanced-classroom';

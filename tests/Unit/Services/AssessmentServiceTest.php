@@ -339,6 +339,7 @@ class AssessmentServiceTest extends TestCase
     {
         $unpublishedLesson = $this->module->lessons()->create([
             'title' => 'Unpublished Lesson',
+            'content' => 'This is unpublished lesson content.',
             'is_published' => false,
         ]);
 

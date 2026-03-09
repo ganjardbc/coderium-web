@@ -4,116 +4,129 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Module;
-use App\Models\Level;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ModuleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $modules = Module::with(['level.track'])
-            ->withCount(['lessons'])
-            ->latest()
-            ->paginate(15);
+        $query = Module::with(['lessons'])
+            ->withCount('lessons');
 
-        return Inertia::render('admin/classroom/ModuleIndex', [
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $status = $request->get('status');
+            if ($status === 'published') {
+                $query->where('is_published', true);
+            } elseif ($status === 'draft') {
+                $query->where('is_published', false);
+            }
+        }
+
+        $modules = $query->orderBy('created_at', 'desc')->paginate(5);
+
+        // Debug logging
+        \Log::info('Modules Index - Total modules: ' . $modules->total());
+        \Log::info('Modules Index - Current page data count: ' . count($modules->items()));
+
+        return Inertia::render('admin/modules/Index', [
             'modules' => $modules,
+            'filters' => $request->only(['search', 'status']),
         ]);
     }
 
-    public function create(Request $request)
+    public function create()
     {
-        $levelId = $request->get('level_id');
-
-        if (!$levelId) {
-            // Show level selection page
-            $levels = Level::with('track')->orderBy('id')->get();
-            return Inertia::render('admin/classroom/ModuleCreate', [
-                'levels' => $levels,
-            ]);
-        }
-
-        // Show module creation form
-        $level = Level::with('track')->findOrFail($levelId);
-        $maxOrderIndex = Module::where('level_id', $levelId)->max('order_index') ?? 0;
-
-        return Inertia::render('admin/classroom/ModuleEditor', [
-            'level' => $level,
-            'maxOrderIndex' => $maxOrderIndex,
-        ]);
+        return Inertia::render('admin/modules/Form');
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'level_id' => 'required|exists:levels,id',
+        $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'order_index' => 'required|integer|min:0',
-            'estimated_duration' => 'nullable|integer|min:1',
+            'description' => 'nullable|string',
+            'estimated_duration' => 'nullable|integer|min:0',
             'is_published' => 'boolean',
-            'media' => 'nullable|array',
-            'media.*.id' => 'required|exists:media,id',
+            'media_ids' => 'nullable|array',
+            'media_ids.*' => 'exists:media,id',
         ]);
 
-        // Extract media data before creating module
-        $mediaData = $validated['media'] ?? [];
-        unset($validated['media']);
+        $module = Module::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'estimated_duration' => $request->estimated_duration,
+            'is_published' => $request->boolean('is_published'),
+        ]);
 
-        $module = Module::create($validated);
-
-        // Attach media relationships
-        if (!empty($mediaData)) {
-            $mediaIds = collect($mediaData)->pluck('id')->toArray();
-            $module->media()->attach($mediaIds);
+        // Handle media if provided
+        if ($request->filled('media_ids')) {
+            $module->media()->sync($request->media_ids);
         }
 
-        return redirect()->route('admin.classroom.modules.index')
+        return redirect()->route('admin.modules.index')
             ->with('success', 'Module created successfully.');
+    }
+
+    public function show(Module $module)
+    {
+        $module->load([
+            'lessons' => function ($query) {
+                $query->orderBy('order_index');
+            },
+            'assessments' => function ($query) {
+                $query->withCount(['questions', 'attempts']);
+            }
+        ])->loadCount(['lessons', 'assessments']);
+
+        return Inertia::render('admin/modules/Show', [
+            'module' => $module,
+        ]);
     }
 
     public function edit(Module $module)
     {
-        $level = $module->level()->with('track')->first();
-        $maxOrderIndex = Module::where('level_id', $module->level_id)->max('order_index') ?? 0;
-
-        // Load the module with its media relationship
         $module->load('media');
 
-        return Inertia::render('admin/classroom/ModuleEditor', [
+        return Inertia::render('admin/modules/Form', [
             'module' => $module,
-            'level' => $level,
-            'maxOrderIndex' => $maxOrderIndex,
         ]);
     }
 
     public function update(Request $request, Module $module)
     {
-        $validated = $request->validate([
-            'level_id' => 'required|exists:levels,id',
+        $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'order_index' => 'required|integer|min:0',
-            'estimated_duration' => 'nullable|integer|min:1',
+            'description' => 'nullable|string',
+            'estimated_duration' => 'nullable|integer|min:0',
             'is_published' => 'boolean',
-            'media' => 'nullable|array',
-            'media.*.id' => 'required|exists:media,id',
+            'media_ids' => 'nullable|array',
+            'media_ids.*' => 'exists:media,id',
         ]);
 
-        // Extract media data before updating module
-        $mediaData = $validated['media'] ?? [];
-        unset($validated['media']);
+        $module->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'estimated_duration' => $request->estimated_duration,
+            'is_published' => $request->boolean('is_published'),
+        ]);
 
-        $module->update($validated);
-
-        // Sync media relationships
-        if (isset($mediaData)) {
-            $mediaIds = collect($mediaData)->pluck('id')->toArray();
-            $module->media()->sync($mediaIds);
+        // Handle media if provided
+        if ($request->has('media_ids')) {
+            $module->media()->sync($request->media_ids ?? []);
         }
 
-        return redirect()->route('admin.classroom.modules.index')
+        return redirect()->route('admin.modules.index')
             ->with('success', 'Module updated successfully.');
     }
 
@@ -121,7 +134,7 @@ class ModuleController extends Controller
     {
         $module->delete();
 
-        return redirect()->route('admin.classroom.modules.index')
+        return redirect()->route('admin.modules.index')
             ->with('success', 'Module deleted successfully.');
     }
 }

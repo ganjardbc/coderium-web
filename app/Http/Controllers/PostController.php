@@ -197,6 +197,12 @@ class PostController extends Controller
             $relatedPosts = $relatedPosts->merge($additionalPosts);
         }
 
+        $breadcumbs = [
+            ['title' => 'Home', 'url' => route('home')],
+            ['title' => 'Posts', 'url' => route('posts.index')],
+            ['title' => $post->title, 'url' => null],
+        ];
+
         return Inertia::render('posts/PostDetail', [
             'post' => [
                 'id' => $post->id,
@@ -217,6 +223,7 @@ class PostController extends Controller
             ],
             'isLiked' => $isLiked,
             'relatedPosts' => $relatedPosts->toArray(),
+            'breadcrumbs' => $breadcumbs,
         ]);
     }
 }

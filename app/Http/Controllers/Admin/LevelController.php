@@ -15,9 +15,9 @@ class LevelController extends Controller
         $levels = Level::with(['track'])
             ->withCount(['modules'])
             ->latest()
-            ->paginate(15);
+            ->paginate(5);
 
-        return Inertia::render('admin/classroom/LevelIndex', [
+        return Inertia::render('admin/levels/index', [
             'levels' => $levels,
         ]);
     }
@@ -29,7 +29,7 @@ class LevelController extends Controller
         if (!$trackId) {
             // Show track selection page
             $tracks = Track::orderBy('title')->get();
-            return Inertia::render('admin/classroom/LevelCreate', [
+            return Inertia::render('admin/levels/create', [
                 'tracks' => $tracks,
             ]);
         }
@@ -38,7 +38,7 @@ class LevelController extends Controller
         $track = Track::findOrFail($trackId);
         $maxOrderIndex = Level::where('track_id', $trackId)->max('order_index') ?? 0;
 
-        return Inertia::render('admin/classroom/LevelEditor', [
+        return Inertia::render('admin/levels/create', [
             'track' => $track,
             'maxOrderIndex' => $maxOrderIndex,
         ]);
@@ -55,10 +55,21 @@ class LevelController extends Controller
             'is_published' => 'boolean',
         ]);
 
-        Level::create($validated);
+        $level = Level::create($validated);
 
-        return redirect()->route('admin.classroom.levels.index')
+        return redirect()->route('admin.tracks.levels', $level->track->slug)
             ->with('success', 'Level created successfully.');
+    }
+
+    public function show(Level $level)
+    {
+        $level->load(['track', 'modules' => function ($query) {
+            $query->withCount('lessons')->orderBy('order_index');
+        }]);
+
+        return Inertia::render('admin/levels/show', [
+            'level' => $level,
+        ]);
     }
 
     public function edit(Level $level)
@@ -66,7 +77,7 @@ class LevelController extends Controller
         $track = $level->track;
         $maxOrderIndex = Level::where('track_id', $level->track_id)->max('order_index') ?? 0;
 
-        return Inertia::render('admin/classroom/LevelEditor', [
+        return Inertia::render('admin/levels/edit', [
             'level' => $level,
             'track' => $track,
             'maxOrderIndex' => $maxOrderIndex,
@@ -86,15 +97,45 @@ class LevelController extends Controller
 
         $level->update($validated);
 
-        return redirect()->route('admin.classroom.levels.index')
+        return redirect()->route('admin.tracks.levels', $level->track->slug)
             ->with('success', 'Level updated successfully.');
     }
 
     public function destroy(Level $level)
     {
+        $trackSlug = $level->track->slug;
         $level->delete();
 
-        return redirect()->route('admin.classroom.levels.index')
+        return redirect()->route('admin.tracks.levels', $trackSlug)
             ->with('success', 'Level deleted successfully.');
+    }
+
+    public function move(Request $request, Level $level)
+    {
+        $direction = $request->input('direction');
+
+        if ($direction === 'up') {
+            $swapLevel = Level::where('track_id', $level->track_id)
+                ->where('order_index', '<', $level->order_index)
+                ->orderBy('order_index', 'desc')
+                ->first();
+        } else {
+            $swapLevel = Level::where('track_id', $level->track_id)
+                ->where('order_index', '>', $level->order_index)
+                ->orderBy('order_index', 'asc')
+                ->first();
+        }
+
+        if ($swapLevel) {
+            $tempOrder = $level->order_index;
+            $level->order_index = $swapLevel->order_index;
+            $swapLevel->order_index = $tempOrder;
+
+            $level->save();
+            $swapLevel->save();
+        }
+
+        return redirect()->route('admin.tracks.levels', $level->track->slug)
+            ->with('success', 'Level order updated successfully.');
     }
 }

@@ -120,7 +120,7 @@ const submit = () => {
 };
 
 const cancel = () => {
-    router.visit('/admin/posts');
+    window.history.back();
 };
 
 const postTypeOptions = [
@@ -134,7 +134,7 @@ const postTypeOptions = [
 <template>
     <Head :title="`${isEditing ? 'Edit' : 'Create'} Post - Admin`" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs" is-back>
         <div class="p-6">
             <div class="mb-6">
                 <h1 class="text-3xl font-bold">

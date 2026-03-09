@@ -28,6 +28,7 @@ class AssessmentResource extends JsonResource
             'updated_at' => $this->updated_at,
 
             // Relationships
+            'assessable' => $this->whenLoaded('assessable'),
             'questions' => QuestionResource::collection($this->whenLoaded('questions')),
             'attempts' => AssessmentAttemptResource::collection($this->whenLoaded('attempts')),
 

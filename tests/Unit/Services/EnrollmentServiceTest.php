@@ -6,6 +6,7 @@ use App\Models\Track;
 use App\Models\User;
 use App\Models\TrackEnrollment;
 use App\Services\EnrollmentService;
+use App\Services\ConstraintEnforcementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -19,7 +20,8 @@ class EnrollmentServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->enrollmentService = new EnrollmentService();
+        $constraintService = $this->app->make(ConstraintEnforcementService::class);
+        $this->enrollmentService = new EnrollmentService($constraintService);
     }
 
     public function test_enrollment_service_methods_exist(): void

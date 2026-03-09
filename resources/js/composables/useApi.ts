@@ -7,6 +7,11 @@ export interface ApiOptions {
     showSuccessMessage?: boolean;
     successMessage?: string;
     errorContext?: string;
+    retryConfig?: {
+        maxRetries?: number;
+        baseDelay?: number;
+        retryCondition?: (error: any) => boolean;
+    };
     preserveState?: boolean;
     preserveScroll?: boolean;
     onSuccess?: (response?: any) => void;
@@ -15,7 +20,7 @@ export interface ApiOptions {
 
 export function useApi() {
     const { setLoading } = globalLoading;
-    const { handleError, handleSuccess } = globalErrorHandler;
+    const { handleError, handleSuccess, retryWithBackoff, queueOfflineOperation, networkStatus } = globalErrorHandler;
 
     const makeRequest = async (
         method: 'get' | 'post' | 'put' | 'patch' | 'delete',
@@ -28,42 +33,62 @@ export function useApi() {
             showSuccessMessage = false,
             successMessage = 'Operation completed successfully',
             errorContext,
+            retryConfig,
             preserveState = true,
             preserveScroll = true,
             onSuccess,
             onError,
         } = options;
 
+        const executeRequest = async (): Promise<any> => {
+            // Check if offline and queue if necessary
+            if (!networkStatus.value.isOnline) {
+                return queueOfflineOperation(() => executeRequest());
+            }
+
+            return new Promise((resolve, reject) => {
+                const requestOptions: any = {
+                    preserveState,
+                    preserveScroll,
+                    onSuccess: (response?: any) => {
+                        if (showSuccessMessage) {
+                            handleSuccess(successMessage);
+                        }
+                        onSuccess?.(response);
+                        resolve(response);
+                    },
+                    onError: (errors: any) => {
+                        const errorResult = handleError(errors, errorContext, retryConfig);
+                        onError?.(errors);
+                        reject(errors);
+                    },
+                    onFinish: () => {
+                        setLoading(loadingKey, false);
+                    },
+                };
+
+                if (method === 'get') {
+                    router.get(url, data, requestOptions);
+                } else {
+                    router[method](url, data, requestOptions);
+                }
+            });
+        };
+
         try {
             setLoading(loadingKey, true);
 
-            const requestOptions: any = {
-                preserveState,
-                preserveScroll,
-                onSuccess: (response?: any) => {
-                    if (showSuccessMessage) {
-                        handleSuccess(successMessage);
-                    }
-                    onSuccess?.(response);
-                },
-                onError: (errors: any) => {
-                    handleError(errors, errorContext);
-                    onError?.(errors);
-                },
-                onFinish: () => {
-                    setLoading(loadingKey, false);
-                },
-            };
-
-            if (method === 'get') {
-                router.get(url, data, requestOptions);
+            // Use retry mechanism if configured
+            if (retryConfig) {
+                return await retryWithBackoff(executeRequest, retryConfig);
             } else {
-                router[method](url, data, requestOptions);
+                return await executeRequest();
             }
         } catch (error) {
             setLoading(loadingKey, false);
-            handleError(error, errorContext);
+            handleError(error, errorContext, retryConfig);
             onError?.(error);
+            throw error;
         }
     };
 

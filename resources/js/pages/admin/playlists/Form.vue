@@ -139,14 +139,14 @@ const submit = () => {
 };
 
 const cancel = () => {
-    router.visit('/admin/playlists');
+    window.history.back();
 };
 </script>
 
 <template>
     <Head :title="`${isEditing ? 'Edit' : 'Create'} Playlist - Admin`" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs" is-back>
         <div class="p-6">
             <div class="mb-6">
                 <h1 class="text-3xl font-bold">

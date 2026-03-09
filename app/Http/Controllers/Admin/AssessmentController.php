@@ -3,83 +3,124 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AssessmentResource;
 use App\Models\Assessment;
 use App\Models\Module;
-use App\Models\Question;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class AssessmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $assessments = Assessment::with(['assessable', 'questions'])
-            ->withCount(['questions'])
-            ->latest()
-            ->paginate(15);
+        $query = Assessment::with(['assessable', 'questions'])
+            ->withCount(['questions', 'attempts']);
 
-        return Inertia::render('admin/classroom/AssessmentIndex', [
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by assessable type
+        if ($request->filled('type')) {
+            $type = $request->get('type');
+            if ($type === 'module') {
+                $query->where('assessable_type', 'App\\Models\\Module');
+            } elseif ($type === 'standalone') {
+                $query->whereNull('assessable_type');
+            }
+        }
+
+        // Filter by required status
+        if ($request->filled('required')) {
+            $required = $request->get('required');
+            if ($required === 'required') {
+                $query->where('is_required', true);
+            } elseif ($required === 'optional') {
+                $query->where('is_required', false);
+            }
+        }
+
+        $assessments = $query->orderBy('created_at', 'desc')->paginate(5);
+
+        return Inertia::render('admin/assessments/Index', [
             'assessments' => $assessments,
+            'filters' => $request->only(['search', 'type', 'required']),
         ]);
     }
 
-    public function create(Request $request)
+    public function form(Request $request, ?Assessment $assessment = null)
     {
-        $moduleId = $request->get('module_id');
+        $modules = Module::orderBy('title')->get();
 
-        if (!$moduleId) {
-            // Show module selection page
-            $modules = Module::with('level.track')->orderBy('id')->get();
-            return Inertia::render('admin/classroom/AssessmentCreate', [
+        if ($assessment) {
+            // Edit mode
+            $assessment->load([
+                'assessable',
+                'questions.options' => function ($query) {
+                    $query->orderBy('order_index');
+                }
+            ]);
+
+            return Inertia::render('admin/assessments/Form', [
+                'assessment' => new AssessmentResource($assessment),
                 'modules' => $modules,
             ]);
+        } else {
+            // Create mode
+            return Inertia::render('admin/assessments/Form', [
+                'modules' => $modules,
+                'selectedModuleId' => $request->get('module_id'),
+            ]);
         }
-
-        // Show assessment creation form
-        $module = Module::with('level.track')->findOrFail($moduleId);
-
-        return Inertia::render('admin/classroom/AssessmentEditor', [
-            'module' => $module,
-        ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'module_id' => 'required|exists:modules,id',
+        $request->validate([
+            'module_id' => 'nullable|exists:modules,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'time_limit' => 'nullable|integer|min:1',
             'passing_score' => 'required|integer|min:0|max:100',
             'max_attempts' => 'nullable|integer|min:1',
             'is_required' => 'boolean',
-            'questions' => 'array',
+            'questions' => 'required|array|min:1',
             'questions.*.question_text' => 'required|string',
             'questions.*.question_type' => 'required|in:multiple_choice,true_false,code_output,conceptual',
             'questions.*.points' => 'required|integer|min:1',
-            'questions.*.order_index' => 'required|integer|min:1',
             'questions.*.explanation' => 'nullable|string',
             'questions.*.options' => 'required|array|min:2',
             'questions.*.options.*.option_text' => 'required|string',
             'questions.*.options.*.is_correct' => 'required|boolean',
-            'questions.*.options.*.order_index' => 'required|integer|min:1',
         ]);
 
-        // Create assessment with polymorphic relationship to module
-        $assessment = Assessment::create([
-            'assessable_type' => 'App\\Models\\Module',
-            'assessable_id' => $validated['module_id'],
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'time_limit' => $validated['time_limit'],
-            'passing_score' => $validated['passing_score'],
-            'max_attempts' => $validated['max_attempts'] ?? 3,
-            'is_required' => $validated['is_required'] ?? false,
-        ]);
+        DB::transaction(function () use ($request) {
+            // Create assessment
+            $assessmentData = [
+                'title' => $request->title,
+                'description' => $request->description,
+                'time_limit' => $request->time_limit,
+                'passing_score' => $request->passing_score,
+                'max_attempts' => $request->max_attempts ?? 3,
+                'is_required' => $request->boolean('is_required'),
+            ];
 
-        // Handle questions
-        if (isset($validated['questions'])) {
-            foreach ($validated['questions'] as $questionData) {
+            // Add polymorphic relationship if module is selected
+            if ($request->module_id) {
+                $assessmentData['assessable_type'] = 'App\\Models\\Module';
+                $assessmentData['assessable_id'] = $request->module_id;
+            }
+
+            $assessment = Assessment::create($assessmentData);
+
+            // Create questions and options
+            foreach ($request->questions as $questionData) {
                 $question = $assessment->questions()->create([
                     'question_text' => $questionData['question_text'],
                     'question_type' => $questionData['question_type'],
@@ -97,73 +138,76 @@ class AssessmentController extends Controller
                     ]);
                 }
             }
-        }
+        });
 
-        return redirect()->route('admin.classroom.assessments.index')
+        return redirect()->route('admin.assessments.index')
             ->with('success', 'Assessment created successfully.');
     }
 
-    public function edit(Assessment $assessment)
+    public function show(Assessment $assessment)
     {
-        // Load the assessable relationship and questions with options
-        $assessment->load(['assessable', 'questions.options' => function ($query) {
-            $query->orderBy('order_index');
-        }]);
+        $assessment->load([
+            'assessable',
+            'questions.options' => function ($query) {
+                $query->orderBy('order_index');
+            },
+            'attempts.user'
+        ])->loadCount(['questions', 'attempts']);
 
-        // For now, we'll assume it's a module-based assessment
-        // In a more complex system, you'd handle different assessable types
-        $module = null;
-        if ($assessment->assessable_type === 'App\\Models\\Module') {
-            $module = Module::with('level.track')->find($assessment->assessable_id);
-        }
-
-        return Inertia::render('admin/classroom/AssessmentEditor', [
-            'assessment' => $assessment,
-            'module' => $module,
+        return Inertia::render('admin/assessments/Show', [
+            'assessment' => new AssessmentResource($assessment),
         ]);
     }
 
+
+
     public function update(Request $request, Assessment $assessment)
     {
-        $validated = $request->validate([
-            'module_id' => 'required|exists:modules,id',
+        $request->validate([
+            'module_id' => 'nullable|exists:modules,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'time_limit' => 'nullable|integer|min:1',
             'passing_score' => 'required|integer|min:0|max:100',
             'max_attempts' => 'nullable|integer|min:1',
             'is_required' => 'boolean',
-            'questions' => 'array',
+            'questions' => 'required|array|min:1',
             'questions.*.question_text' => 'required|string',
             'questions.*.question_type' => 'required|in:multiple_choice,true_false,code_output,conceptual',
             'questions.*.points' => 'required|integer|min:1',
-            'questions.*.order_index' => 'required|integer|min:1',
             'questions.*.explanation' => 'nullable|string',
             'questions.*.options' => 'required|array|min:2',
             'questions.*.options.*.option_text' => 'required|string',
             'questions.*.options.*.is_correct' => 'required|boolean',
-            'questions.*.options.*.order_index' => 'required|integer|min:1',
         ]);
 
-        // Update assessment with polymorphic relationship
-        $assessment->update([
-            'assessable_type' => 'App\\Models\\Module',
-            'assessable_id' => $validated['module_id'],
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'time_limit' => $validated['time_limit'],
-            'passing_score' => $validated['passing_score'],
-            'max_attempts' => $validated['max_attempts'] ?? 3,
-            'is_required' => $validated['is_required'] ?? false,
-        ]);
+        DB::transaction(function () use ($request, $assessment) {
+            // Update assessment
+            $assessmentData = [
+                'title' => $request->title,
+                'description' => $request->description,
+                'time_limit' => $request->time_limit,
+                'passing_score' => $request->passing_score,
+                'max_attempts' => $request->max_attempts ?? 3,
+                'is_required' => $request->boolean('is_required'),
+            ];
 
-        // Handle questions
-        if (isset($validated['questions'])) {
-            // Delete existing questions and their options
+            // Update polymorphic relationship
+            if ($request->module_id) {
+                $assessmentData['assessable_type'] = 'App\\Models\\Module';
+                $assessmentData['assessable_id'] = $request->module_id;
+            } else {
+                $assessmentData['assessable_type'] = null;
+                $assessmentData['assessable_id'] = null;
+            }
+
+            $assessment->update($assessmentData);
+
+            // Delete existing questions and options
             $assessment->questions()->delete();
 
-            // Create new questions
-            foreach ($validated['questions'] as $questionData) {
+            // Create new questions and options
+            foreach ($request->questions as $questionData) {
                 $question = $assessment->questions()->create([
                     'question_text' => $questionData['question_text'],
                     'question_type' => $questionData['question_type'],
@@ -181,17 +225,23 @@ class AssessmentController extends Controller
                     ]);
                 }
             }
-        }
+        });
 
-        return redirect()->route('admin.classroom.assessments.index')
+        return redirect()->route('admin.assessments.index')
             ->with('success', 'Assessment updated successfully.');
     }
 
     public function destroy(Assessment $assessment)
     {
-        $assessment->delete();
+        DB::transaction(function () use ($assessment) {
+            // Delete questions and options (cascade should handle this)
+            $assessment->questions()->delete();
 
-        return redirect()->route('admin.classroom.assessments.index')
+            // Delete the assessment
+            $assessment->delete();
+        });
+
+        return redirect()->route('admin.assessments.index')
             ->with('success', 'Assessment deleted successfully.');
     }
 }

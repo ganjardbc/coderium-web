@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             AchievementSeeder::class,
             CertificateTemplateSeeder::class,
             ClassroomSeeder::class,
+            CourseSeeder::class,
         ]);
     }
 }

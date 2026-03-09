@@ -1,8 +1,5 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import Pagination from '@/components/Pagination.vue';
-import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/vue3';
-import { EditIcon, TrashIcon } from 'lucide-vue-next';
 
 export interface Column<T> {
     key: string;
@@ -11,14 +8,6 @@ export interface Column<T> {
     align?: 'left' | 'center' | 'right';
     render?: (row: T) => string | number | boolean;
     class?: string;
-}
-
-export interface Action<T> {
-    label: string;
-    onClick?: (row: T) => void;
-    href?: (row: T) => string;
-    variant?: 'default' | 'outline' | 'destructive' | 'ghost' | 'link';
-    show?: (row: T) => boolean;
 }
 
 interface PaginationData {
@@ -35,7 +24,6 @@ interface PaginationData {
 interface Props {
     data: T[];
     columns: Column<T>[];
-    actions?: Action<T>[];
     pagination?: PaginationData;
     loading?: boolean;
     emptyMessage?: string;
@@ -88,7 +76,7 @@ const getNumberByIndexAndPagination = (index: number) => {
 
 <template>
     <div class="rounded-lg border bg-card">
-        <div class="overflow-x-auto">
+        <div class="h-[520px] overflow-y-auto overflow-x-auto">
             <table class="w-full">
                 <thead class="border-b">
                     <tr>
@@ -111,7 +99,7 @@ const getNumberByIndexAndPagination = (index: number) => {
                             {{ column.label }}
                         </th>
                         <th
-                            v-if="actions && actions?.length > 0"
+                            v-if="$slots['actions']"
                             class="px-6 py-3 text-right text-sm font-medium"
                         >
                             Actions
@@ -121,7 +109,7 @@ const getNumberByIndexAndPagination = (index: number) => {
                 <tbody class="divide-y">
                     <tr v-if="loading" class="hover:bg-muted/50">
                         <td
-                            :colspan="columns?.length + (actions ? 1 : 0)"
+                            :colspan="columns?.length + ($slots['actions'] ? 1 : 0)"
                             class="px-6 py-8 text-center text-muted-foreground"
                         >
                             Loading...
@@ -129,7 +117,7 @@ const getNumberByIndexAndPagination = (index: number) => {
                     </tr>
                     <tr v-else-if="data?.length === 0" class="hover:bg-muted/50">
                         <td
-                            :colspan="columns?.length + (actions ? 1 : 0)"
+                            :colspan="columns?.length + ($slots['actions'] ? 1 : 0)"
                             class="px-6 py-8 text-center text-muted-foreground"
                         >
                             {{ emptyMessage }}
@@ -161,53 +149,8 @@ const getNumberByIndexAndPagination = (index: number) => {
                                 {{ getCellValue(row, column) }}
                             </slot>
                         </td>
-                        <td
-                            v-if="actions && actions?.length > 0"
-                            class="px-6 py-4"
-                        >
-                            <div class="flex justify-end gap-2">
-                                <template
-                                    v-for="(action, actionIndex) in actions"
-                                    :key="actionIndex"
-                                >
-                                    <Link
-                                        v-if="
-                                            action.href &&
-                                            (!action.show || action.show(row))
-                                        "
-                                        :href="action.href(row)"
-                                    >
-                                        <Button :variant="action.variant">
-                                            <slot
-                                                :name="`action-${actionIndex}`"
-                                                :row="row"
-                                                :action="action"
-                                            >
-                                                <span v-if="action.label">{{ action.label }}</span>
-                                                <EditIcon v-else class="h-4 w-4" />
-                                            </slot>
-                                        </Button>
-                                    </Link>
-
-                                    <Button
-                                        v-else-if="
-                                            action.onClick &&
-                                            (!action.show || action.show(row))
-                                        "
-                                        @click="action.onClick(row)"
-                                        :variant="action.variant"
-                                    >
-                                        <slot
-                                            :name="`action-${actionIndex}`"
-                                            :row="row"
-                                            :action="action"
-                                        >
-                                            <span v-if="action.label">{{ action.label }}</span>
-                                            <TrashIcon v-else class="h-4 w-4" />
-                                        </slot>
-                                    </Button>
-                                </template>
-                            </div>
+                        <td v-if="$slots['actions']" class="px-6 py-4">
+                            <slot name="actions" :row="row"></slot>
                         </td>
                     </tr>
                 </tbody>

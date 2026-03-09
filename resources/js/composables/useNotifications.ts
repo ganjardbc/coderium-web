@@ -1,5 +1,11 @@
 import { ref } from 'vue';
 
+export interface NotificationAction {
+    label: string;
+    action: () => void;
+    variant?: 'default' | 'destructive' | 'outline';
+}
+
 export interface Notification {
     id: string;
     type: 'success' | 'error' | 'warning' | 'info';
@@ -7,6 +13,8 @@ export interface Notification {
     message?: string;
     duration?: number;
     persistent?: boolean;
+    actions?: NotificationAction[];
+    dismissible?: boolean;
 }
 
 const notifications = ref<Notification[]>([]);
@@ -18,6 +26,7 @@ export function useNotifications() {
             id,
             duration: 5000,
             persistent: false,
+            dismissible: true,
             ...notification,
         };
 

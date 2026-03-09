@@ -3,123 +3,194 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LessonResource;
 use App\Models\Lesson;
 use App\Models\Module;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class LessonController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $lessons = Lesson::with(['module.level.track'])
-            ->latest()
-            ->paginate(15);
+        $query = Lesson::with(['module']);
 
-        return Inertia::render('admin/classroom/LessonIndex', [
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('content', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by lesson type
+        if ($request->filled('type')) {
+            $query->where('lesson_type', $request->get('type'));
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $status = $request->get('status');
+            if ($status === 'published') {
+                $query->where('is_published', true);
+            } elseif ($status === 'draft') {
+                $query->where('is_published', false);
+            }
+        }
+
+        // Filter by module
+        if ($request->filled('module')) {
+            $moduleId = $request->get('module');
+            if ($moduleId === 'standalone') {
+                $query->whereNull('module_id');
+            } else {
+                $query->where('module_id', $moduleId);
+            }
+        }
+
+        $lessons = $query->orderBy('created_at', 'desc')->paginate(5);
+
+        return Inertia::render('admin/lessons/Index', [
             'lessons' => $lessons,
+            'filters' => $request->only(['search', 'type', 'status', 'module']),
         ]);
     }
 
     public function create(Request $request)
     {
-        $moduleId = $request->get('module_id');
+        $modules = Module::orderBy('title')->get();
 
-        if (!$moduleId) {
-            // Show module selection page
-            $modules = Module::with('level.track')->orderBy('id')->get();
-            return Inertia::render('admin/classroom/LessonCreate', [
-                'modules' => $modules,
-            ]);
-        }
-
-        // Show lesson creation form
-        $module = Module::with('level.track')->findOrFail($moduleId);
-        $maxOrderIndex = Lesson::where('module_id', $moduleId)->max('order_index') ?? 0;
-
-        return Inertia::render('admin/classroom/LessonEditor', [
-            'module' => $module,
-            'maxOrderIndex' => $maxOrderIndex,
+        return Inertia::render('admin/lessons/Form', [
+            'modules' => $modules,
+            'selectedModuleId' => $request->get('module_id'),
         ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'module_id' => 'required|exists:modules,id',
+        $request->validate([
+            'module_id' => 'nullable|exists:modules,id',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'lesson_type' => 'required|in:text,video,interactive',
-            'order_index' => 'required|integer|min:0',
             'estimated_duration' => 'required|integer|min:1',
             'is_published' => 'boolean',
-            'media' => 'nullable|array',
-            'media.*.id' => 'required|exists:media,id',
+            'media_ids' => 'nullable|array',
+            'media_ids.*' => 'exists:media,id',
         ]);
 
-        // Extract media data before creating lesson
-        $mediaData = $validated['media'] ?? [];
-        unset($validated['media']);
+        DB::transaction(function () use ($request) {
+            // Get order index for the module (if assigned)
+            $orderIndex = 1;
+            if ($request->module_id) {
+                $orderIndex = Lesson::where('module_id', $request->module_id)->max('order_index') + 1;
+            }
 
-        $lesson = Lesson::create($validated);
+            $lesson = Lesson::create([
+                'module_id' => $request->module_id,
+                'title' => $request->title,
+                'content' => $request->content,
+                'lesson_type' => $request->lesson_type,
+                'order_index' => $orderIndex,
+                'estimated_duration' => $request->estimated_duration,
+                'is_published' => $request->boolean('is_published'),
+            ]);
 
-        // Attach media relationships
-        if (!empty($mediaData)) {
-            $mediaIds = collect($mediaData)->pluck('id')->toArray();
-            $lesson->media()->attach($mediaIds);
-        }
+            // Handle media if provided
+            if ($request->filled('media_ids')) {
+                $lesson->media()->sync($request->media_ids);
+            }
+        });
 
-        return redirect()->route('admin.classroom.lessons.index')
+        return redirect()->route('admin.lessons.index')
             ->with('success', 'Lesson created successfully.');
+    }
+
+    public function show(Lesson $lesson)
+    {
+        $lesson->load(['module', 'media']);
+
+        return Inertia::render('admin/lessons/Show', [
+            'lesson' => $lesson,
+        ]);
     }
 
     public function edit(Lesson $lesson)
     {
-        $module = $lesson->module()->with('level.track')->first();
-        $maxOrderIndex = Lesson::where('module_id', $lesson->module_id)->max('order_index') ?? 0;
+        $lesson->load(['module', 'media']);
+        $modules = Module::orderBy('title')->get();
 
-        return Inertia::render('admin/classroom/LessonEditor', [
-            'lesson' => $lesson->load('media'),
-            'module' => $module,
-            'maxOrderIndex' => $maxOrderIndex,
+        return Inertia::render('admin/lessons/Form', [
+            'lesson' => $lesson,
+            'modules' => $modules,
         ]);
     }
 
     public function update(Request $request, Lesson $lesson)
     {
-        $validated = $request->validate([
-            'module_id' => 'required|exists:modules,id',
+        $request->validate([
+            'module_id' => 'nullable|exists:modules,id',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'lesson_type' => 'required|in:text,video,interactive',
-            'order_index' => 'required|integer|min:0',
             'estimated_duration' => 'required|integer|min:1',
             'is_published' => 'boolean',
-            'media' => 'nullable|array',
-            'media.*.id' => 'required|exists:media,id',
+            'media_ids' => 'nullable|array',
+            'media_ids.*' => 'exists:media,id',
         ]);
 
-        // Extract media data before updating lesson
-        $mediaData = $validated['media'] ?? [];
-        unset($validated['media']);
+        DB::transaction(function () use ($request, $lesson) {
+            // Handle module change
+            $updateData = [
+                'module_id' => $request->module_id,
+                'title' => $request->title,
+                'content' => $request->content,
+                'lesson_type' => $request->lesson_type,
+                'estimated_duration' => $request->estimated_duration,
+                'is_published' => $request->boolean('is_published'),
+            ];
 
-        $lesson->update($validated);
+            // If module changed, update order index
+            if ($lesson->module_id !== $request->module_id) {
+                if ($request->module_id) {
+                    $updateData['order_index'] = Lesson::where('module_id', $request->module_id)->max('order_index') + 1;
+                } else {
+                    $updateData['order_index'] = 1;
+                }
+            }
 
-        // Sync media relationships
-        if (isset($mediaData)) {
-            $mediaIds = collect($mediaData)->pluck('id')->toArray();
-            $lesson->media()->sync($mediaIds);
-        }
+            $lesson->update($updateData);
 
-        return redirect()->route('admin.classroom.lessons.index')
+            // Handle media
+            if ($request->has('media_ids')) {
+                $lesson->media()->sync($request->media_ids ?? []);
+            }
+        });
+
+        return redirect()->route('admin.lessons.index')
             ->with('success', 'Lesson updated successfully.');
     }
 
     public function destroy(Lesson $lesson)
     {
-        $lesson->delete();
+        DB::transaction(function () use ($lesson) {
+            // Detach media
+            $lesson->media()->detach();
 
-        return redirect()->route('admin.classroom.lessons.index')
+            // Delete the lesson
+            $lesson->delete();
+
+            // Reorder remaining lessons in the module
+            if ($lesson->module_id) {
+                Lesson::where('module_id', $lesson->module_id)
+                    ->where('order_index', '>', $lesson->order_index)
+                    ->decrement('order_index');
+            }
+        });
+
+        return redirect()->route('admin.lessons.index')
             ->with('success', 'Lesson deleted successfully.');
     }
 }

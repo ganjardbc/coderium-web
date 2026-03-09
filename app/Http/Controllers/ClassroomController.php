@@ -506,8 +506,335 @@ class ClassroomController extends Controller
     }
 
     /**
-     * Check if user has access to track content.
+     * Display course-specific module view page.
      */
+    public function courseModuleView(Request $request, string $courseSlug, int $moduleId): Response
+    {
+        $course = \App\Models\Course::where('slug', $courseSlug)->firstOrFail();
+        $module = Module::findOrFail($moduleId);
+
+        // Check if user is enrolled in the course
+        if ($request->user()) {
+            $enrollment = $course->enrollments()->where('user_id', $request->user()->id)->first();
+            \Log::info('Enrollment check', [
+                'user_id' => $request->user()->id,
+                'enrollment_exists' => $enrollment !== null,
+                'enrollment_id' => $enrollment?->id
+            ]);
+
+            if (!$enrollment) {
+                \Log::warning('User not enrolled in course', [
+                    'user_id' => $request->user()->id,
+                    'course_id' => $course->id
+                ]);
+
+                // Redirect to course page with enrollment message
+                return redirect()->route('courses.show', $course->slug)
+                    ->with('error', 'You must enroll in this course to access its content.');
+            }
+        } else {
+            \Log::warning('User not authenticated');
+            abort(401, 'Authentication required.');
+        }
+
+        // Check if module is part of this course
+        $courseModule = $course->modules()->where('modules.id', $module->id)->first();
+        \Log::info('Course module check', [
+            'course_module_exists' => $courseModule !== null,
+            'course_module_id' => $courseModule?->id
+        ]);
+
+        if (!$courseModule) {
+            \Log::warning('Module not found in course', [
+                'course_id' => $course->id,
+                'module_id' => $module->id
+            ]);
+            abort(404, 'Module not found in this course.');
+        }
+
+        $module->load(['lessons' => function ($lessonQuery) use ($request) {
+            if (!$request->user() || !$request->user()->hasInstructorPermissions()) {
+                $lessonQuery->where('is_published', true);
+            }
+            $lessonQuery->orderBy('order_index');
+        }, 'assessments', 'assignments']);
+
+        $moduleData = [
+            'id' => $module->id,
+            'title' => $module->title,
+            'description' => $module->description,
+            'order_index' => $courseModule->pivot->order,
+            'is_required' => $courseModule->pivot->is_required,
+            'estimated_duration' => $module->estimated_duration,
+            'course' => [
+                'id' => $course->id,
+                'title' => $course->title,
+                'slug' => $course->slug,
+            ],
+            'lessons' => $module->lessons->map(function ($lesson) use ($request) {
+                $lessonData = [
+                    'id' => $lesson->id,
+                    'title' => $lesson->title,
+                    'order_index' => $lesson->order_index,
+                    'estimated_duration' => $lesson->estimated_duration,
+                    'lesson_type' => $lesson->lesson_type,
+                ];
+
+                // Add progress data for authenticated users
+                if ($request->user()) {
+                    $progress = $this->progressService->getLessonProgress($request->user(), $lesson);
+                    $lessonData['is_completed'] = $progress ? $progress->isCompleted() : false;
+                }
+
+                return $lessonData;
+            }),
+            'assessments' => $module->assessments->map(function ($assessment) {
+                return [
+                    'id' => $assessment->id,
+                    'title' => $assessment->title,
+                    'is_required' => $assessment->is_required,
+                    'passing_score' => $assessment->passing_score,
+                ];
+            }),
+            'assignments' => $module->assignments->map(function ($assignment) {
+                return [
+                    'id' => $assignment->id,
+                    'title' => $assignment->title,
+                    'due_date' => $assignment->due_date,
+                ];
+            }),
+        ];
+
+        // Add progress data for authenticated users
+        if ($request->user()) {
+            $moduleData['progress_percentage'] = $this->progressService->calculateModuleProgress($request->user(), $module);
+        }
+
+        // Generate breadcrumbs
+        $breadcrumbs = [
+            ['title' => 'Courses', 'url' => route('courses.index')],
+            ['title' => $course->title, 'url' => route('courses.show', $course->slug)],
+            ['title' => $module->title, 'url' => null],
+        ];
+
+        return Inertia::render('courses/CoursesModule', [
+            'module' => $moduleData,
+            'breadcrumbs' => $breadcrumbs,
+        ]);
+    }
+
+    /**
+     * Display course-specific lesson view page.
+     */
+    public function courseLessonView(Request $request, string $courseSlug, int $moduleId, int $lessonId): Response
+    {
+        $course = \App\Models\Course::where('slug', $courseSlug)->firstOrFail();
+        $module = Module::findOrFail($moduleId);
+        $lesson = Lesson::findOrFail($lessonId);
+
+        // Check if user is enrolled in the course
+        if ($request->user()) {
+            $enrollment = $course->enrollments()->where('user_id', $request->user()->id)->first();
+            if (!$enrollment) {
+                abort(403, 'You must be enrolled in this course to access its content.');
+            }
+        } else {
+            abort(401, 'Authentication required.');
+        }
+
+        // Check if module is part of this course and lesson is part of module
+        $courseModule = $course->modules()->where('modules.id', $module->id)->first();
+        if (!$courseModule) {
+            abort(404, 'Module not found in this course.');
+        }
+
+        if ($lesson->module_id !== $module->id) {
+            abort(404, 'Lesson not found in this module.');
+        }
+
+        // Check if lesson is published for non-instructors
+        if (!$lesson->is_published && (!$request->user() || !$request->user()->hasInstructorPermissions())) {
+            abort(404);
+        }
+
+        $lesson->load(['assessments', 'discussions', 'media']);
+
+        $lessonData = [
+            'id' => $lesson->id,
+            'title' => $lesson->title,
+            'content' => $lesson->content,
+            'order_index' => $lesson->order_index,
+            'estimated_duration' => $lesson->estimated_duration,
+            'lesson_type' => $lesson->lesson_type,
+            'course' => [
+                'id' => $course->id,
+                'title' => $course->title,
+                'slug' => $course->slug,
+            ],
+            'module' => [
+                'id' => $module->id,
+                'title' => $module->title,
+            ],
+            'media' => $lesson->media->map(function ($media) {
+                return [
+                    'id' => $media->id,
+                    'original_name' => $media->original_name,
+                    'mime_type' => $media->mime_type,
+                    'url' => $media->url,
+                    'size' => $media->size,
+                ];
+            }),
+        ];
+
+        // Add progress data for authenticated users
+        if ($request->user()) {
+            $progress = $this->progressService->getLessonProgress($request->user(), $lesson);
+            $lessonData['is_completed'] = $progress ? $progress->isCompleted() : false;
+            $lessonData['progress'] = $progress;
+
+            // Get module progress
+            $moduleProgress = [
+                'progress_percentage' => $this->progressService->calculateModuleProgress($request->user(), $module),
+                'completed_lessons' => $module->lessons()
+                    ->whereHas('progress', function ($query) use ($request) {
+                        $query->where('user_id', $request->user()->id)
+                              ->whereNotNull('completed_at');
+                    })->count(),
+                'total_lessons' => $module->lessons()->count(),
+            ];
+            $lessonData['moduleProgress'] = $moduleProgress;
+        }
+
+        // Get navigation (previous/next lessons within the course context)
+        $navigation = $this->getCourseNavigationData($request, $course, $module, $lesson);
+        $lessonData['nextLesson'] = $navigation['next'];
+        $lessonData['previousLesson'] = $navigation['previous'];
+
+        // Generate breadcrumbs
+        $breadcrumbs = [
+            ['title' => 'Courses', 'url' => route('courses.index')],
+            ['title' => $course->title, 'url' => route('courses.show', $course->slug)],
+            ['title' => $module->title, 'url' => route('courses.modules.show', [$course->slug, $module->id])],
+            ['title' => $lesson->title, 'url' => null],
+        ];
+
+        return Inertia::render('classroom/CourseLessonView', [
+            'lesson' => $lessonData,
+            'breadcrumbs' => $breadcrumbs,
+            'nextLesson' => $navigation['next'],
+            'previousLesson' => $navigation['previous'],
+            'moduleProgress' => $lessonData['moduleProgress'] ?? null,
+        ]);
+    }
+
+    /**
+     * Display course-specific assessment view page.
+     */
+    public function courseAssessmentView(Request $request, string $courseSlug, int $moduleId, int $assessmentId): Response
+    {
+        $course = \App\Models\Course::where('slug', $courseSlug)->firstOrFail();
+        $module = Module::findOrFail($moduleId);
+        $assessment = Assessment::with(['assessable', 'questions.options'])->findOrFail($assessmentId);
+        $user = $request->user();
+
+        if (!$user) {
+            abort(401, 'Authentication required.');
+        }
+
+        // Check if user is enrolled in the course
+        $enrollment = $course->enrollments()->where('user_id', $user->id)->first();
+        if (!$enrollment) {
+            abort(403, 'You must be enrolled in this course to access its content.');
+        }
+
+        // Check if module is part of this course
+        $courseModule = $course->modules()->where('modules.id', $module->id)->first();
+        if (!$courseModule) {
+            abort(404, 'Module not found in this course.');
+        }
+
+        // Check if assessment belongs to this module
+        if ($assessment->assessable_type !== Module::class || $assessment->assessable_id !== $module->id) {
+            abort(404, 'Assessment not found in this module.');
+        }
+
+        try {
+            $assessmentData = $this->assessmentService->getAssessmentForTaking($user, $assessment);
+            $results = $this->assessmentService->getAssessmentResults($user, $assessment);
+
+            // Generate breadcrumbs
+            $breadcrumbs = [
+                ['title' => 'Courses', 'url' => route('courses.index')],
+                ['title' => $course->title, 'url' => route('courses.show', $course->slug)],
+                ['title' => $module->title, 'url' => route('courses.modules.show', [$course->slug, $module->id])],
+                ['title' => $assessment->title, 'url' => null],
+            ];
+
+            return Inertia::render('classroom/CourseAssessmentView', [
+                'assessment' => $assessmentData,
+                'results' => $results,
+                'breadcrumbs' => $breadcrumbs,
+                'course' => [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                    'slug' => $course->slug,
+                ],
+                'module' => [
+                    'id' => $module->id,
+                    'title' => $module->title,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            abort(403, 'Cannot access this assessment.');
+        }
+    }
+
+    /**
+     * Get navigation data for a lesson within course context (previous/next).
+     */
+    private function getCourseNavigationData(Request $request, \App\Models\Course $course, Module $module, Lesson $lesson): array
+    {
+        $publishedOnly = !$request->user() || !$request->user()->hasInstructorPermissions();
+
+        // Get previous lesson
+        $previousLesson = null;
+        $prevInModule = $module->lessons()
+            ->when($publishedOnly, fn($q) => $q->where('is_published', true))
+            ->where('order_index', '<', $lesson->order_index)
+            ->orderBy('order_index', 'desc')
+            ->first();
+
+        if ($prevInModule) {
+            $previousLesson = [
+                'id' => $prevInModule->id,
+                'title' => $prevInModule->title,
+                'module' => $module->title,
+                'url' => route('courses.lessons.show', [$course->slug, $module->id, $prevInModule->id]),
+            ];
+        }
+
+        // Get next lesson
+        $nextLesson = null;
+        $nextInModule = $module->lessons()
+            ->when($publishedOnly, fn($q) => $q->where('is_published', true))
+            ->where('order_index', '>', $lesson->order_index)
+            ->orderBy('order_index', 'asc')
+            ->first();
+
+        if ($nextInModule) {
+            $nextLesson = [
+                'id' => $nextInModule->id,
+                'title' => $nextInModule->title,
+                'module' => $module->title,
+                'url' => route('courses.lessons.show', [$course->slug, $module->id, $nextInModule->id]),
+            ];
+        }
+
+        return [
+            'previous' => $previousLesson,
+            'next' => $nextLesson,
+        ];
+    }
     private function checkTrackAccess(Request $request, Track $track): void
     {
         // Check if track is published for non-instructors

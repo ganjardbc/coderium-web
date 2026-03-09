@@ -109,6 +109,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user can enroll in courses
+     */
+    public function canEnrollInCourses(): bool
+    {
+        return true; // All users can enroll in courses
+    }
+
+    /**
      * Check if user can access classroom features
      */
     public function canAccessClassroom(): bool
@@ -140,6 +148,14 @@ class User extends Authenticatable
     public function trackEnrollments()
     {
         return $this->hasMany(TrackEnrollment::class);
+    }
+
+    /**
+     * Course enrollments for this user.
+     */
+    public function courseEnrollments()
+    {
+        return $this->hasMany(CourseEnrollment::class);
     }
 
     /**

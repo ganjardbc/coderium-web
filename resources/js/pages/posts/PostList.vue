@@ -118,7 +118,7 @@ const hasActiveFilters = computed(() => {
         props.filters.query ||
         props.filters.type !== 'all' ||
         props.filters.sortBy !== 'recent'
-    );
+    ) as boolean;
 });
 
 const performSearch = () => {

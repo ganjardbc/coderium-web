@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -45,11 +46,37 @@ class Level extends Model
     }
 
     /**
-     * Get the modules for the level.
+     * Get all modules for the level (both legacy direct and new flexible assignments).
      */
     public function modules(): HasMany
     {
         return $this->hasMany(Module::class)->orderBy('order_index');
+    }
+
+    /**
+     * Get all modules including both direct and pivot assignments.
+     */
+    public function allModules()
+    {
+        // Get directly assigned modules (legacy)
+        $directModules = $this->modules;
+
+        // Get pivot assigned modules (new system)
+        $pivotModules = $this->assignedModules;
+
+        // Merge and remove duplicates
+        return $directModules->merge($pivotModules)->unique('id');
+    }
+
+    /**
+     * Get the modules assigned to this level through the pivot table (new flexible system).
+     */
+    public function assignedModules(): BelongsToMany
+    {
+        return $this->belongsToMany(Module::class, 'level_modules')
+                    ->withPivot(['order', 'is_required'])
+                    ->withTimestamps()
+                    ->orderBy('order');
     }
 
     /**

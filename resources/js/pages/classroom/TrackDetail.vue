@@ -15,6 +15,7 @@ import { useApi } from '@/composables/useApi';
 import { globalLoading } from '@/composables/useLoading';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import type { Track } from '@/types';
+import type { ModuleAssignment, StandaloneModule } from '@/types/enhanced-classroom';
 import { Head } from '@inertiajs/vue3';
 import {
     Award,
@@ -26,14 +27,41 @@ import {
     Play,
     Target,
     Users,
+    Layers,
+    Settings,
+    Edit,
+    Plus,
+    AlertCircle,
+    TrendingUp,
+    BarChart3,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Props {
     track: Track;
+    // Enhanced props for module assignment display
+    moduleAssignments?: ModuleAssignment[];
+    availableModules?: StandaloneModule[];
+    showModuleAssignments?: boolean;
+    enableAssignmentEditing?: boolean;
+    userRole?: 'student' | 'instructor' | 'admin';
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    showModuleAssignments: true,
+    enableAssignmentEditing: false,
+    userRole: 'student',
+});
+
+const emit = defineEmits<{
+    moduleAssignmentUpdated: [assignments: ModuleAssignment[]];
+    enrollmentChanged: [trackId: string, enrolled: boolean];
+}>();
+
+// Enhanced state for module assignment management
+const showAssignmentEditor = ref(false);
+const selectedLevel = ref<number | null>(null);
+const assignmentEditMode = ref(false);
 
 const { api, get } = useApi();
 const { isLoading } = globalLoading;
@@ -102,6 +130,67 @@ const sortedLevels = computed(() => {
     );
 });
 
+// Enhanced computed properties for module assignments
+const moduleAssignmentsByLevel = computed(() => {
+    if (!props.moduleAssignments) return {};
+
+    const assignmentMap: Record<number, ModuleAssignment[]> = {};
+    props.moduleAssignments.forEach(assignment => {
+        if (assignment.targetType === 'level') {
+            const levelId = parseInt(assignment.targetId);
+            if (!assignmentMap[levelId]) {
+                assignmentMap[levelId] = [];
+            }
+            assignmentMap[levelId].push(assignment);
+        }
+    });
+
+    // Sort assignments by order within each level
+    Object.keys(assignmentMap).forEach(levelId => {
+        assignmentMap[parseInt(levelId)].sort((a, b) => a.order - b.order);
+    });
+
+    return assignmentMap;
+});
+
+const totalModuleAssignments = computed(() => {
+    return props.moduleAssignments?.length || 0;
+});
+
+const activeModuleAssignments = computed(() => {
+    return props.moduleAssignments?.filter(a => a.isActive).length || 0;
+});
+
+const moduleAssignmentProgress = computed(() => {
+    if (!props.moduleAssignments?.length) return 0;
+    const completedAssignments = props.moduleAssignments.filter(a => {
+        // This would come from actual progress data
+        return false; // Placeholder
+    }).length;
+    return (completedAssignments / props.moduleAssignments.length) * 100;
+});
+
+const canEditAssignments = computed(() => {
+    return props.enableAssignmentEditing &&
+           (props.userRole === 'admin' || props.userRole === 'instructor');
+});
+
+const getModuleAssignmentsForLevel = (levelId: number) => {
+    return moduleAssignmentsByLevel.value[levelId] || [];
+};
+
+const getAssignmentStatusColor = (assignment: ModuleAssignment) => {
+    if (!assignment.isActive) return 'text-gray-500';
+    if (assignment.isRequired) return 'text-blue-600';
+    return 'text-green-600';
+};
+
+const getAssignmentStatusIcon = (assignment: ModuleAssignment) => {
+    if (!assignment.isActive) return AlertCircle;
+    if (assignment.isRequired) return CheckCircle;
+    return BookOpen;
+};
+
 const getNextLesson = () => {
     if (!props.track.progress?.current_lesson) return null;
     return props.track.progress.current_lesson;
@@ -136,6 +225,46 @@ const navigateToLevel = (levelId: number) => {
             errorContext: 'Load level',
         },
     );
+};
+
+// Enhanced methods for module assignment management
+const toggleAssignmentEditor = () => {
+    showAssignmentEditor.value = !showAssignmentEditor.value;
+};
+
+const editLevelAssignments = (levelId: number) => {
+    selectedLevel.value = levelId;
+    assignmentEditMode.value = true;
+    showAssignmentEditor.value = true;
+};
+
+const saveAssignmentChanges = async (assignments: ModuleAssignment[]) => {
+    try {
+        // This would call the API to update assignments
+        emit('moduleAssignmentUpdated', assignments);
+        assignmentEditMode.value = false;
+        showAssignmentEditor.value = false;
+    } catch (error) {
+        console.error('Failed to save assignment changes:', error);
+    }
+};
+
+const addModuleToLevel = async (levelId: number, moduleId: string) => {
+    try {
+        // This would call the API to add a module assignment
+        console.log('Adding module', moduleId, 'to level', levelId);
+    } catch (error) {
+        console.error('Failed to add module to level:', error);
+    }
+};
+
+const removeModuleFromLevel = async (assignmentId: string) => {
+    try {
+        // This would call the API to remove a module assignment
+        console.log('Removing assignment', assignmentId);
+    } catch (error) {
+        console.error('Failed to remove module from level:', error);
+    }
 };
 </script>
 
@@ -292,7 +421,7 @@ const navigateToLevel = (levelId: number) => {
 
                                 <Separator />
 
-                                <!-- Track Stats -->
+                                <!-- Enhanced Track Stats with Module Assignment Info -->
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
                                         <span class="text-muted-foreground"
@@ -323,6 +452,36 @@ const navigateToLevel = (levelId: number) => {
                                             track.levels_count || 0
                                         }}</span>
                                     </div>
+
+                                    <!-- Enhanced Module Assignment Stats -->
+                                    <div v-if="showModuleAssignments && totalModuleAssignments > 0">
+                                        <Separator class="my-2" />
+                                        <div class="flex justify-between">
+                                            <span class="text-muted-foreground">Total Modules</span>
+                                            <span class="font-medium">{{ totalModuleAssignments }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-muted-foreground">Active Modules</span>
+                                            <span class="font-medium text-green-600">{{ activeModuleAssignments }}</span>
+                                        </div>
+                                        <div v-if="moduleAssignmentProgress > 0" class="flex justify-between">
+                                            <span class="text-muted-foreground">Module Progress</span>
+                                            <span class="font-medium">{{ Math.round(moduleAssignmentProgress) }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Assignment Management Controls (Admin/Instructor) -->
+                                <div v-if="canEditAssignments" class="pt-4 border-t">
+                                    <Button
+                                        @click="toggleAssignmentEditor"
+                                        variant="outline"
+                                        size="sm"
+                                        class="w-full"
+                                    >
+                                        <Settings class="mr-2 h-4 w-4" />
+                                        Manage Assignments
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -383,6 +542,16 @@ const navigateToLevel = (levelId: number) => {
                                                             )
                                                         }}
                                                     </Badge>
+
+                                                    <!-- Module Assignment Count Badge -->
+                                                    <Badge
+                                                        v-if="showModuleAssignments && getModuleAssignmentsForLevel(level.id).length > 0"
+                                                        variant="secondary"
+                                                        class="text-xs"
+                                                    >
+                                                        <Layers class="mr-1 h-3 w-3" />
+                                                        {{ getModuleAssignmentsForLevel(level.id).length }} assigned
+                                                    </Badge>
                                                 </div>
                                                 <CardTitle
                                                     class="text-lg transition-colors group-hover:text-primary"
@@ -405,6 +574,17 @@ const navigateToLevel = (levelId: number) => {
                                                     }}
                                                     modules
                                                 </span>
+
+                                                <!-- Assignment Management Button (Admin/Instructor) -->
+                                                <Button
+                                                    v-if="canEditAssignments"
+                                                    @click="editLevelAssignments(level.id)"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                >
+                                                    <Edit class="h-4 w-4" />
+                                                </Button>
+
                                                 <Button
                                                     v-if="isEnrolled"
                                                     @click="
@@ -427,6 +607,93 @@ const navigateToLevel = (levelId: number) => {
                                             </div>
                                         </div>
                                     </CardHeader>
+
+                                    <!-- Enhanced Module Assignment Display -->
+                                    <CardContent
+                                        v-if="showModuleAssignments && getModuleAssignmentsForLevel(level.id).length > 0"
+                                        class="pt-0"
+                                    >
+                                        <div class="border-t pt-3">
+                                            <div class="mb-2 flex items-center justify-between">
+                                                <span class="text-sm font-medium text-muted-foreground">
+                                                    Assigned Modules
+                                                </span>
+                                                <Button
+                                                    v-if="canEditAssignments"
+                                                    @click="editLevelAssignments(level.id)"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    class="h-6 px-2 text-xs"
+                                                >
+                                                    <Plus class="mr-1 h-3 w-3" />
+                                                    Add Module
+                                                </Button>
+                                            </div>
+
+                                            <div class="space-y-2">
+                                                <div
+                                                    v-for="assignment in getModuleAssignmentsForLevel(level.id)"
+                                                    :key="assignment.id"
+                                                    class="flex items-center justify-between rounded-md border p-2 text-sm"
+                                                >
+                                                    <div class="flex items-center gap-2">
+                                                        <component
+                                                            :is="getAssignmentStatusIcon(assignment)"
+                                                            :class="['h-4 w-4', getAssignmentStatusColor(assignment)]"
+                                                        />
+                                                        <span class="font-medium">{{ assignment.module?.title || 'Module' }}</span>
+                                                        <Badge
+                                                            v-if="assignment.isRequired"
+                                                            variant="destructive"
+                                                            class="text-xs"
+                                                        >
+                                                            Required
+                                                        </Badge>
+                                                        <Badge
+                                                            v-else
+                                                            variant="secondary"
+                                                            class="text-xs"
+                                                        >
+                                                            Optional
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                                                        <span v-if="assignment.module?.estimatedDuration">
+                                                            {{ formatDuration(assignment.module.estimatedDuration) }}
+                                                        </span>
+                                                        <span v-if="assignment.completionRate > 0">
+                                                            {{ Math.round(assignment.completionRate) }}% complete
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Assignment Analytics (for detailed view) -->
+                                            <div v-if="getModuleAssignmentsForLevel(level.id).length > 0" class="mt-3 pt-3 border-t">
+                                                <div class="grid grid-cols-3 gap-4 text-center">
+                                                    <div>
+                                                        <div class="text-lg font-semibold">
+                                                            {{ getModuleAssignmentsForLevel(level.id).filter(a => a.isActive).length }}
+                                                        </div>
+                                                        <div class="text-xs text-muted-foreground">Active</div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-lg font-semibold">
+                                                            {{ getModuleAssignmentsForLevel(level.id).filter(a => a.isRequired).length }}
+                                                        </div>
+                                                        <div class="text-xs text-muted-foreground">Required</div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-lg font-semibold">
+                                                            {{ Math.round(getModuleAssignmentsForLevel(level.id).reduce((acc, a) => acc + (a.completionRate || 0), 0) / getModuleAssignmentsForLevel(level.id).length) }}%
+                                                        </div>
+                                                        <div class="text-xs text-muted-foreground">Avg. Complete</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
                                 </Card>
                             </div>
 
@@ -469,6 +736,72 @@ const navigateToLevel = (levelId: number) => {
                                             >
                                                 Course Instructor
                                             </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <!-- Enhanced Module Assignment Analytics -->
+                            <Card v-if="showModuleAssignments && totalModuleAssignments > 0">
+                                <CardHeader>
+                                    <CardTitle
+                                        class="flex items-center gap-2 text-lg"
+                                    >
+                                        <BarChart3 class="h-5 w-5" />
+                                        Module Analytics
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div class="space-y-4">
+                                        <!-- Assignment Overview -->
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="text-center">
+                                                <div class="text-2xl font-bold text-primary">
+                                                    {{ totalModuleAssignments }}
+                                                </div>
+                                                <div class="text-xs text-muted-foreground">
+                                                    Total Modules
+                                                </div>
+                                            </div>
+                                            <div class="text-center">
+                                                <div class="text-2xl font-bold text-green-600">
+                                                    {{ activeModuleAssignments }}
+                                                </div>
+                                                <div class="text-xs text-muted-foreground">
+                                                    Active Modules
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Progress Bar -->
+                                        <div v-if="moduleAssignmentProgress > 0">
+                                            <div class="mb-2 flex items-center justify-between text-sm">
+                                                <span class="text-muted-foreground">Module Progress</span>
+                                                <span class="font-medium">{{ Math.round(moduleAssignmentProgress) }}%</span>
+                                            </div>
+                                            <Progress :value="moduleAssignmentProgress" class="h-2" />
+                                        </div>
+
+                                        <!-- Assignment Breakdown -->
+                                        <div class="space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-muted-foreground">Required Modules</span>
+                                                <span class="font-medium">
+                                                    {{ moduleAssignments?.filter(a => a.isRequired).length || 0 }}
+                                                </span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-muted-foreground">Optional Modules</span>
+                                                <span class="font-medium">
+                                                    {{ moduleAssignments?.filter(a => !a.isRequired).length || 0 }}
+                                                </span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-muted-foreground">Avg. Completion</span>
+                                                <span class="font-medium">
+                                                    {{ Math.round((moduleAssignments?.reduce((acc, a) => acc + (a.completionRate || 0), 0) || 0) / Math.max(totalModuleAssignments, 1)) }}%
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>

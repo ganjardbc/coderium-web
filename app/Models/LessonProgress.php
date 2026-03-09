@@ -65,4 +65,33 @@ class LessonProgress extends Model
             'completed_at' => now(),
         ]);
     }
+
+    /**
+     * Get the corresponding learning progress record.
+     * Backward compatibility method to bridge to new progress system.
+     */
+    public function toLearningProgress(): ?LearningProgress
+    {
+        return LearningProgress::where([
+            'user_id' => $this->user_id,
+            'progressable_type' => 'App\\Models\\Lesson',
+            'progressable_id' => $this->lesson_id,
+        ])->first();
+    }
+
+    /**
+     * Convert time spent from seconds to minutes for compatibility.
+     */
+    public function getTimeSpentMinutesAttribute(): int
+    {
+        return intval($this->time_spent / 60);
+    }
+
+    /**
+     * Get completion percentage (100% if completed, 0% if not).
+     */
+    public function getCompletionPercentageAttribute(): float
+    {
+        return $this->isCompleted() ? 100.00 : 0.00;
+    }
 }

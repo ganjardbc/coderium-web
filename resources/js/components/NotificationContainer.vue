@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { globalNotifications } from '@/composables/useNotifications';
+import type { NotificationAction } from '@/composables/useNotifications';
 import {
     AlertCircle,
     AlertTriangle,
@@ -53,6 +54,13 @@ const getIconColorClasses = (type: string) => {
             return 'text-blue-500';
     }
 };
+
+const handleAction = (action: NotificationAction, notificationId: string) => {
+    action.action();
+    if (action.variant !== 'outline') {
+        removeNotification(notificationId);
+    }
+};
 </script>
 
 <template>
@@ -81,13 +89,31 @@ const getIconColorClasses = (type: string) => {
                         </h4>
                         <p
                             v-if="notification.message"
-                            class="mt-1 text-sm opacity-90"
+                            class="mt-1 text-sm opacity-90 whitespace-pre-line"
                         >
                             {{ notification.message }}
                         </p>
+
+                        <!-- Actions -->
+                        <div
+                            v-if="notification.actions && notification.actions.length > 0"
+                            class="mt-3 flex gap-2"
+                        >
+                            <Button
+                                v-for="action in notification.actions"
+                                :key="action.label"
+                                @click="handleAction(action, notification.id)"
+                                :variant="action.variant || 'outline'"
+                                size="sm"
+                                class="text-xs"
+                            >
+                                {{ action.label }}
+                            </Button>
+                        </div>
                     </div>
 
                     <Button
+                        v-if="notification.dismissible !== false"
                         @click="removeNotification(notification.id)"
                         variant="ghost"
                         size="sm"

@@ -13,11 +13,12 @@ class TrackController extends Controller
 {
     public function index()
     {
-        $tracks = Track::withCount(['levels', 'enrollments'])
+        $tracks = Track::with('instructor:id,name,email')
+            ->withCount(['levels', 'enrollments'])
             ->latest()
-            ->paginate(15);
+            ->paginate(5);
 
-        return Inertia::render('admin/classroom/TrackIndex', [
+        return Inertia::render('admin/tracks/index', [
             'tracks' => $tracks,
         ]);
     }
@@ -29,7 +30,7 @@ class TrackController extends Controller
             ->select('id', 'name', 'email')
             ->get();
 
-        return Inertia::render('admin/classroom/TrackEditor', [
+        return Inertia::render('admin/tracks/create', [
             'instructors' => $instructors,
         ]);
     }
@@ -65,8 +66,38 @@ class TrackController extends Controller
             $track->media()->attach($mediaIds);
         }
 
-        return redirect()->route('admin.classroom.tracks.index')
+        return redirect()->route('admin.tracks.index')
             ->with('success', 'Track created successfully.');
+    }
+
+    public function show(Track $track)
+    {
+        $track->load(['instructor:id,name,email', 'levels' => function ($query) {
+            $query->withCount('modules')->orderBy('order_index');
+        }]);
+
+        $enrollments = $track->enrollments()
+            ->with('user:id,name,email')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $stats = [
+            'total_enrollments' => $track->enrollments()->count(),
+            'active_enrollments' => $track->enrollments()->whereNull('completed_at')->count(),
+            'completed_enrollments' => $track->enrollments()->whereNotNull('completed_at')->count(),
+            'average_progress' => $track->enrollments()->avg('progress_percentage') ?? 0,
+            'completion_rate' => $track->enrollments()->count() > 0
+                ? ($track->enrollments()->whereNotNull('completed_at')->count() / $track->enrollments()->count()) * 100
+                : 0,
+        ];
+
+        return Inertia::render('admin/tracks/show', [
+            'track' => $track,
+            'levels' => $track->levels,
+            'enrollments' => $enrollments,
+            'stats' => $stats,
+        ]);
     }
 
     public function edit(Track $track)
@@ -79,7 +110,7 @@ class TrackController extends Controller
         // Load the track with its media relationship
         $track->load('media');
 
-        return Inertia::render('admin/classroom/TrackEditor', [
+        return Inertia::render('admin/tracks/edit', [
             'track' => $track,
             'instructors' => $instructors,
         ]);
@@ -116,7 +147,7 @@ class TrackController extends Controller
             $track->media()->sync($mediaIds);
         }
 
-        return redirect()->route('admin.classroom.tracks.index')
+        return redirect()->route('admin.tracks.index')
             ->with('success', 'Track updated successfully.');
     }
 
@@ -124,7 +155,20 @@ class TrackController extends Controller
     {
         $track->delete();
 
-        return redirect()->route('admin.classroom.tracks.index')
+        return redirect()->route('admin.tracks.index')
             ->with('success', 'Track deleted successfully.');
+    }
+
+    public function levels(Track $track)
+    {
+        $levels = $track->levels()
+            ->withCount('modules')
+            ->orderBy('order_index')
+            ->paginate(5);
+
+        return Inertia::render('admin/tracks/levels', [
+            'track' => $track,
+            'levels' => $levels,
+        ]);
     }
 }

@@ -94,4 +94,120 @@ class Assessment extends Model
             ->orderByDesc('score')
             ->first();
     }
+
+    /**
+     * Get the course context for this assessment.
+     * Returns the course if the assessment is directly attached to a course,
+     * or if it's attached to a module that belongs to a course.
+     */
+    public function getCourseContext(): ?Course
+    {
+        // Direct course assessment
+        if ($this->assessable_type === 'App\Models\Course') {
+            return $this->assessable;
+        }
+
+        // Module assessment - check if module belongs to any courses
+        if ($this->assessable_type === 'App\Models\Module') {
+            return $this->assessable->courses()->first();
+        }
+
+        // Lesson assessment - check if lesson's module belongs to any courses
+        if ($this->assessable_type === 'App\Models\Lesson') {
+            return $this->assessable->module->courses()->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the track context for this assessment.
+     * Returns the track if the assessment is attached to content within a track.
+     */
+    public function getTrackContext(): ?Track
+    {
+        // Module assessment
+        if ($this->assessable_type === 'App\Models\Module') {
+            return $this->assessable->level?->track;
+        }
+
+        // Lesson assessment
+        if ($this->assessable_type === 'App\Models\Lesson') {
+            return $this->assessable->module->level?->track;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the learning path context (either course or track).
+     * Returns an array with type and model.
+     */
+    public function getLearningPathContext(): array
+    {
+        $course = $this->getCourseContext();
+        if ($course) {
+            return ['type' => 'course', 'model' => $course];
+        }
+
+        $track = $this->getTrackContext();
+        if ($track) {
+            return ['type' => 'track', 'model' => $track];
+        }
+
+        return ['type' => null, 'model' => null];
+    }
+
+    /**
+     * Check if this assessment is in a course context.
+     */
+    public function isInCourseContext(): bool
+    {
+        return $this->getCourseContext() !== null;
+    }
+
+    /**
+     * Check if this assessment is in a track context.
+     */
+    public function isInTrackContext(): bool
+    {
+        return $this->getTrackContext() !== null;
+    }
+
+    /**
+     * Get assessment progress contribution for the learning path.
+     * Returns the weight this assessment should have in overall progress calculation.
+     */
+    public function getProgressContribution(): float
+    {
+        // Required assessments have higher weight
+        $baseWeight = $this->is_required ? 1.0 : 0.5;
+
+        // Adjust weight based on total points
+        $totalPoints = $this->getTotalPoints();
+        $pointsWeight = $totalPoints > 0 ? min($totalPoints / 100, 2.0) : 1.0;
+
+        return $baseWeight * $pointsWeight;
+    }
+
+    /**
+     * Calculate assessment completion percentage for a user.
+     * Returns percentage based on best attempt score.
+     */
+    public function getCompletionPercentage(User $user): float
+    {
+        $bestAttempt = $this->getBestAttempt($user);
+
+        if (!$bestAttempt) {
+            return 0.0;
+        }
+
+        $maxScore = $bestAttempt->max_score > 0 ? $bestAttempt->max_score : $this->getTotalPoints();
+
+        if ($maxScore <= 0) {
+            return $bestAttempt->passed ? 100.0 : 0.0;
+        }
+
+        return min(($bestAttempt->score / $maxScore) * 100, 100.0);
+    }
 }

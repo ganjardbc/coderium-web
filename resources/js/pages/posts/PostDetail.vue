@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BackButton from '@/components/BackButton.vue';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
 import PostCard from '@/components/PostCard.vue';
 import { Button } from '@/components/ui/button';
@@ -43,10 +43,16 @@ interface Post {
     };
 }
 
+interface BreadcrumbItem {
+    title: string;
+    url?: string;
+}
+
 interface Props {
     post: Post;
     isLiked: boolean;
     relatedPosts: Post[];
+    breadcrumbs: BreadcrumbItem[];
 }
 
 const ENABLE_DISCOVER_MODE = false;
@@ -179,36 +185,34 @@ const carouselPostMedia = computed(() => {
     </Head>
 
     <FrontLayout>
-        <!-- Back Button -->
-        <BackButton>
-            <template #append>
-                <!-- Type Badge -->
-                <div class="flex items-center justify-end gap-2">
-                    <Button
-                        @click="toggleLike"
-                        size="lg"
-                        :variant="isLiked ? 'default' : 'outline'"
-                        class="rounded-full !px-3"
-                    >
-                        <Heart
-                            :class="['h-5 w-5', isLiked ? 'fill-current' : '']"
-                        />
-                        <span class="hidden md:block">
-                            {{ isLiked ? 'Liked' : 'Like' }}
-                        </span>
-                    </Button>
-                    <Button
-                        @click="sharePost"
-                        size="lg"
-                        variant="outline"
-                        class="rounded-full !px-3"
-                    >
-                        <Share2 class="h-5 w-5" />
-                        <span class="hidden md:block"> Share </span>
-                    </Button>
-                </div>
-            </template>
-        </BackButton>
+        <!-- Breadcrumbs -->
+        <div class="border-b bg-gray-50/50 py-4 dark:bg-gray-900/20 flex justify-between items-center">
+            <Breadcrumbs :breadcrumbs="breadcrumbs" :is-back="true" />
+            <div class="flex items-center justify-end gap-2">
+                <Button
+                    @click="toggleLike"
+                    size="lg"
+                    :variant="isLiked ? 'default' : 'outline'"
+                    class="rounded-full !px-3"
+                >
+                    <Heart
+                        :class="['h-5 w-5', isLiked ? 'fill-current' : '']"
+                    />
+                    <span class="hidden md:block">
+                        {{ isLiked ? 'Liked' : 'Like' }}
+                    </span>
+                </Button>
+                <Button
+                    @click="sharePost"
+                    size="lg"
+                    variant="outline"
+                    class="rounded-full !px-3"
+                >
+                    <Share2 class="h-5 w-5" />
+                    <span class="hidden md:block"> Share </span>
+                </Button>
+            </div>
+        </div>
 
         <!-- Article Content -->
         <article class="container mx-auto max-w-3xl px-0 lg:px-4">

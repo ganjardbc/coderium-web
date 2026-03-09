@@ -23,45 +23,8 @@ class ClassroomController extends Controller
      */
     public function index()
     {
-        try {
-            $stats = [
-                'tracks' => Track::count(),
-                'levels' => Level::count(),
-                'modules' => Module::count(),
-                'lessons' => Lesson::count(),
-                'assessments' => Assessment::count(),
-                'enrollments' => TrackEnrollment::count(),
-                'certificates' => Certificate::count(),
-            ];
-
-            $recentTracks = Track::latest()->take(5)->get();
-            $recentEnrollments = TrackEnrollment::latest()->take(10)->get();
-
-            return Inertia::render('admin/classroom/Index', [
-                'stats' => $stats,
-                'recentTracks' => $recentTracks,
-                'recentEnrollments' => $recentEnrollments,
-            ]);
-        } catch (\Exception $e) {
-            // Log the error for debugging
-            \Log::error('Classroom index error: ' . $e->getMessage());
-
-            // Return a simple response for now
-            return Inertia::render('admin/classroom/Index', [
-                'stats' => [
-                    'tracks' => 0,
-                    'levels' => 0,
-                    'modules' => 0,
-                    'lessons' => 0,
-                    'assessments' => 0,
-                    'enrollments' => 0,
-                    'certificates' => 0,
-                ],
-                'recentTracks' => [],
-                'recentEnrollments' => [],
-                'error' => $e->getMessage(),
-            ]);
-        }
+        // Redirect to the new classroom course controller
+        return redirect()->route('admin.classroom.courses.index');
     }
 
     /**

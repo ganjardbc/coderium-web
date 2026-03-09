@@ -68,4 +68,40 @@ class TrackEnrollment extends Model
             'progress_percentage' => 100.00,
         ]);
     }
+
+    /**
+     * Get enrollment data in a unified format.
+     * Provides compatibility for unified enrollment APIs.
+     */
+    public function toUnifiedEnrollmentFormat(): array
+    {
+        return [
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'track_id' => $this->track_id,
+            'course_id' => null, // Track enrollments don't have course_id
+            'enrolled_at' => $this->enrolled_at,
+            'completed_at' => $this->completed_at,
+            'progress_percentage' => $this->progress_percentage,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'type' => 'track', // Identifier for enrollment type
+        ];
+    }
+
+    /**
+     * Scope to get active enrollments (not completed).
+     */
+    public function scopeActive($query)
+    {
+        return $query->whereNull('completed_at');
+    }
+
+    /**
+     * Scope to get completed enrollments.
+     */
+    public function scopeCompleted($query)
+    {
+        return $query->whereNotNull('completed_at');
+    }
 }

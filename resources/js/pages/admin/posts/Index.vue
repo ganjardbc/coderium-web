@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import DataTable, {
-    type Action,
     type Column,
 } from '@/components/DataTable.vue';
 import Searchbar from '@/components/Searchbar.vue';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { TrashIcon, EditIcon, PlusIcon, EyeIcon } from 'lucide-vue-next';
 
 interface Post {
     id: number;
@@ -120,17 +120,6 @@ const columns: Column<Post>[] = [
     { key: 'is_published', label: 'Status', align: 'left' },
     { key: 'published_at', label: 'Published', align: 'left' },
 ];
-
-const actions: Action<Post>[] = [
-    {
-        href: (post) => `/admin/posts/${post.slug}/edit`,
-        variant: 'outline',
-    },
-    {
-        onClick: (post) => deletePost(post),
-        variant: 'outline',
-    },
-];
 </script>
 
 <template>
@@ -145,19 +134,7 @@ const actions: Action<Post>[] = [
                 </div>
                 <Link href="/admin/posts/create">
                     <Button>
-                        <svg
-                            class="mr-2 h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 4v16m8-8H4"
-                            />
-                        </svg>
+                        <PlusIcon class="h-4 w-4" />
                         Create Post
                     </Button>
                 </Link>
@@ -177,7 +154,6 @@ const actions: Action<Post>[] = [
             <DataTable
                 :data="props.posts.data"
                 :columns="columns"
-                :actions="actions"
                 :pagination="props.posts"
                 empty-message="No posts found"
             >
@@ -298,6 +274,25 @@ const actions: Action<Post>[] = [
                                 : '-'
                         }}
                     </span>
+                </template>
+
+                <!-- Actions -->
+                <template #actions="{ row }">
+                    <div class="flex gap-2">
+                        <Link :href="`/admin/posts/${row.slug}`">
+                            <Button variant="outline">
+                                <EyeIcon class="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <Link :href="`/admin/posts/${row.slug}/edit`">
+                            <Button variant="outline">
+                                <EditIcon class="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <Button variant="outline" @click="deletePost(row)">
+                            <TrashIcon class="h-4 w-4" />
+                        </Button>
+                    </div>
                 </template>
             </DataTable>
         </div>

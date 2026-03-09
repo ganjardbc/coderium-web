@@ -11,29 +11,26 @@ use Illuminate\Validation\ValidationException;
 
 class EnrollmentService
 {
+    protected ConstraintEnforcementService $constraintService;
+
+    public function __construct(ConstraintEnforcementService $constraintService)
+    {
+        $this->constraintService = $constraintService;
+    }
+
     /**
      * Enroll a user in a track.
      *
      * @param User $user
      * @param Track $track
+     * @param bool $isAdminOverride
      * @return TrackEnrollment
      * @throws ValidationException
      */
-    public function enrollUser(User $user, Track $track): TrackEnrollment
+    public function enrollUser(User $user, Track $track, bool $isAdminOverride = false): TrackEnrollment
     {
-        // Check if user can enroll in tracks
-        if (!$user->canEnrollInTracks()) {
-            throw ValidationException::withMessages([
-                'user' => 'User does not have permission to enroll in tracks.',
-            ]);
-        }
-
-        // Check if track is published
-        if (!$track->is_published) {
-            throw ValidationException::withMessages([
-                'track' => 'Cannot enroll in unpublished track.',
-            ]);
-        }
+        // Enforce enrollment constraints
+        $this->constraintService->enforceTrackEnrollmentConstraints($user, $track, $isAdminOverride);
 
         // Check if user is already enrolled
         $existingEnrollment = TrackEnrollment::where('user_id', $user->id)
@@ -45,14 +42,6 @@ class EnrollmentService
                 'enrollment' => 'User is already enrolled in this track.',
             ]);
         }
-
-        // Check payment verification for premium tracks
-        if ($track->is_premium && !$track->isFree()) {
-            $this->verifyPaymentForPremiumTrack($user, $track);
-        }
-
-        // Check enrollment capacity
-        $this->checkEnrollmentCapacity($track);
 
         return DB::transaction(function () use ($user, $track) {
             $enrollment = TrackEnrollment::create([
@@ -271,6 +260,217 @@ class EnrollmentService
 
         // For now, return true for admin/instructor users, false for others
         return $user->hasInstructorPermissions();
+    }
+
+    /**
+     * Bulk enroll users in tracks with comprehensive validation.
+     *
+     * @param array $enrollments
+     * @return array
+     * @throws ValidationException
+     */
+    public function bulkEnrollUsers(array $enrollments): array
+    {
+        $results = [];
+        $errors = [];
+
+        // Validate all enrollments first
+        foreach ($enrollments as $index => $enrollment) {
+            try {
+                $this->validateBulkEnrollmentData($enrollment, $index);
+            } catch (ValidationException $e) {
+                $errors[] = [
+                    'index' => $index,
+                    'errors' => $e->errors(),
+                ];
+            }
+        }
+
+        if (!empty($errors)) {
+            throw ValidationException::withMessages([
+                'bulk_enrollment' => 'Validation failed for bulk enrollment.',
+                'enrollment_errors' => $errors,
+            ]);
+        }
+
+        return DB::transaction(function () use ($enrollments, &$results) {
+            foreach ($enrollments as $index => $enrollment) {
+                try {
+                    $user = User::findOrFail($enrollment['user_id']);
+                    $track = Track::findOrFail($enrollment['track_id']);
+
+                    $result = $this->enrollUser($user, $track);
+
+                    $results[] = [
+                        'index' => $index,
+                        'success' => true,
+                        'enrollment_id' => $result->id,
+                        'user_id' => $user->id,
+                        'track_id' => $track->id,
+                    ];
+                } catch (\Exception $e) {
+                    $results[] = [
+                        'index' => $index,
+                        'success' => false,
+                        'error' => $e->getMessage(),
+                        'user_id' => $enrollment['user_id'] ?? null,
+                        'track_id' => $enrollment['track_id'] ?? null,
+                    ];
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Bulk enrollment completed.',
+                'results' => $results,
+                'total_processed' => count($enrollments),
+                'successful' => count(array_filter($results, fn($r) => $r['success'])),
+                'failed' => count(array_filter($results, fn($r) => !$r['success'])),
+            ];
+        });
+    }
+
+    /**
+     * Bulk unenroll users from tracks.
+     *
+     * @param array $unenrollments
+     * @return array
+     * @throws ValidationException
+     */
+    public function bulkUnenrollUsers(array $unenrollments): array
+    {
+        $results = [];
+        $errors = [];
+
+        // Validate all unenrollments first
+        foreach ($unenrollments as $index => $unenrollment) {
+            try {
+                $this->validateBulkUnenrollmentData($unenrollment, $index);
+            } catch (ValidationException $e) {
+                $errors[] = [
+                    'index' => $index,
+                    'errors' => $e->errors(),
+                ];
+            }
+        }
+
+        if (!empty($errors)) {
+            throw ValidationException::withMessages([
+                'bulk_unenrollment' => 'Validation failed for bulk unenrollment.',
+                'unenrollment_errors' => $errors,
+            ]);
+        }
+
+        return DB::transaction(function () use ($unenrollments, &$results) {
+            foreach ($unenrollments as $index => $unenrollment) {
+                try {
+                    $user = User::findOrFail($unenrollment['user_id']);
+                    $track = Track::findOrFail($unenrollment['track_id']);
+
+                    $success = $this->unenrollUser($user, $track);
+
+                    $results[] = [
+                        'index' => $index,
+                        'success' => $success,
+                        'user_id' => $user->id,
+                        'track_id' => $track->id,
+                    ];
+                } catch (\Exception $e) {
+                    $results[] = [
+                        'index' => $index,
+                        'success' => false,
+                        'error' => $e->getMessage(),
+                        'user_id' => $unenrollment['user_id'] ?? null,
+                        'track_id' => $unenrollment['track_id'] ?? null,
+                    ];
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Bulk unenrollment completed.',
+                'results' => $results,
+                'total_processed' => count($unenrollments),
+                'successful' => count(array_filter($results, fn($r) => $r['success'])),
+                'failed' => count(array_filter($results, fn($r) => !$r['success'])),
+            ];
+        });
+    }
+
+    /**
+     * Validate bulk enrollment data structure.
+     *
+     * @param array $enrollment
+     * @param int $index
+     * @throws ValidationException
+     */
+    private function validateBulkEnrollmentData(array $enrollment, int $index): void
+    {
+        $requiredFields = ['user_id', 'track_id'];
+        $missingFields = [];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($enrollment[$field])) {
+                $missingFields[] = $field;
+            }
+        }
+
+        if (!empty($missingFields)) {
+            throw ValidationException::withMessages([
+                "enrollment_{$index}" => "Missing required fields: " . implode(', ', $missingFields),
+            ]);
+        }
+
+        // Validate that the entities exist
+        if (!User::where('id', $enrollment['user_id'])->exists()) {
+            throw ValidationException::withMessages([
+                "enrollment_{$index}" => "User with ID {$enrollment['user_id']} does not exist.",
+            ]);
+        }
+
+        if (!Track::where('id', $enrollment['track_id'])->exists()) {
+            throw ValidationException::withMessages([
+                "enrollment_{$index}" => "Track with ID {$enrollment['track_id']} does not exist.",
+            ]);
+        }
+    }
+
+    /**
+     * Validate bulk unenrollment data structure.
+     *
+     * @param array $unenrollment
+     * @param int $index
+     * @throws ValidationException
+     */
+    private function validateBulkUnenrollmentData(array $unenrollment, int $index): void
+    {
+        $requiredFields = ['user_id', 'track_id'];
+        $missingFields = [];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($unenrollment[$field])) {
+                $missingFields[] = $field;
+            }
+        }
+
+        if (!empty($missingFields)) {
+            throw ValidationException::withMessages([
+                "unenrollment_{$index}" => "Missing required fields: " . implode(', ', $missingFields),
+            ]);
+        }
+
+        // Validate that the entities exist
+        if (!User::where('id', $unenrollment['user_id'])->exists()) {
+            throw ValidationException::withMessages([
+                "unenrollment_{$index}" => "User with ID {$unenrollment['user_id']} does not exist.",
+            ]);
+        }
+
+        if (!Track::where('id', $unenrollment['track_id'])->exists()) {
+            throw ValidationException::withMessages([
+                "unenrollment_{$index}" => "Track with ID {$unenrollment['track_id']} does not exist.",
+            ]);
+        }
     }
 
     /**
