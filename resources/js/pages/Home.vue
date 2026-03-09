@@ -93,10 +93,10 @@ const handleClearSearch = () => {
 
     <FrontLayout>
         <!-- Main Content: Two Column Layout (Medium-style) -->
-        <section class="py-8">
+        <section class="py-4 lg:py-8">
             <div class="container mx-auto max-w-6xl px-4">
                 <!-- Two Column Layout -->
-                <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 lg:gap-8">
                     <!-- Main Column: Posts List -->
                     <div class="flex-1 space-y-6">
                         <!-- Hero Section -->
@@ -122,7 +122,7 @@ const handleClearSearch = () => {
 
                         <div
                             v-if="recentPosts.data.length > 0"
-                            class="grid grid-cols-1 gap-8"
+                            class="grid grid-cols-1 gap-6 lg:gap-8"
                         >
                             <PostCard
                                 v-for="post in recentPosts.data"
@@ -141,16 +141,12 @@ const handleClearSearch = () => {
                         </div>
 
                         <!-- Pagination -->
-                        <div
+                        <Pagination
                             v-if="recentPosts.last_page > 1 && ENABLE_POST_PAGINATION"
-                            class="mt-8"
-                        >
-                            <Pagination
-                                :current-page="recentPosts.current_page"
-                                :last-page="recentPosts.last_page"
-                                :links="recentPosts.links"
-                            />
-                        </div>
+                            :current-page="recentPosts.current_page"
+                            :last-page="recentPosts.last_page"
+                            :links="recentPosts.links"
+                        />
                     </div>
 
                     <!-- Sidebar Column: Sticky Content -->
