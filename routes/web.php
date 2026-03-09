@@ -7,7 +7,10 @@ use Laravel\Fortify\Features;
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // Search
-Route::get('/search', [App\Http\Controllers\SearchController::class, 'index'])->name('search');
+// Route::get('/search', [App\Http\Controllers\SearchController::class, 'index'])->name('search');
+
+// Post List
+Route::get('/explore', [App\Http\Controllers\SearchController::class, 'index'])->name('postlists.index');
 
 // Public playlists
 Route::get('/playlists', [App\Http\Controllers\PlaylistController::class, 'index'])->name('playlists.index');

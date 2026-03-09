@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
-import { XIcon, Search as SearchIcon, FileText, Image as ImageIcon, Video, SlidersHorizontal } from 'lucide-vue-next';
+import { XIcon, Search as SearchIcon, FileText, Image as ImageIcon, Video, SlidersHorizontal, X as CloseIcon } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import PostCard from '@/components/PostCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
-import { useDebounceFn } from '@/lib/utils';
 import BackButton from '@/components/BackButton.vue';
 
 interface Post {
@@ -77,7 +76,7 @@ const sortOptions = [
 ];
 
 const performSearch = () => {
-    router.get('/search', {
+    router.get('/explore', {
         q: searchQuery.value,
         type: selectedType.value,
         sort: selectedSort.value,
@@ -104,12 +103,8 @@ const clearSearch = () => {
     performSearch();
 };
 
-const debouncedHandleSearch = useDebounceFn(() => {
-    performSearch();
-}, 500);
-
 const handleSearch = () => {
-    debouncedHandleSearch();
+    performSearch();
 };
 </script>
 
@@ -132,30 +127,32 @@ const handleSearch = () => {
 
         <!-- Filters & Results -->
         <section class="py-8">
-            <div class="container mx-auto px-4">
+            <div class="container mx-auto px-4 space-y-6">
                 <!-- Search Posts -->
-                <div class="mb-8">
+                <div class="w-full flex-1 flex flex-col md:flex-row gap-2">
                     <Searchbar
                         v-model="searchQuery"
                         placeholder="Search posts..."
+                        class="w-full"
                         @search="handleSearch"
                         @clear="clearSearch"
                     />
                     <Button
                         @click="showFilters = !showFilters"
                         variant="outline"
-                        class="w-full md:hidden mt-4"
+                        class="w-full md:w-[94px] 2xl:hidden"
                     >
-                        <SlidersHorizontal class="h-4 w-4" />
-                        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+                        <CloseIcon v-if="showFilters" class="h-4 w-4" />
+                        <SlidersHorizontal v-else class="h-4 w-4" />
+                        {{ showFilters ? 'Hide' : 'Filters' }}
                     </Button>
                 </div>
 
-                <div class="grid gap-8 lg:grid-cols-[310px_1fr]">
+                <div class="grid gap-6 2xl:grid-cols-[310px_1fr]">
                     <!-- Sidebar Filters -->
                     <aside
                         class="flex-1 border rounded-lg p-4 h-fit"
-                        :class="['space-y-4', showFilters ? 'block' : 'hidden md:block']"
+                        :class="['space-y-4', showFilters ? 'block' : 'hidden 2xl:block']"
                     >
                         <div class="flex justify-between items-center border-b pb-4">
                             <div class="text-md font-semibold">
@@ -215,7 +212,7 @@ const handleSearch = () => {
                     <div class="flex-1">
                         <!-- Posts Grid -->
                         <div v-if="posts.data.length > 0" class="space-y-6">
-                            <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                                 <PostCard
                                     v-for="post in posts.data"
                                     :key="post.id"

@@ -91,7 +91,7 @@ class SearchController extends Controller
                 ->count(),
         ];
 
-        return Inertia::render('Search', [
+        return Inertia::render('PostLists', [
             'posts' => $posts,
             'counts' => $counts,
             'filters' => [

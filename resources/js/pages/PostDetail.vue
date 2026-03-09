@@ -40,6 +40,8 @@ interface Props {
     relatedPosts: Post[];
 }
 
+const ENABLE_DISCOVER_MODE = false;
+
 const props = defineProps<Props>();
 
 const [emblaRef, emblaApi] = emblaCarouselVue();
@@ -334,7 +336,7 @@ const carouselPostMedia = computed(() => {
                             <Link
                                 v-for="tag in getTags()"
                                 :key="tag"
-                                :href="`/search?q=${encodeURIComponent(tag)}&sort=recent&type=all`"
+                                :href="`/explore?q=${encodeURIComponent(tag)}&sort=recent&type=all`"
                                 class="inline-flex items-center rounded-full border px-3 py-1 text-sm transition-colors hover:border-primary hover:bg-accent"
                             >
                                 <Tag class="h-4 w-4 text-muted-foreground mr-2" />
@@ -384,7 +386,7 @@ const carouselPostMedia = computed(() => {
             <div class="container mx-auto px-4">
                 <div class="mx-auto w-full">
                     <h2 class="mb-4 text-2xl font-bold">Related Posts</h2>
-                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
                         <PostCard
                             v-for="relatedPost in props.relatedPosts"
                             :key="relatedPost.id"
@@ -397,7 +399,7 @@ const carouselPostMedia = computed(() => {
         </section>
 
         <!-- Related Actions -->
-        <DiscoverMode />
+        <DiscoverMode v-if="ENABLE_DISCOVER_MODE" />
     </FrontLayout>
 </template>
 

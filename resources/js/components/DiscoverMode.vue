@@ -12,7 +12,7 @@ import { Link } from '@inertiajs/vue3';
                 </p>
                 <div class="flex items-center justify-center gap-4">
                     <Button as-child variant="default">
-                        <Link href="/search">
+                        <Link href="/explore">
                             Explore Posts
                         </Link>
                     </Button>

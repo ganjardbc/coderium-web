@@ -31,9 +31,9 @@ const getTitle = () => {
 <template>
     <Button
         @click="toggleTheme"
-        variant="ghost"
-        size="icon"
-        class="rounded-full"
+        variant="outline"
+        size="lg"
+        class="w-[40px] h-[40px]"
         :title="getTitle()"
     >
         <component :is="getCurrentIcon()" class="h-5 w-5" />

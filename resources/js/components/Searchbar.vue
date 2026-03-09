@@ -49,12 +49,6 @@ const handleClear = () => {
     emit('update:modelValue', '');
     emit('clear');
 };
-
-const handleKeyup = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-        handleSearch();
-    }
-};
 </script>
 
 <template>
@@ -69,7 +63,6 @@ const handleKeyup = (event: KeyboardEvent) => {
                 v-model="searchQuery"
                 required
                 @input="handleInput"
-                @keyup="handleKeyup"
             />
             <Button
                 v-if="showClearButton && searchQuery"

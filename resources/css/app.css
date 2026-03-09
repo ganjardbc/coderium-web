@@ -316,3 +316,84 @@
     max-width: 100%;
     overflow: hidden;
 }
+
+/* BEM Classes for FrontLayout */
+.layout {
+    @apply min-h-screen bg-background;
+}
+
+.layout__grid {
+    @apply grid grid-cols-1 lg:grid-cols-[300px_1fr];
+}
+
+.layout__sidebar {
+    @apply flex-1 sticky z-[100] top-0 w-full h-auto lg:h-screen bg-white dark:bg-black border-b lg:border-b-0 border-r-0 lg:border-r;
+}
+
+.layout__sidebar-inner {
+    @apply w-full h-full flex flex-row lg:flex-col justify-between items-center;
+}
+
+.layout__sidebar-header {
+    @apply flex items-center justify-center w-auto lg:w-full h-16 px-4;
+}
+
+.layout__logo-wrapper {
+    @apply w-[124px] mx-auto flex items-center gap-2;
+}
+
+.layout__logo {
+    @apply fill-current text-[var(--foreground)] dark:text-white;
+}
+
+.layout__sidebar-content {
+    @apply fixed lg:relative w-full h-16 lg:h-auto bottom-0 flex-1 px-4 lg:py-0 overflow-y-auto bg-white dark:bg-black border-t lg:border-none;
+}
+
+.layout__menu {
+    @apply flex flex-row lg:flex-col items-center lg:items-start gap-2 w-full h-full;
+}
+
+.layout__menu-item {
+    @apply flex gap-4 justify-center lg:justify-start items-center px-3 w-full h-[48px] rounded-lg transition-colors;
+}
+
+.layout__menu-item--active {
+    @apply bg-primary/10 text-primary;
+}
+
+.layout__menu-item--inactive {
+    @apply text-muted-foreground hover:bg-accent hover:text-foreground;
+}
+
+.layout__menu-icon {
+    @apply w-[24px] text-center;
+}
+
+.layout__menu-label {
+    @apply flex-1 text-base font-semibold hidden lg:block;
+}
+
+.layout__sidebar-footer {
+    @apply w-auto lg:w-full flex justify-center gap-4 px-4 py-0 lg:py-4;
+}
+
+.layout__main {
+    @apply flex-1 pb-16 lg:pb-0;
+}
+
+.layout__content {
+    @apply container mx-auto;
+}
+
+.layout__footer {
+    @apply border-t bg-card/50 py-8;
+}
+
+.layout__footer-content {
+    @apply container mx-auto px-4;
+}
+
+.layout__footer-text {
+    @apply text-sm text-center text-muted-foreground;
+}

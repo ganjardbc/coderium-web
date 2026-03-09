@@ -110,7 +110,7 @@ defineProps<Props>();
                             Posts will appear here once they are added to the playlist.
                         </p>
                         <Button as-child>
-                            <Link href="/search">
+                            <Link href="/explore">
                                 Browse All Posts
                             </Link>
                         </Button>

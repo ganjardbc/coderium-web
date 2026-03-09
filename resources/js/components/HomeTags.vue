@@ -26,7 +26,7 @@ defineProps<{
                     v-for="tag in popularTags"
                     :key="tag.name"
                     :as="Link"
-                    :href="`/search?q=${encodeURIComponent(tag.name)}&sort=recent&type=all`"
+                    :href="`/explore?q=${encodeURIComponent(tag.name)}&sort=recent&type=all`"
                     variant="outline"
                     size="lg"
                     class="group relative overflow-hidden rounded-full transition-all hover:scale-105"

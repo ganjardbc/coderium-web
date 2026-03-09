@@ -60,10 +60,10 @@ interface Props {
 }
 
 const ENABLE_PLAYLIST = true;
-const ENABLE_POST_SEARCH = true;
+const ENABLE_POST_SEARCH = false;
 const ENABLE_POST_PAGINATION = true;
 const ENABLE_POPULAR_TAGS = true;
-const ENABLE_DISCOVER_MODE = true;
+const ENABLE_DISCOVER_MODE = false;
 
 const props = defineProps<Props>();
 
@@ -72,8 +72,6 @@ const searchQuery = ref(props.filters?.search || '');
 const handleSearch = (query: string) => {
     router.get('/', {
         q: query || undefined,
-        // sort: 'recent',
-        // type: 'all',
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -94,11 +92,11 @@ const handleClearSearch = () => {
     <FrontLayout>
         <!-- Main Content: Two Column Layout (Medium-style) -->
         <section class="py-4 lg:py-8">
-            <div class="container mx-auto max-w-6xl px-4">
+            <div class="container px-4">
                 <!-- Two Column Layout -->
-                <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 lg:gap-8">
-                    <!-- Main Column: Posts List -->
-                    <div class="flex-1 space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
+                    <!-- Main Column: Posts List (Second on mobile, first on desktop) -->
+                    <div class="flex-1 max-w-xl mx-auto space-y-6 ">
                         <!-- Hero Section -->
                         <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12 rounded-lg">
                             <div class="container mx-auto px-4 text-center">
@@ -122,7 +120,7 @@ const handleClearSearch = () => {
 
                         <div
                             v-if="recentPosts.data.length > 0"
-                            class="grid grid-cols-1 gap-6 lg:gap-8"
+                            class="grid grid-cols-1 gap-6"
                         >
                             <PostCard
                                 v-for="post in recentPosts.data"
@@ -149,9 +147,9 @@ const handleClearSearch = () => {
                         />
                     </div>
 
-                    <!-- Sidebar Column: Sticky Content -->
-                    <aside class="flex-1">
-                        <div class="sticky top-22 space-y-6">
+                    <!-- Sidebar Column: Sticky Content (First on mobile, second on desktop) -->
+                    <aside class="flex-1 max-w-xl mx-auto hidden xl:block">
+                        <div class="xl:sticky xl:top-8 space-y-6">
                             <!-- Featured Playlists Card -->
                             <div
                                 v-if="ENABLE_PLAYLIST && playlists.length > 0"
@@ -189,7 +187,7 @@ const handleClearSearch = () => {
                                         v-for="tag in popularTags.slice(0, 12)"
                                         :key="tag.name"
                                         :as="Link"
-                                        :href="`/search?q=${encodeURIComponent(tag.name)}&sort=recent&type=all`"
+                                        :href="`/explore?q=${encodeURIComponent(tag.name)}&sort=recent&type=all`"
                                         variant="outline"
                                         size="sm"
                                         class="group rounded-full text-xs"
@@ -203,7 +201,7 @@ const handleClearSearch = () => {
                                      <Button
                                         v-if="popularTags.length > 4"
                                         :as="Link"
-                                        href="/search"
+                                        href="/explore"
                                         variant="outline"
                                         size="sm"
                                         class="group rounded-full text-xs"

@@ -160,7 +160,7 @@ const handleClearSearch = () => {
                         <div class="flex-[0_0_auto] min-w-0">
                             <Button
                                 :as="Link"
-                                :href="`/search?q=${props.filters?.search || ''}&sort=${props.filters?.sort || ''}&type=all`"
+                                :href="`/explore?q=${props.filters?.search || ''}&sort=${props.filters?.sort || ''}&type=all`"
                                 size="lg"
                                 variant="outline"
                                 class="flex flex-col !py-6 !min-w-[310px] !max-w-[310px] h-full bg-gray-50 dark:bg-gray-800"
