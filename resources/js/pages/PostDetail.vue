@@ -231,16 +231,6 @@ const carouselPostMedia = computed(() => {
             >
                 <div ref="emblaRef" class="h-full">
                     <div class="flex h-full touch-pan-y">
-                        <!-- <div
-                            v-if="post.cover"
-                            class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
-                        >
-                            <img
-                                :src="post.cover"
-                                :alt="post.title"
-                                class="max-w-full h-full object-contain"
-                            />
-                        </div> -->
                         <div
                             v-for="(media, index) in carouselPostMedia"
                             :key="index"
@@ -283,7 +273,7 @@ const carouselPostMedia = computed(() => {
                 <!-- Dot Indicators -->
                 <div v-if="carouselPostMedia.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2">
                     <button
-                        v-for="(_, index) in post.media"
+                        v-for="(_, index) in carouselPostMedia"
                         :key="index"
                         @click="goToImage(index)"
                         :class="[
