@@ -134,6 +134,24 @@ const showPostCover = computed(() => {
     const listOfTypes = ['article', 'stack_gallery'];
     return listOfTypes.includes(props.post.type) && !!props.post.cover;
 });
+
+const carouselPostMedia = computed(() => {
+    let listOfMedia = props.post.media || [];
+
+    if (props.post.cover) {
+        const mediaCover: Media = {
+            id: 0,
+            url: props.post.cover,
+            type: 'image',
+        };
+        listOfMedia = [
+            mediaCover,
+            ...listOfMedia,
+        ]
+    }
+
+    return listOfMedia;
+});
 </script>
 
 <template>
@@ -208,12 +226,12 @@ const showPostCover = computed(() => {
 
             <!-- Carousel: Multiple Images -->
             <div
-                v-if="post.type === 'carousel' && post.media.length > 0"
+                v-if="post.type === 'carousel' && carouselPostMedia.length > 0"
                 class="relative overflow-hidden"
             >
                 <div ref="emblaRef" class="h-full">
                     <div class="flex h-full touch-pan-y">
-                        <div
+                        <!-- <div
                             v-if="post.cover"
                             class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
                         >
@@ -222,9 +240,9 @@ const showPostCover = computed(() => {
                                 :alt="post.title"
                                 class="max-w-full h-full object-contain"
                             />
-                        </div>
+                        </div> -->
                         <div
-                            v-for="(media, index) in post.media"
+                            v-for="(media, index) in carouselPostMedia"
                             :key="index"
                             class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
                         >
@@ -239,7 +257,7 @@ const showPostCover = computed(() => {
 
                 <!-- Navigation Arrows -->
                 <Button
-                    v-if="post.media.length > 1"
+                    v-if="carouselPostMedia.length > 1"
                     @click="prevImage"
                     :disabled="currentImageIndex === 0"
                     variant="default"
@@ -248,9 +266,9 @@ const showPostCover = computed(() => {
                     <ChevronLeft class="h-5 w-5" />
                 </Button>
                 <Button
-                    v-if="post.media.length > 1"
+                    v-if="carouselPostMedia.length > 1"
                     @click="nextImage"
-                    :disabled="currentImageIndex === post.media.length - 1"
+                    :disabled="currentImageIndex === carouselPostMedia.length - 1"
                     variant="default"
                     class="absolute right-4 bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
                 >
@@ -259,11 +277,11 @@ const showPostCover = computed(() => {
 
                 <!-- Image Counter -->
                 <div class="absolute top-2 right-2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur-sm">
-                    {{ currentImageIndex + 1 }} / {{ post.media.length }}
+                    {{ currentImageIndex + 1 }} / {{ carouselPostMedia.length }}
                 </div>
 
                 <!-- Dot Indicators -->
-                <div v-if="post.media.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2">
+                <div v-if="carouselPostMedia.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2">
                     <button
                         v-for="(_, index) in post.media"
                         :key="index"
