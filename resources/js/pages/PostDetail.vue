@@ -131,7 +131,7 @@ const getTags = () => {
 };
 
 const showPostCover = computed(() => {
-    const listOfTypes = ['article', 'stack_gallery'];
+    const listOfTypes = ['article'];
     return listOfTypes.includes(props.post.type) && !!props.post.cover;
 });
 
@@ -304,11 +304,11 @@ const carouselPostMedia = computed(() => {
 
                         <!-- Stacked Gallery -->
                         <div
-                            v-if="post.type === 'stack_gallery' && post.media.length > 0"
+                            v-if="post.type === 'stack_gallery' && carouselPostMedia.length > 0"
                             class="w-full space-y-5"
                         >
                             <div
-                                v-for="(media, index) in post.media"
+                                v-for="(media, index) in carouselPostMedia"
                                 :key="index"
                                 class="overflow-hidden rounded-lg border"
                             >
@@ -375,26 +375,6 @@ const carouselPostMedia = computed(() => {
                             </div>
                         </div>
                     </div>
-
-                    <!-- Action Buttons -->
-                    <!-- <div class="mt-8 flex items-center gap-3 border-t pt-6">
-                        <Button
-                            @click="toggleLike"
-                            :variant="isLiked ? 'default' : 'outline'"
-                            class="rounded-full"
-                        >
-                            <Heart :class="['h-5 w-5', isLiked ? 'fill-current' : '']" />
-                            <span>{{ isLiked ? 'Liked' : 'Like' }}</span>
-                        </Button>
-                        <Button
-                            @click="sharePost"
-                            variant="outline"
-                            class="rounded-full"
-                        >
-                            <Share2 class="h-5 w-5" />
-                            <span>Share</span>
-                        </Button>
-                    </div> -->
                 </div>
             </div>
         </article>
