@@ -63,7 +63,7 @@ interface Props {
 const ENABLE_PLAYLIST = true;
 const ENABLE_RECENT_POSTS = true;
 const ENABLE_POPULAR_POSTS = true;
-const ENABLE_OLDEST_POSTS = true;
+const ENABLE_OLDEST_POSTS = false;
 const ENABLE_POPULAR_TAGS = true;
 const ENABLE_DISCOVER_MODE = false;
 

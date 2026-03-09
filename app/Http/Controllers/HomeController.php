@@ -45,7 +45,7 @@ class HomeController extends Controller
                 });
             })
             ->orderBy('published_at', 'desc')
-            ->paginate(5)
+            ->paginate(8)
             ->withQueryString();
 
         // Get popular published posts with pagination and search
@@ -61,7 +61,7 @@ class HomeController extends Controller
                 });
             })
             ->orderBy('views_count', 'desc')
-            ->paginate(5)
+            ->paginate(8)
             ->withQueryString();
 
         // Get oldest published posts with pagination and search
@@ -77,7 +77,7 @@ class HomeController extends Controller
                 });
             })
             ->orderBy('published_at', 'asc')
-            ->paginate(5)
+            ->paginate(8)
             ->withQueryString();
 
         // Get popular tags (extract from posts' tags array and count occurrences)
