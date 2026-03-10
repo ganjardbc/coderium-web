@@ -33,7 +33,7 @@ const getTitle = () => {
         @click="toggleTheme"
         variant="outline"
         size="lg"
-        class="w-[40px] h-[40px]"
+        class="w-[40px] h-[40px] rounded-full"
         :title="getTitle()"
     >
         <component :is="getCurrentIcon()" class="h-5 w-5" />
