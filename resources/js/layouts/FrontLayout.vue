@@ -94,7 +94,7 @@ const listOfMenus = computed(() => {
                             href="/admin/dashboard"
                             variant="default"
                             size="lg"
-                            class="w-[40px] h-[40px]"
+                            class="w-[40px] h-[40px] rounded-full"
                         >
                             <LayoutDashboardIcon class="inline-block h-4 w-4" />
                         </Button>
@@ -104,7 +104,7 @@ const listOfMenus = computed(() => {
                             href="/login"
                             variant="default"
                             size="lg"
-                            class="w-[40px] h-[40px]"
+                            class="w-[40px] h-[40px] rounded-full"
                         >
                             <LogIn class="inline-block h-4 w-4" />
                         </Button>
