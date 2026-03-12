@@ -92,7 +92,7 @@ const handleClearSearch = () => {
     <FrontLayout>
         <!-- Main Content: Two Column Layout (Medium-style) -->
         <section class="py-4 lg:py-8">
-            <div class="container px-4">
+            <div class="w-full px-4">
                 <!-- Two Column Layout -->
                 <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
                     <!-- Main Column: Posts List (Second on mobile, first on desktop) -->

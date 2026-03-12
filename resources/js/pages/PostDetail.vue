@@ -268,12 +268,12 @@ const carouselPostMedia = computed(() => {
                 </Button>
 
                 <!-- Image Counter -->
-                <div class="absolute top-2 right-2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur-sm">
+                <div class="absolute top-2 right-2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur-md shadow-lg shadow-inner-lg">
                     {{ currentImageIndex + 1 }} / {{ carouselPostMedia.length }}
                 </div>
 
                 <!-- Dot Indicators -->
-                <div v-if="carouselPostMedia.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2">
+                <div v-if="carouselPostMedia.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2 backdrop-blur-sm rounded-full px-3 py-2 bg-black/50 shadow-lg shadow-inner-lg">
                     <button
                         v-for="(_, index) in carouselPostMedia"
                         :key="index"
@@ -307,12 +307,12 @@ const carouselPostMedia = computed(() => {
                         <!-- Stacked Gallery -->
                         <div
                             v-if="post.type === 'stack_gallery' && carouselPostMedia.length > 0"
-                            class="w-full space-y-5"
+                            class="w-full rounded-lg border overflow-hidden"
                         >
                             <div
                                 v-for="(media, index) in carouselPostMedia"
                                 :key="index"
-                                class="overflow-hidden rounded-lg border"
+                                class="overflow-hidden"
                             >
                                 <img
                                     :src="media.url"

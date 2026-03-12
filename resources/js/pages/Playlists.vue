@@ -6,7 +6,7 @@ import FrontLayout from '@/layouts/FrontLayout.vue';
 import PlaylistCard from '@/components/PlaylistCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import Searchbar from '@/components/Searchbar.vue';
-import BackButton from '@/components/BackButton.vue';
+// import BackButton from '@/components/BackButton.vue';
 
 interface Playlist {
     id: number;
@@ -63,7 +63,7 @@ const handleClearSearch = () => {
 
     <FrontLayout>
         <!-- Breadcrumbs -->
-        <BackButton />
+        <!-- <BackButton /> -->
 
         <!-- Header -->
         <section class="border-b bg-gradient-to-b from-card/50 to-background py-8">
@@ -76,8 +76,8 @@ const handleClearSearch = () => {
         </section>
 
         <!-- Playlists Grid -->
-        <section class="py-8">
-            <div class="container mx-auto px-4">
+        <section class="w-full py-8">
+            <div class="max-w-6xl mx-auto px-4">
                 <!-- Search Playlists -->
                 <div class="mb-8">
                     <Searchbar

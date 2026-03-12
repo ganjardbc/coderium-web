@@ -48,37 +48,37 @@ class HomeController extends Controller
             ->paginate(8)
             ->withQueryString();
 
-        // Get popular published posts with pagination and search
-        $popularPosts = Post::query()
-            ->where('is_published', true)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('subtitle', 'like', "%{$search}%")
-                        ->orWhere('content', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('views_count', 'desc')
-            ->paginate(8)
-            ->withQueryString();
+        // // Get popular published posts with pagination and search
+        // $popularPosts = Post::query()
+        //     ->where('is_published', true)
+        //     ->whereNotNull('published_at')
+        //     ->where('published_at', '<=', now())
+        //     ->when($search, function ($query, $search) {
+        //         $query->where(function ($q) use ($search) {
+        //             $q->where('title', 'like', "%{$search}%")
+        //                 ->orWhere('subtitle', 'like', "%{$search}%")
+        //                 ->orWhere('content', 'like', "%{$search}%");
+        //         });
+        //     })
+        //     ->orderBy('views_count', 'desc')
+        //     ->paginate(8)
+        //     ->withQueryString();
 
-        // Get oldest published posts with pagination and search
-        $oldestPosts = Post::query()
-            ->where('is_published', true)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('subtitle', 'like', "%{$search}%")
-                        ->orWhere('content', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('published_at', 'asc')
-            ->paginate(8)
-            ->withQueryString();
+        // // Get oldest published posts with pagination and search
+        // $oldestPosts = Post::query()
+        //     ->where('is_published', true)
+        //     ->whereNotNull('published_at')
+        //     ->where('published_at', '<=', now())
+        //     ->when($search, function ($query, $search) {
+        //         $query->where(function ($q) use ($search) {
+        //             $q->where('title', 'like', "%{$search}%")
+        //                 ->orWhere('subtitle', 'like', "%{$search}%")
+        //                 ->orWhere('content', 'like', "%{$search}%");
+        //         });
+        //     })
+        //     ->orderBy('published_at', 'asc')
+        //     ->paginate(8)
+        //     ->withQueryString();
 
         // Get popular tags (extract from posts' tags array and count occurrences)
         $allTags = Post::query()
@@ -116,8 +116,8 @@ class HomeController extends Controller
         return Inertia::render('Home', [
             'playlists' => $playlists,
             'recentPosts' => $recentPosts,
-            'popularPosts' => $popularPosts,
-            'oldestPosts' => $oldestPosts,
+            // 'popularPosts' => $popularPosts,
+            // 'oldestPosts' => $oldestPosts,
             'popularTags' => $popularTags,
             'filters' => [
                 'search' => $search,

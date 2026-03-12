@@ -51,7 +51,7 @@ defineProps<Props>();
 
         <!-- Playlist Header -->
         <section class="relative border-b w-full">
-            <div class="relative container h-full px-4 py-8">
+            <div class="relative container mx-auto h-full px-4 py-8">
                 <div class="w-full flex flex-col md:flex-row-reverse items-center gap-8">
                     <!-- Playlist Cover -->
                     <img

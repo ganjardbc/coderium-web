@@ -3,11 +3,11 @@ import { ref, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import { XIcon, Search as SearchIcon, FileText, Image as ImageIcon, Video, SlidersHorizontal, X as CloseIcon } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
-import PostCard from '@/components/PostCard.vue';
+import PostGridCard from '@/components/PostGridCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
-import BackButton from '@/components/BackButton.vue';
+// import BackButton from '@/components/BackButton.vue';
 
 interface Post {
     id: number;
@@ -113,10 +113,10 @@ const handleSearch = () => {
 
     <FrontLayout>
         <!-- Breadcrumbs -->
-        <BackButton />
+        <!-- <BackButton /> -->
 
         <!-- Header -->
-        <section class="border-b bg-gradient-to-b from-card/50 to-background py-8">
+        <section class="border-b bg-gradient-to-b from-card/50 to-background py-8 backdrop-blur-md bg-black/40 shadow-lg shadow-inner-lg">
             <div class="container mx-auto px-4">
                 <h1 class="text-2xl md:text-3xl font-bold text-center">Explore Posts</h1>
                 <p class="text-md md:text-lg text-muted-foreground text-center mt-2">
@@ -126,8 +126,8 @@ const handleSearch = () => {
         </section>
 
         <!-- Filters & Results -->
-        <section class="py-8">
-            <div class="container mx-auto px-4 space-y-6">
+        <section class="w-full py-8">
+            <div class="max-w-6xl mx-auto px-4 space-y-6">
                 <!-- Search Posts -->
                 <div class="w-full flex-1 flex flex-col md:flex-row gap-2">
                     <Searchbar
@@ -140,7 +140,7 @@ const handleSearch = () => {
                     <Button
                         @click="showFilters = !showFilters"
                         variant="outline"
-                        class="w-full md:w-[94px] 2xl:hidden"
+                        class="w-full md:w-[94px]"
                     >
                         <CloseIcon v-if="showFilters" class="h-4 w-4" />
                         <SlidersHorizontal v-else class="h-4 w-4" />
@@ -148,11 +148,11 @@ const handleSearch = () => {
                     </Button>
                 </div>
 
-                <div class="grid gap-6 2xl:grid-cols-[310px_1fr]">
+                <div class="grid gap-6 grid-cols-1">
                     <!-- Sidebar Filters -->
                     <aside
                         class="flex-1 border rounded-lg p-4 h-fit"
-                        :class="['space-y-4', showFilters ? 'block' : 'hidden 2xl:block']"
+                        :class="['space-y-4', showFilters ? 'block' : 'hidden']"
                     >
                         <div class="flex justify-between items-center border-b pb-4">
                             <div class="text-md font-semibold">
@@ -212,8 +212,9 @@ const handleSearch = () => {
                     <div class="flex-1">
                         <!-- Posts Grid -->
                         <div v-if="posts.data.length > 0" class="space-y-6">
-                            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                <PostCard
+                            <!-- grid-cols-2 xl:grid-cols-3 -->
+                            <div class="grid gap-2 grid-cols-2 md:grid-cols-3">
+                                <PostGridCard
                                     v-for="post in posts.data"
                                     :key="post.id"
                                     :post="post"
