@@ -13,16 +13,16 @@ services:
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_PORT=3306
-      - DB_DATABASE=db_coderium
-      - DB_USERNAME=root
-      - DB_PASSWORD=password
+      - DB_DATABASE=coderium
+      - DB_USERNAME=coderium
+      - DB_PASSWORD=coderium123
     depends_on:
       - node
   db:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_DATABASE: db_coderium
+      MYSQL_DATABASE: coderium
       MYSQL_ROOT_PASSWORD: password
     volumes:
       - db_data:/var/lib/mysql
