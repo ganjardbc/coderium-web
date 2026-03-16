@@ -120,8 +120,6 @@ onUnmounted(() => {
     </AppLayout>
 </template> -->
 
-<template>
-    <div>
-        disabled for now
-    </div>
-</template>
+<script setup lang="ts">
+// this component is currently disabled until we implement the backend logic for it
+</script>
