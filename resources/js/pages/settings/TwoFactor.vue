@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import TwoFactorRecoveryCodes from '@/components/TwoFactorRecoveryCodes.vue';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal.vue';
@@ -36,9 +36,9 @@ const showSetupModal = ref<boolean>(false);
 onUnmounted(() => {
     clearTwoFactorAuthData();
 });
-</script>
+</script> -->
 
-<template>
+<!-- <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Two-Factor Authentication" />
         <SettingsLayout>
@@ -118,4 +118,10 @@ onUnmounted(() => {
             </div>
         </SettingsLayout>
     </AppLayout>
+</template> -->
+
+<template>
+    <div>
+        disabled for now
+    </div>
 </template>

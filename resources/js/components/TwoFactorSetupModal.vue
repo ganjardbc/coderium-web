@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import AlertError from '@/components/AlertError.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -107,9 +107,9 @@ watch(
         }
     },
 );
-</script>
+</script> -->
 
-<template>
+<!-- <template>
     <Dialog :open="isOpen" @update:open="isOpen = $event">
         <DialogContent class="sm:max-w-md">
             <DialogHeader class="flex items-center justify-center">
@@ -297,4 +297,10 @@ watch(
             </div>
         </DialogContent>
     </Dialog>
+</template> -->
+
+<template>
+    <div>
+        disabled for now
+    </div>
 </template>

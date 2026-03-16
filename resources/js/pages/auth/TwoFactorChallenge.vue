@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,9 +46,9 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
 
 const code = ref<number[]>([]);
 const codeValue = computed<string>(() => code.value.join(''));
-</script>
+</script> -->
 
-<template>
+<!-- <template>
     <AuthLayout
         :title="authConfigContent.title"
         :description="authConfigContent.description"
@@ -138,4 +138,10 @@ const codeValue = computed<string>(() => code.value.join(''));
             </template>
         </div>
     </AuthLayout>
+</template> -->
+
+<template>
+    <div>
+        disabled for now
+    </div>
 </template>

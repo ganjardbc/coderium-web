@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import AlertError from '@/components/AlertError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,9 +36,9 @@ onMounted(async () => {
         await fetchRecoveryCodes();
     }
 });
-</script>
+</script> -->
 
-<template>
+<!-- <template>
     <Card class="w-full">
         <CardHeader>
             <CardTitle class="flex gap-3">
@@ -120,4 +120,10 @@ onMounted(async () => {
             </div>
         </CardContent>
     </Card>
+</template> -->
+
+<template>
+    <div>
+        disabled for now
+    </div>
 </template>
