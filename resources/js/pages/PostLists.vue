@@ -7,7 +7,6 @@ import PostGridCard from '@/components/PostGridCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
-// import BackButton from '@/components/BackButton.vue';
 
 interface Post {
     id: number;
@@ -112,11 +111,8 @@ const handleSearch = () => {
     <Head title="Explore Posts" />
 
     <FrontLayout>
-        <!-- Breadcrumbs -->
-        <!-- <BackButton /> -->
-
         <!-- Header -->
-        <section class="border-b bg-gradient-to-b from-card/50 to-background py-8 backdrop-blur-md bg-black/40 shadow-lg shadow-inner-lg">
+        <section class="border-b bg-gradient-to-b from-card/50 to-background py-8">
             <div class="container mx-auto px-4">
                 <h1 class="text-2xl md:text-3xl font-bold text-center">Explore Posts</h1>
                 <p class="text-md md:text-lg text-muted-foreground text-center mt-2">
