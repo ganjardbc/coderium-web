@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import DataTable, { type Column } from '@/components/DataTable.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Card,
     CardContent,
@@ -8,25 +9,24 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import DataTable, { type Column } from '@/components/DataTable.vue';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
 import {
-    Edit,
-    Plus,
     BookOpen,
-    Clock,
     CheckCircle,
-    XCircle,
+    Clock,
+    Edit,
     EditIcon,
-    TrashIcon,
-    FileCheck,
-    Users,
-    Target,
     EyeIcon,
+    FileCheck,
+    Plus,
+    Target,
+    TrashIcon,
+    Users,
+    XCircle,
 } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
 
 interface Lesson {
     id: number;
@@ -152,19 +152,25 @@ const totalDuration = (props.module.lessons || [])?.reduce((total, lesson) => {
     return total + (lesson.estimated_duration || 0);
 }, 0);
 
-const publishedLessons = (props.module.lessons || [])?.filter(lesson => lesson.is_published).length;
+const publishedLessons = (props.module.lessons || [])?.filter(
+    (lesson) => lesson.is_published,
+).length;
 
 // Lesson type statistics
-const lessonTypeStats = (props.module.lessons || [])?.reduce((stats, lesson) => {
-    const type = lesson.lesson_type || 'Unknown';
-    stats[type] = (stats[type] || 0) + 1;
-    return stats;
-}, {} as Record<string, number>);
+const lessonTypeStats = (props.module.lessons || [])?.reduce(
+    (stats, lesson) => {
+        const type = lesson.lesson_type || 'Unknown';
+        stats[type] = (stats[type] || 0) + 1;
+        return stats;
+    },
+    {} as Record<string, number>,
+);
 
 // Average lesson duration
-const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 0
-    ? Math.round(totalDuration / props.module.lessons_count)
-    : 0;
+const averageLessonDuration =
+    totalDuration > 0 && props.module.lessons_count > 0
+        ? Math.round(totalDuration / props.module.lessons_count)
+        : 0;
 </script>
 
 <template>
@@ -177,7 +183,11 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                 <div class="flex-1">
                     <div class="flex items-center gap-3">
                         <h1 class="text-3xl font-bold">{{ module.title }}</h1>
-                        <Badge :variant="module.is_published ? 'default' : 'secondary'">
+                        <Badge
+                            :variant="
+                                module.is_published ? 'default' : 'secondary'
+                            "
+                        >
                             {{ module.is_published ? 'Published' : 'Draft' }}
                         </Badge>
                     </div>
@@ -193,7 +203,11 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                 </Button>
             </div>
 
-            <Tabs :model-value="activeTab" @update:model-value="handleTabChange" class="space-y-4">
+            <Tabs
+                :model-value="activeTab"
+                @update:model-value="handleTabChange"
+                class="space-y-4"
+            >
                 <TabsList>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="lessons">Lessons</TabsTrigger>
@@ -207,12 +221,20 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <BookOpen class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Total Lessons</span>
+                                    <BookOpen
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Total Lessons</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ module.lessons_count }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
+                                    <div class="text-2xl font-bold">
+                                        {{ module.lessons_count }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         {{ publishedLessons }} published
                                     </p>
                                 </div>
@@ -222,13 +244,26 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <FileCheck class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Assessments</span>
+                                    <FileCheck
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Assessments</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ module.assessments_count || 0 }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
-                                        {{ (module.assessments || []).filter(a => a.is_required).length }} required
+                                    <div class="text-2xl font-bold">
+                                        {{ module.assessments_count || 0 }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
+                                        {{
+                                            (module.assessments || []).filter(
+                                                (a) => a.is_required,
+                                            ).length
+                                        }}
+                                        required
                                     </p>
                                 </div>
                             </CardContent>
@@ -237,12 +272,20 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <Clock class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Total Duration</span>
+                                    <Clock
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Total Duration</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ formatDuration(totalDuration) }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
+                                    <div class="text-2xl font-bold">
+                                        {{ formatDuration(totalDuration) }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         Estimated time
                                     </p>
                                 </div>
@@ -252,13 +295,29 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <CheckCircle class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Status</span>
+                                    <CheckCircle
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Status</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ module.is_published ? 'Live' : 'Draft' }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
-                                        {{ module.is_published ? 'Available to students' : 'Not published yet' }}
+                                    <div class="text-2xl font-bold">
+                                        {{
+                                            module.is_published
+                                                ? 'Live'
+                                                : 'Draft'
+                                        }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
+                                        {{
+                                            module.is_published
+                                                ? 'Available to students'
+                                                : 'Not published yet'
+                                        }}
                                     </p>
                                 </div>
                             </CardContent>
@@ -275,23 +334,36 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div>
-                                <h3 class="font-medium mb-2">Description</h3>
+                                <h3 class="mb-2 font-medium">Description</h3>
                                 <p class="text-muted-foreground">
-                                    {{ module.description || 'No description provided.' }}
+                                    {{
+                                        module.description ||
+                                        'No description provided.'
+                                    }}
                                 </p>
                             </div>
 
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <h3 class="font-medium mb-2">Created</h3>
+                                    <h3 class="mb-2 font-medium">Created</h3>
                                     <p class="text-muted-foreground">
-                                        {{ new Date(module.created_at).toLocaleDateString() }}
+                                        {{
+                                            new Date(
+                                                module.created_at,
+                                            ).toLocaleDateString()
+                                        }}
                                     </p>
                                 </div>
                                 <div>
-                                    <h3 class="font-medium mb-2">Last Updated</h3>
+                                    <h3 class="mb-2 font-medium">
+                                        Last Updated
+                                    </h3>
                                     <p class="text-muted-foreground">
-                                        {{ new Date(module.updated_at).toLocaleDateString() }}
+                                        {{
+                                            new Date(
+                                                module.updated_at,
+                                            ).toLocaleDateString()
+                                        }}
                                     </p>
                                 </div>
                             </div>
@@ -299,11 +371,16 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                     </Card>
 
                     <!-- Content Breakdown -->
-                    <div v-if="module.lessons && module.lessons.length > 0" class="grid gap-4 md:grid-cols-2">
+                    <div
+                        v-if="module.lessons && module.lessons.length > 0"
+                        class="grid gap-4 md:grid-cols-2"
+                    >
                         <!-- Lesson Types -->
                         <Card>
                             <CardHeader>
-                                <CardTitle class="text-lg">Lesson Types</CardTitle>
+                                <CardTitle class="text-lg"
+                                    >Lesson Types</CardTitle
+                                >
                                 <CardDescription>
                                     Content distribution by type
                                 </CardDescription>
@@ -316,12 +393,24 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                                         class="flex items-center justify-between"
                                     >
                                         <div class="flex items-center gap-2">
-                                            <Badge variant="outline">{{ type }}</Badge>
+                                            <Badge variant="outline">{{
+                                                type
+                                            }}</Badge>
                                         </div>
                                         <div class="text-right">
-                                            <div class="font-semibold">{{ count }}</div>
-                                            <div class="text-xs text-muted-foreground">
-                                                {{ Math.round((count / module.lessons_count) * 100) }}%
+                                            <div class="font-semibold">
+                                                {{ count }}
+                                            </div>
+                                            <div
+                                                class="text-xs text-muted-foreground"
+                                            >
+                                                {{
+                                                    Math.round(
+                                                        (count /
+                                                            module.lessons_count) *
+                                                            100,
+                                                    )
+                                                }}%
                                             </div>
                                         </div>
                                     </div>
@@ -332,34 +421,74 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <!-- Publication Status -->
                         <Card>
                             <CardHeader>
-                                <CardTitle class="text-lg">Publication Status</CardTitle>
+                                <CardTitle class="text-lg"
+                                    >Publication Status</CardTitle
+                                >
                                 <CardDescription>
                                     Content readiness overview
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div class="space-y-3">
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <CheckCircle class="h-4 w-4 text-green-600" />
-                                            <span class="text-sm">Published</span>
+                                            <CheckCircle
+                                                class="h-4 w-4 text-green-600"
+                                            />
+                                            <span class="text-sm"
+                                                >Published</span
+                                            >
                                         </div>
                                         <div class="text-right">
-                                            <div class="font-semibold">{{ publishedLessons }}</div>
-                                            <div class="text-xs text-muted-foreground">
-                                                {{ publishedLessons > 0 ? Math.round((publishedLessons / module.lessons_count) * 100) : 0 }}%
+                                            <div class="font-semibold">
+                                                {{ publishedLessons }}
+                                            </div>
+                                            <div
+                                                class="text-xs text-muted-foreground"
+                                            >
+                                                {{
+                                                    publishedLessons > 0
+                                                        ? Math.round(
+                                                              (publishedLessons /
+                                                                  module.lessons_count) *
+                                                                  100,
+                                                          )
+                                                        : 0
+                                                }}%
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center justify-between">
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
                                         <div class="flex items-center gap-2">
-                                            <XCircle class="h-4 w-4 text-gray-400" />
+                                            <XCircle
+                                                class="h-4 w-4 text-gray-400"
+                                            />
                                             <span class="text-sm">Draft</span>
                                         </div>
                                         <div class="text-right">
-                                            <div class="font-semibold">{{ module.lessons_count - publishedLessons }}</div>
-                                            <div class="text-xs text-muted-foreground">
-                                                {{ module.lessons_count > 0 ? Math.round(((module.lessons_count - publishedLessons) / module.lessons_count) * 100) : 0 }}%
+                                            <div class="font-semibold">
+                                                {{
+                                                    module.lessons_count -
+                                                    publishedLessons
+                                                }}
+                                            </div>
+                                            <div
+                                                class="text-xs text-muted-foreground"
+                                            >
+                                                {{
+                                                    module.lessons_count > 0
+                                                        ? Math.round(
+                                                              ((module.lessons_count -
+                                                                  publishedLessons) /
+                                                                  module.lessons_count) *
+                                                                  100,
+                                                          )
+                                                        : 0
+                                                }}%
                                             </div>
                                         </div>
                                     </div>
@@ -372,16 +501,27 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                 <!-- Modules Lessons -->
                 <TabsContent value="lessons" class="space-y-4">
                     <!-- Lessons Statistics -->
-                    <div v-if="module.lessons && module.lessons.length > 0" class="grid gap-4 md:grid-cols-4">
+                    <div
+                        v-if="module.lessons && module.lessons.length > 0"
+                        class="grid gap-4 md:grid-cols-4"
+                    >
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <BookOpen class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Total Lessons</span>
+                                    <BookOpen
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Total Lessons</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ module.lessons_count }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
+                                    <div class="text-2xl font-bold">
+                                        {{ module.lessons_count }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         In this module
                                     </p>
                                 </div>
@@ -391,13 +531,29 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <CheckCircle class="h-4 w-4 text-green-600" />
-                                    <span class="text-sm font-medium truncate">Published</span>
+                                    <CheckCircle
+                                        class="h-4 w-4 text-green-600"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Published</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ publishedLessons }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
-                                        {{ publishedLessons > 0 ? Math.round((publishedLessons / module.lessons_count) * 100) : 0 }}% of total
+                                    <div class="text-2xl font-bold">
+                                        {{ publishedLessons }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
+                                        {{
+                                            publishedLessons > 0
+                                                ? Math.round(
+                                                      (publishedLessons /
+                                                          module.lessons_count) *
+                                                          100,
+                                                  )
+                                                : 0
+                                        }}% of total
                                     </p>
                                 </div>
                             </CardContent>
@@ -407,12 +563,30 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                             <CardContent>
                                 <div class="flex items-center space-x-2">
                                     <XCircle class="h-4 w-4 text-gray-400" />
-                                    <span class="text-sm font-medium truncate">Draft</span>
+                                    <span class="truncate text-sm font-medium"
+                                        >Draft</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ module.lessons_count - publishedLessons }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
-                                        {{ module.lessons_count > 0 ? Math.round(((module.lessons_count - publishedLessons) / module.lessons_count) * 100) : 0 }}% of total
+                                    <div class="text-2xl font-bold">
+                                        {{
+                                            module.lessons_count -
+                                            publishedLessons
+                                        }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
+                                        {{
+                                            module.lessons_count > 0
+                                                ? Math.round(
+                                                      ((module.lessons_count -
+                                                          publishedLessons) /
+                                                          module.lessons_count) *
+                                                          100,
+                                                  )
+                                                : 0
+                                        }}% of total
                                     </p>
                                 </div>
                             </CardContent>
@@ -421,12 +595,24 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <Clock class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Avg Duration</span>
+                                    <Clock
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Avg Duration</span
+                                    >
                                 </div>
                                 <div class="mt-2">
-                                    <div class="text-2xl font-bold">{{ formatDuration(averageLessonDuration) }}</div>
-                                    <p class="text-xs text-muted-foreground truncate">
+                                    <div class="text-2xl font-bold">
+                                        {{
+                                            formatDuration(
+                                                averageLessonDuration,
+                                            )
+                                        }}
+                                    </div>
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         Per lesson
                                     </p>
                                 </div>
@@ -435,7 +621,13 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                     </div>
 
                     <!-- Lesson Type Breakdown -->
-                    <Card v-if="module.lessons && module.lessons.length > 0 && Object.keys(lessonTypeStats).length > 0">
+                    <Card
+                        v-if="
+                            module.lessons &&
+                            module.lessons.length > 0 &&
+                            Object.keys(lessonTypeStats).length > 0
+                        "
+                    >
                         <CardHeader>
                             <CardTitle class="text-lg">Lesson Types</CardTitle>
                             <CardDescription>
@@ -443,19 +635,33 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div
+                                class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+                            >
                                 <div
                                     v-for="(count, type) in lessonTypeStats"
                                     :key="type"
-                                    class="flex items-center justify-between p-3 rounded-lg border"
+                                    class="flex items-center justify-between rounded-lg border p-3"
                                 >
                                     <div class="flex items-center gap-2">
-                                        <Badge variant="outline">{{ type }}</Badge>
+                                        <Badge variant="outline">{{
+                                            type
+                                        }}</Badge>
                                     </div>
                                     <div class="text-right">
-                                        <div class="font-semibold">{{ count }}</div>
-                                        <div class="text-xs text-muted-foreground">
-                                            {{ Math.round((count / module.lessons_count) * 100) }}%
+                                        <div class="font-semibold">
+                                            {{ count }}
+                                        </div>
+                                        <div
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            {{
+                                                Math.round(
+                                                    (count /
+                                                        module.lessons_count) *
+                                                        100,
+                                                )
+                                            }}%
                                         </div>
                                     </div>
                                 </div>
@@ -473,9 +679,11 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                                     </CardDescription>
                                 </div>
                                 <Button as-child size="sm">
-                                    <Link :href="`/admin/lessons/create?module_id=${module.id}`">
+                                    <Link
+                                        :href="`/admin/lessons/create?module_id=${module.id}`"
+                                    >
                                         <Plus class="mr-2 h-4 w-4" />
-                                        Add Lesson
+                                        Create Lesson
                                     </Link>
                                 </Button>
                             </div>
@@ -489,8 +697,12 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                             >
                                 <template #cell-title="{ row }">
                                     <div class="min-w-[200px]">
-                                        <div class="font-medium">{{ row.title }}</div>
-                                        <div class="text-sm text-muted-foreground line-clamp-1">
+                                        <div class="font-medium">
+                                            {{ row.title }}
+                                        </div>
+                                        <div
+                                            class="line-clamp-1 text-sm text-muted-foreground"
+                                        >
                                             {{ row.description }}
                                         </div>
                                     </div>
@@ -503,7 +715,9 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                                 </template>
 
                                 <template #cell-order_index="{ row }">
-                                    <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                                    <span
+                                        class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+                                    >
                                         #{{ row.order_index }}
                                     </span>
                                 </template>
@@ -514,28 +728,45 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
 
                                 <template #cell-is_published="{ row }">
                                     <div class="flex items-center gap-1">
-                                        <CheckCircle v-if="row.is_published" class="h-4 w-4 text-green-600" />
-                                        <XCircle v-else class="h-4 w-4 text-gray-400" />
+                                        <CheckCircle
+                                            v-if="row.is_published"
+                                            class="h-4 w-4 text-green-600"
+                                        />
+                                        <XCircle
+                                            v-else
+                                            class="h-4 w-4 text-gray-400"
+                                        />
                                         <span class="text-sm">
-                                            {{ row.is_published ? 'Published' : 'Draft' }}
+                                            {{
+                                                row.is_published
+                                                    ? 'Published'
+                                                    : 'Draft'
+                                            }}
                                         </span>
                                     </div>
                                 </template>
 
                                 <!-- Actions -->
                                 <template #actions="{ row }">
-                                    <div class="flex gap-2 justify-end">
-                                        <Link :href="`/admin/lessons/${row.id}`">
+                                    <div class="flex justify-end gap-2">
+                                        <Link
+                                            :href="`/admin/lessons/${row.id}`"
+                                        >
                                             <Button variant="outline">
                                                 <EyeIcon class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Link :href="`/admin/lessons/${row.id}/edit`">
+                                        <Link
+                                            :href="`/admin/lessons/${row.id}/edit`"
+                                        >
                                             <Button variant="outline">
                                                 <EditIcon class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Button variant="outline" @click="deleteLesson(row)">
+                                        <Button
+                                            variant="outline"
+                                            @click="deleteLesson(row)"
+                                        >
                                             <TrashIcon class="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -548,18 +779,37 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                 <!-- Modules Assessments -->
                 <TabsContent value="assessments" class="space-y-4">
                     <!-- Assessment Statistics -->
-                    <div v-if="module.assessments && module.assessments.length > 0" class="grid gap-4 md:grid-cols-3">
+                    <div
+                        v-if="
+                            module.assessments && module.assessments.length > 0
+                        "
+                        class="grid gap-4 md:grid-cols-3"
+                    >
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <FileCheck class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Total Questions</span>
+                                    <FileCheck
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Total Questions</span
+                                    >
                                 </div>
                                 <div class="mt-2">
                                     <div class="text-2xl font-bold">
-                                        {{ module.assessments.reduce((sum, assessment) => sum + (assessment.questions_count || 0), 0) }}
+                                        {{
+                                            module.assessments.reduce(
+                                                (sum, assessment) =>
+                                                    sum +
+                                                    (assessment.questions_count ||
+                                                        0),
+                                                0,
+                                            )
+                                        }}
                                     </div>
-                                    <p class="text-xs text-muted-foreground truncate">
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         Across all assessments
                                     </p>
                                 </div>
@@ -569,14 +819,28 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <Users class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Total Attempts</span>
+                                    <Users
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Total Attempts</span
+                                    >
                                 </div>
                                 <div class="mt-2">
                                     <div class="text-2xl font-bold">
-                                        {{ module.assessments.reduce((sum, assessment) => sum + (assessment.attempts_count || 0), 0) }}
+                                        {{
+                                            module.assessments.reduce(
+                                                (sum, assessment) =>
+                                                    sum +
+                                                    (assessment.attempts_count ||
+                                                        0),
+                                                0,
+                                            )
+                                        }}
                                     </div>
-                                    <p class="text-xs text-muted-foreground truncate">
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         Student attempts
                                     </p>
                                 </div>
@@ -586,14 +850,33 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                         <Card>
                             <CardContent>
                                 <div class="flex items-center space-x-2">
-                                    <Target class="h-4 w-4 text-muted-foreground" />
-                                    <span class="text-sm font-medium truncate">Average Pass Score</span>
+                                    <Target
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <span class="truncate text-sm font-medium"
+                                        >Average Pass Score</span
+                                    >
                                 </div>
                                 <div class="mt-2">
                                     <div class="text-2xl font-bold">
-                                        {{ module.assessments.length > 0 ? Math.round(module.assessments.reduce((sum, assessment) => sum + assessment.passing_score, 0) / module.assessments.length) : 0 }}%
+                                        {{
+                                            module.assessments.length > 0
+                                                ? Math.round(
+                                                      module.assessments.reduce(
+                                                          (sum, assessment) =>
+                                                              sum +
+                                                              assessment.passing_score,
+                                                          0,
+                                                      ) /
+                                                          module.assessments
+                                                              .length,
+                                                  )
+                                                : 0
+                                        }}%
                                     </div>
-                                    <p class="text-xs text-muted-foreground truncate">
+                                    <p
+                                        class="truncate text-xs text-muted-foreground"
+                                    >
                                         Required to pass
                                     </p>
                                 </div>
@@ -611,7 +894,9 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                                     </CardDescription>
                                 </div>
                                 <Button as-child size="sm">
-                                    <Link :href="`/admin/assessments/create?module_id=${module.id}`">
+                                    <Link
+                                        :href="`/admin/assessments/create?module_id=${module.id}`"
+                                    >
                                         <Plus class="mr-2 h-4 w-4" />
                                         Add Assessment
                                     </Link>
@@ -627,8 +912,12 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
                             >
                                 <template #cell-title="{ row }">
                                     <div class="min-w-[200px]">
-                                        <div class="font-medium">{{ row.title }}</div>
-                                        <div class="text-sm text-muted-foreground line-clamp-1">
+                                        <div class="font-medium">
+                                            {{ row.title }}
+                                        </div>
+                                        <div
+                                            class="line-clamp-1 text-sm text-muted-foreground"
+                                        >
                                             {{ row.description }}
                                         </div>
                                     </div>
@@ -636,56 +925,89 @@ const averageLessonDuration = totalDuration > 0 && props.module.lessons_count > 
 
                                 <template #cell-questions_count="{ row }">
                                     <div class="flex items-center gap-1">
-                                        <FileCheck class="h-4 w-4 text-muted-foreground" />
-                                        <span>{{ row.questions_count || 0 }}</span>
+                                        <FileCheck
+                                            class="h-4 w-4 text-muted-foreground"
+                                        />
+                                        <span>{{
+                                            row.questions_count || 0
+                                        }}</span>
                                     </div>
                                 </template>
 
                                 <template #cell-passing_score="{ row }">
                                     <div class="flex items-center gap-1">
-                                        <Target class="h-4 w-4 text-muted-foreground" />
+                                        <Target
+                                            class="h-4 w-4 text-muted-foreground"
+                                        />
                                         <span>{{ row.passing_score }}%</span>
                                     </div>
                                 </template>
 
                                 <template #cell-time_limit="{ row }">
-                                    <div class="min-w-[92px] flex items-center gap-1">
-                                        <Clock class="h-4 w-4 text-muted-foreground" />
-                                        <span>{{ formatDuration(row.time_limit) }}</span>
+                                    <div
+                                        class="flex min-w-[92px] items-center gap-1"
+                                    >
+                                        <Clock
+                                            class="h-4 w-4 text-muted-foreground"
+                                        />
+                                        <span>{{
+                                            formatDuration(row.time_limit)
+                                        }}</span>
                                     </div>
                                 </template>
 
                                 <template #cell-attempts_count="{ row }">
                                     <div class="flex items-center gap-1">
-                                        <Users class="h-4 w-4 text-muted-foreground" />
-                                        <span>{{ row.attempts_count || 0 }}</span>
+                                        <Users
+                                            class="h-4 w-4 text-muted-foreground"
+                                        />
+                                        <span>{{
+                                            row.attempts_count || 0
+                                        }}</span>
                                     </div>
                                 </template>
 
                                 <template #cell-is_required="{ row }">
                                     <div class="flex items-center gap-1">
-                                        <CheckCircle v-if="row.is_required" class="h-4 w-4 text-red-600" />
-                                        <XCircle v-else class="h-4 w-4 text-gray-400" />
+                                        <CheckCircle
+                                            v-if="row.is_required"
+                                            class="h-4 w-4 text-red-600"
+                                        />
+                                        <XCircle
+                                            v-else
+                                            class="h-4 w-4 text-gray-400"
+                                        />
                                         <span class="text-sm">
-                                            {{ row.is_required ? 'Required' : 'Optional' }}
+                                            {{
+                                                row.is_required
+                                                    ? 'Required'
+                                                    : 'Optional'
+                                            }}
                                         </span>
                                     </div>
                                 </template>
 
                                 <!-- Actions -->
                                 <template #actions="{ row }">
-                                    <div class="flex gap-2 justify-end">
-                                        <Link :href="`/admin/assessments/${row.id}`">
+                                    <div class="flex justify-end gap-2">
+                                        <Link
+                                            :href="`/admin/assessments/${row.id}`"
+                                        >
                                             <Button variant="outline">
                                                 <EyeIcon class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Link :href="`/admin/assessments/${row.id}/edit`">
+                                        <Link
+                                            :href="`/admin/assessments/${row.id}/edit`"
+                                        >
                                             <Button variant="outline">
                                                 <EditIcon class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Button variant="outline" @click="deleteAssessment(row)">
+                                        <Button
+                                            variant="outline"
+                                            @click="deleteAssessment(row)"
+                                        >
                                             <TrashIcon class="h-4 w-4" />
                                         </Button>
                                     </div>

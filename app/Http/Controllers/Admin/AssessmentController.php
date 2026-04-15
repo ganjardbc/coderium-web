@@ -140,7 +140,9 @@ class AssessmentController extends Controller
             }
         });
 
-        return redirect()->route('admin.assessments.index')
+        return redirect()
+            ->route('admin.modules.show', $request->module_id)
+            ->with('query', ['tab' => 'lessons'])
             ->with('success', 'Assessment created successfully.');
     }
 
@@ -227,7 +229,9 @@ class AssessmentController extends Controller
             }
         });
 
-        return redirect()->route('admin.assessments.index')
+        return redirect()
+            ->route('admin.modules.show', $request->module_id)
+            ->with('query', ['tab' => 'lessons'])
             ->with('success', 'Assessment updated successfully.');
     }
 
@@ -241,7 +245,9 @@ class AssessmentController extends Controller
             $assessment->delete();
         });
 
-        return redirect()->route('admin.assessments.index')
+        return redirect()
+            ->route('admin.modules.show', $request->module_id)
+            ->with('query', ['tab' => 'lessons'])
             ->with('success', 'Assessment deleted successfully.');
     }
 }

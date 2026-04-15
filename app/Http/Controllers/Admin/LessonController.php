@@ -104,7 +104,9 @@ class LessonController extends Controller
             }
         });
 
-        return redirect()->route('admin.lessons.index')
+        return redirect()
+            ->route('admin.modules.show', $request->module_id)
+            ->with('query', ['tab' => 'lessons'])
             ->with('success', 'Lesson created successfully.');
     }
 
@@ -169,7 +171,9 @@ class LessonController extends Controller
             }
         });
 
-        return redirect()->route('admin.lessons.index')
+        return redirect()
+            ->route('admin.modules.show', $request->module_id)
+            ->with('query', ['tab' => 'lessons'])
             ->with('success', 'Lesson updated successfully.');
     }
 
@@ -190,7 +194,9 @@ class LessonController extends Controller
             }
         });
 
-        return redirect()->route('admin.lessons.index')
+        return redirect()
+            ->route('admin.modules.show', $request->module_id)
+            ->with('query', ['tab' => 'lessons'])
             ->with('success', 'Lesson deleted successfully.');
     }
 }

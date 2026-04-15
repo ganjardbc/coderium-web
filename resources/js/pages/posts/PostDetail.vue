@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import BackButton from '@/components/BackButton.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
 import PostCard from '@/components/PostCard.vue';
+import PostCarousel from '@/components/PostCarousel.vue';
+import PostVideo from '@/components/PostVideo.vue';
+import PostGallery from '@/components/PostGallery.vue';
 import { Button } from '@/components/ui/button';
 import FrontLayout from '@/layouts/FrontLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
-import emblaCarouselVue from 'embla-carousel-vue';
 import {
-    ChevronLeft,
-    ChevronRight,
     Clock,
     Eye,
     Heart,
@@ -17,7 +17,7 @@ import {
     Tag,
     User,
 } from 'lucide-vue-next';
-import { computed, ref, watchEffect } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Media {
     id: number;
@@ -43,41 +43,18 @@ interface Post {
     };
 }
 
-interface BreadcrumbItem {
-    title: string;
-    url?: string;
-}
-
 interface Props {
     post: Post;
     isLiked: boolean;
     relatedPosts: Post[];
-    breadcrumbs: BreadcrumbItem[];
 }
 
 const ENABLE_DISCOVER_MODE = false;
 
 const props = defineProps<Props>();
 
-const [emblaRef, emblaApi] = emblaCarouselVue();
-const currentImageIndex = ref(0);
 const isLiked = ref(props.isLiked);
 const likesCount = ref(props.post.likes_count);
-
-// Update current index when carousel scrolls
-watchEffect(() => {
-    if (emblaApi.value) {
-        const onSelect = () => {
-            currentImageIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
-        };
-
-        emblaApi.value.on('select', onSelect);
-        emblaApi.value.on('reInit', onSelect);
-
-        // Initialize the index
-        onSelect();
-    }
-});
 
 const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -95,24 +72,6 @@ const formatNumber = (num: number) => {
         return (num / 1000).toFixed(1) + 'K';
     }
     return num.toString();
-};
-
-const nextImage = () => {
-    if (emblaApi.value) {
-        emblaApi.value.scrollNext();
-    }
-};
-
-const prevImage = () => {
-    if (emblaApi.value) {
-        emblaApi.value.scrollPrev();
-    }
-};
-
-const goToImage = (index: number) => {
-    if (emblaApi.value) {
-        emblaApi.value.scrollTo(index);
-    }
 };
 
 const toggleLike = async () => {
@@ -185,34 +144,36 @@ const carouselPostMedia = computed(() => {
     </Head>
 
     <FrontLayout>
-        <!-- Breadcrumbs -->
-        <div class="border-b bg-gray-50/50 py-4 dark:bg-gray-900/20 flex justify-between items-center">
-            <Breadcrumbs :breadcrumbs="breadcrumbs" :is-back="true" />
-            <div class="flex items-center justify-end gap-2">
-                <Button
-                    @click="toggleLike"
-                    size="lg"
-                    :variant="isLiked ? 'default' : 'outline'"
-                    class="rounded-full !px-3"
-                >
-                    <Heart
-                        :class="['h-5 w-5', isLiked ? 'fill-current' : '']"
-                    />
-                    <span class="hidden md:block">
-                        {{ isLiked ? 'Liked' : 'Like' }}
-                    </span>
-                </Button>
-                <Button
-                    @click="sharePost"
-                    size="lg"
-                    variant="outline"
-                    class="rounded-full !px-3"
-                >
-                    <Share2 class="h-5 w-5" />
-                    <span class="hidden md:block"> Share </span>
-                </Button>
-            </div>
-        </div>
+        <!-- Back Button -->
+        <BackButton>
+            <template #append>
+                <!-- Type Badge -->
+                <div class="flex items-center justify-end gap-2">
+                    <Button
+                        @click="toggleLike"
+                        size="lg"
+                        :variant="isLiked ? 'default' : 'outline'"
+                        class="rounded-full !px-3"
+                    >
+                        <Heart
+                            :class="['h-5 w-5', isLiked ? 'fill-current' : '']"
+                        />
+                        <span class="hidden md:block">
+                            {{ isLiked ? 'Liked' : 'Like' }}
+                        </span>
+                    </Button>
+                    <Button
+                        @click="sharePost"
+                        size="lg"
+                        variant="outline"
+                        class="rounded-full !px-3"
+                    >
+                        <Share2 class="h-5 w-5" />
+                        <span class="hidden md:block"> Share </span>
+                    </Button>
+                </div>
+            </template>
+        </BackButton>
 
         <!-- Article Content -->
         <article class="container mx-auto max-w-3xl px-0 lg:px-4">
@@ -225,87 +186,17 @@ const carouselPostMedia = computed(() => {
                 />
             </div>
 
-            <div
+            <!-- Video: Post Video -->
+            <PostVideo
                 v-if="post.type === 'video' && post.media.length > 0"
-                class="overflow-hidden bg-muted"
-            >
-                <video
-                    :src="post.media[0].url"
-                    controls
-                    class="aspect-video h-auto w-full"
-                >
-                    Your browser does not support the video tag.
-                </video>
-            </div>
+                :url="post.media[0].url"
+            />
 
             <!-- Carousel: Multiple Images -->
-            <div
+            <PostCarousel
                 v-if="post.type === 'carousel' && carouselPostMedia.length > 0"
-                class="relative overflow-hidden"
-            >
-                <div ref="emblaRef" class="h-full">
-                    <div class="flex h-full touch-pan-y">
-                        <div
-                            v-for="(media, index) in carouselPostMedia"
-                            :key="index"
-                            class="flex min-w-0 flex-[0_0_100%] items-center justify-center bg-muted"
-                        >
-                            <img
-                                :src="media.url"
-                                :alt="`${post.title} - Image ${index + 1}`"
-                                class="h-full max-w-full object-contain"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation Arrows -->
-                <Button
-                    v-if="carouselPostMedia.length > 1"
-                    @click="prevImage"
-                    :disabled="currentImageIndex === 0"
-                    variant="default"
-                    class="absolute bottom-1/2 left-4 h-[32px] w-[32px] -translate-y-1/2 rounded-full"
-                >
-                    <ChevronLeft class="h-5 w-5" />
-                </Button>
-                <Button
-                    v-if="carouselPostMedia.length > 1"
-                    @click="nextImage"
-                    :disabled="
-                        currentImageIndex === carouselPostMedia.length - 1
-                    "
-                    variant="default"
-                    class="absolute right-4 bottom-1/2 h-[32px] w-[32px] -translate-y-1/2 rounded-full"
-                >
-                    <ChevronRight class="h-5 w-5" />
-                </Button>
-
-                <!-- Image Counter -->
-                <div
-                    class="shadow-inner-lg absolute top-2 right-2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white shadow-lg backdrop-blur-md"
-                >
-                    {{ currentImageIndex + 1 }} / {{ carouselPostMedia.length }}
-                </div>
-
-                <!-- Dot Indicators -->
-                <div
-                    v-if="carouselPostMedia.length > 1"
-                    class="shadow-inner-lg absolute bottom-4 left-1/2 flex -translate-x-1/2 justify-center gap-2 rounded-full bg-black/50 px-3 py-2 shadow-lg backdrop-blur-sm"
-                >
-                    <button
-                        v-for="(_, index) in carouselPostMedia"
-                        :key="index"
-                        @click="goToImage(index)"
-                        :class="[
-                            'h-2 rounded-full transition-all',
-                            index === currentImageIndex
-                                ? 'w-8 bg-primary'
-                                : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50',
-                        ]"
-                    />
-                </div>
-            </div>
+                :medias="carouselPostMedia"
+            />
 
             <div class="px-4 py-8 lg:px-0">
                 <div class="mx-auto max-w-3xl">
@@ -326,25 +217,13 @@ const carouselPostMedia = computed(() => {
                         </p>
 
                         <!-- Stacked Gallery -->
-                        <div
+                        <PostGallery
                             v-if="
                                 post.type === 'stack_gallery' &&
                                 carouselPostMedia.length > 0
                             "
-                            class="w-full overflow-hidden rounded-lg border"
-                        >
-                            <div
-                                v-for="(media, index) in carouselPostMedia"
-                                :key="index"
-                                class="overflow-hidden"
-                            >
-                                <img
-                                    :src="media.url"
-                                    :alt="`${post.title} - Image ${index + 1}`"
-                                    class="h-full w-full object-cover"
-                                />
-                            </div>
-                        </div>
+                            :medias="carouselPostMedia"
+                        />
 
                         <!-- Content -->
                         <div

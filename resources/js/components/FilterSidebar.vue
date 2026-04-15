@@ -46,10 +46,7 @@ const handleClearFilters = () => {
 <template>
     <aside
         class="h-fit flex-1 rounded-lg border p-4"
-        :class="[
-            'space-y-4',
-            props.showFilters ? 'block' : 'hidden md:block',
-        ]"
+        :class="['space-y-4', props.showFilters ? 'block' : 'hidden']"
     >
         <div class="flex items-center justify-between border-b pb-4">
             <div class="text-md font-semibold">Filters</div>

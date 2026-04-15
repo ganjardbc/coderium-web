@@ -16,7 +16,7 @@ import { computed } from 'vue';
 const ENABLE_DARK_MODE = true;
 const ENABLE_EXPLORE = true;
 const ENABLE_PLAYLISTS = true;
-const ENABLE_COURSE = false;
+const ENABLE_COURSE = true;
 
 const $page = usePage();
 const isAuth = computed(() => {
@@ -46,7 +46,7 @@ const listOfMenus = computed(() => {
         {
             label: 'Course',
             icon: BookOpenIcon,
-            route: '/course',
+            route: '/courses',
             isVisible: ENABLE_COURSE,
         },
     ];
@@ -101,8 +101,7 @@ const listOfMenus = computed(() => {
                             :as="Link"
                             href="/admin/dashboard"
                             variant="default"
-                            size="lg"
-                            class="h-[40px] w-[40px] rounded-full"
+                            class="h-[44px] w-[44px] rounded-full !px-3"
                         >
                             <LayoutDashboardIcon class="inline-block h-4 w-4" />
                         </Button>
@@ -111,8 +110,7 @@ const listOfMenus = computed(() => {
                             :as="Link"
                             href="/login"
                             variant="default"
-                            size="lg"
-                            class="h-[40px] w-[40px] rounded-full"
+                            class="h-[44px] w-[44px] rounded-full !px-3"
                         >
                             <LogIn class="inline-block h-4 w-4" />
                         </Button>
@@ -133,14 +131,14 @@ const listOfMenus = computed(() => {
                 <!-- Front Append -->
                 <slot name="front-append" />
 
-                <footer class="layout__footer">
+                <!-- <footer class="layout__footer">
                     <div class="layout__footer-content">
                         <div class="layout__footer-text">
                             © {{ new Date().getFullYear() }} Coderium. All
                             rights reserved.
                         </div>
                     </div>
-                </footer>
+                </footer> -->
             </div>
         </div>
     </div>

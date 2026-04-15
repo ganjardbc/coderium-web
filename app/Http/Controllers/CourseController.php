@@ -289,16 +289,16 @@ class CourseController extends Controller
         $module = Module::findOrFail($moduleId);
         $lesson = Lesson::findOrFail($lessonId);
 
-        // Check if user is enrolled in the course
-        if ($request->user()) {
-            $enrollment = $course->enrollments()->where('user_id', $request->user()->id)->first();
-            if (!$enrollment) {
-                return redirect()->route('courses.show', $course->slug)
-                    ->with('error', 'You must enroll in this course to access its content.');
-            }
-        } else {
-            abort(401, 'Authentication required.');
-        }
+        // // Check if user is enrolled in the course
+        // if ($request->user()) {
+        //     $enrollment = $course->enrollments()->where('user_id', $request->user()->id)->first();
+        //     if (!$enrollment) {
+        //         return redirect()->route('courses.show', $course->slug)
+        //             ->with('error', 'You must enroll in this course to access its content.');
+        //     }
+        // } else {
+        //     abort(401, 'Authentication required.');
+        // }
 
         // Check if module is part of this course
         $courseModule = $course->modules()->where('modules.id', $module->id)->first();
@@ -317,6 +317,18 @@ class CourseController extends Controller
         }
 
         $lesson->load(['media']);
+
+        $courseDetail = $course->load([
+            'modules' => function ($query) {
+                $query->orderBy('course_modules.order')
+                    ->with([
+                        'lessons' => function ($q) {
+                            $q->orderBy('order_index');
+                        },
+                        'assessments'
+                    ]);
+            },
+        ]);
 
         // Load module with all lessons for sidebar navigation
         $module->load([
@@ -369,7 +381,7 @@ class CourseController extends Controller
                     'file_name' => $media->file_name,
                     'mime_type' => $media->mime_type,
                     'size' => $media->size,
-                    'url' => $media->getUrl(),
+                    'url' => $media->url,
                 ];
             }),
         ];
@@ -390,6 +402,7 @@ class CourseController extends Controller
         ];
 
         return Inertia::render('courses/CoursesLesson', [
+            'courseDetail' => $courseDetail,
             'lesson' => $lessonData,
             'breadcrumbs' => $breadcrumbs,
         ]);

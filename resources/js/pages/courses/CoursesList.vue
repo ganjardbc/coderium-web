@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import BackButton from '@/components/BackButton.vue';
+import CourseCard from '@/components/CourseCard.vue';
 import FilterSidebar from '@/components/FilterSidebar.vue';
 import Pagination from '@/components/Pagination.vue';
-import CourseCard from '@/components/CourseCard.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
 import FrontLayout from '@/layouts/FrontLayout.vue';
@@ -10,9 +9,9 @@ import { useDebounceFn } from '@/lib/utils';
 import { Head, router } from '@inertiajs/vue3';
 import {
     BookOpen,
+    GraduationCap,
     Search as SearchIcon,
     SlidersHorizontal,
-    GraduationCap,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -141,18 +140,16 @@ const filterSections = computed(() => [
     {
         key: 'sort',
         title: 'Sort By',
-        options: sortOptions.map(option => ({ ...option, icon: undefined })),
+        options: sortOptions.map((option) => ({ ...option, icon: undefined })),
         selectedValue: selectedSort.value,
     },
 ]);
 
 const hasActiveFilters = computed(() => {
-    return (
-        props.filters.search ||
+    return (props.filters.search ||
         props.filters.certificate !== 'all' ||
         props.filters.difficulty !== 'all' ||
-        props.filters.sortBy !== 'recent'
-    ) as boolean;
+        props.filters.sortBy !== 'recent') as boolean;
 });
 
 const performSearch = () => {
@@ -217,9 +214,6 @@ const handleSearch = () => {
     <Head title="Explore Courses" />
 
     <FrontLayout>
-        <!-- Breadcrumbs -->
-        <BackButton />
-
         <!-- Header -->
         <section
             class="border-b bg-gradient-to-b from-card/50 to-background py-8"
@@ -231,83 +225,79 @@ const handleSearch = () => {
                 <p
                     class="text-md mt-2 text-center text-muted-foreground md:text-lg"
                 >
-                    Discover structured learning paths designed to help you master new skills and advance your career
+                    Discover structured learning paths designed to help you
+                    master new skills and advance your career
                 </p>
             </div>
         </section>
 
         <!-- Filters & Results -->
         <section class="py-8">
-            <div class="container mx-auto px-4">
+            <div class="mx-auto max-w-6xl space-y-8 px-4">
                 <!-- Search Courses -->
-                <div class="mb-8">
+                <div class="flex gap-2">
                     <Searchbar
                         v-model="searchQuery"
                         placeholder="Search courses..."
+                        class="flex-1"
                         @search="handleSearch"
                         @clear="clearSearch"
                     />
                     <Button
                         @click="showFilters = !showFilters"
                         variant="outline"
-                        class="mt-4 w-full md:hidden"
+                        class="w-24"
                     >
                         <SlidersHorizontal class="h-4 w-4" />
-                        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+                        {{ showFilters ? 'Hide' : 'Filters' }}
                     </Button>
                 </div>
 
-                <div class="grid gap-8 lg:grid-cols-[310px_1fr]">
-                    <!-- Sidebar Filters -->
-                    <FilterSidebar
-                        :sections="filterSections"
-                        :show-filters="showFilters"
-                        :has-active-filters="hasActiveFilters"
-                        @update-filter="handleFilterUpdate"
-                        @clear-filters="clearSearch"
-                    />
+                <!-- Sidebar Filters -->
+                <FilterSidebar
+                    :sections="filterSections"
+                    :show-filters="showFilters"
+                    :has-active-filters="hasActiveFilters"
+                    @update-filter="handleFilterUpdate"
+                    @clear-filters="clearSearch"
+                />
 
-                    <!-- Results -->
-                    <div class="flex-1">
-                        <!-- Courses Grid -->
-                        <div v-if="courses.data.length > 0" class="space-y-6">
-                            <div
-                                class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
-                            >
-                                <CourseCard
-                                    v-for="course in courses.data"
-                                    :key="course.id"
-                                    :course="course"
-                                />
-                            </div>
-
-                            <!-- Pagination -->
-                            <Pagination
-                                :current-page="courses.current_page"
-                                :last-page="courses.last_page"
-                                :links="courses.links"
+                <!-- Results -->
+                <div class="flex-1">
+                    <!-- Courses Grid -->
+                    <div v-if="courses.data.length > 0" class="space-y-6">
+                        <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                            <CourseCard
+                                v-for="course in courses.data"
+                                :key="course.id"
+                                :course="course"
                             />
                         </div>
 
-                        <!-- Empty State -->
-                        <div
-                            v-else
-                            class="rounded-lg border border-dashed py-16 text-center"
-                        >
-                            <SearchIcon
-                                class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
-                            />
-                            <h3 class="mb-2 text-lg font-semibold">
-                                No courses found
-                            </h3>
-                            <p class="mb-4 text-sm text-muted-foreground">
-                                Try adjusting your search or filters to find
-                                what you're looking for.
-                            </p>
-                            <Button @click="clearSearch">
-                                Clear Filters
-                            </Button>
-                        </div>
+                        <!-- Pagination -->
+                        <Pagination
+                            :current-page="courses.current_page"
+                            :last-page="courses.last_page"
+                            :links="courses.links"
+                        />
+                    </div>
+
+                    <!-- Empty State -->
+                    <div
+                        v-else
+                        class="rounded-lg border border-dashed py-16 text-center"
+                    >
+                        <SearchIcon
+                            class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
+                        />
+                        <h3 class="mb-2 text-lg font-semibold">
+                            No courses found
+                        </h3>
+                        <p class="mb-4 text-sm text-muted-foreground">
+                            Try adjusting your search or filters to find what
+                            you're looking for.
+                        </p>
+                        <Button @click="clearSearch"> Clear Filters </Button>
                     </div>
                 </div>
             </div>
