@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import DataTable, {
+    type Column,
+} from '@/components/DataTable.vue';
+import Searchbar from '@/components/Searchbar.vue';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Button } from '@/components/ui/button';
-import DataTable, { type Column, type Action } from '@/components/DataTable.vue';
-import Searchbar from '@/components/Searchbar.vue';
+import { ref } from 'vue';
+import { TrashIcon, EditIcon, PlusIcon } from 'lucide-vue-next';
 
 interface Playlist {
     id: number;
@@ -53,19 +56,27 @@ const deletePlaylist = (playlist: Playlist) => {
 };
 
 const handleSearch = (query: string) => {
-    router.get('/admin/playlists', {
-        search: query || undefined,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/admin/playlists',
+        {
+            search: query || undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const handleClearSearch = () => {
-    router.get('/admin/playlists', {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/admin/playlists',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const columns: Column<Playlist>[] = [
@@ -74,19 +85,6 @@ const columns: Column<Playlist>[] = [
     { key: 'posts_count', label: 'Posts', align: 'left' },
     { key: 'is_published', label: 'Status', align: 'left' },
     { key: 'created_at', label: 'Created', align: 'left' },
-];
-
-const actions: Action<Playlist>[] = [
-    {
-        label: 'Edit',
-        href: (playlist) => `/admin/playlists/${playlist.slug}/edit`,
-        variant: 'outline',
-    },
-    {
-        label: 'Delete',
-        onClick: (playlist) => deletePlaylist(playlist),
-        variant: 'outline',
-    },
 ];
 </script>
 
@@ -98,13 +96,13 @@ const actions: Action<Playlist>[] = [
             <div class="mb-6 flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold">Playlists</h1>
-                    <p class="text-muted-foreground">Manage your content playlists</p>
+                    <p class="text-muted-foreground">
+                        Manage your content playlists
+                    </p>
                 </div>
                 <Link href="/admin/playlists/create">
                     <Button>
-                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
+                        <PlusIcon class="h-4 w-4" />
                         Create Playlist
                     </Button>
                 </Link>
@@ -124,7 +122,6 @@ const actions: Action<Playlist>[] = [
             <DataTable
                 :data="props.playlists.data"
                 :columns="columns"
-                :actions="actions"
                 :pagination="props.playlists"
                 empty-message="No playlists found"
             >
@@ -137,9 +134,22 @@ const actions: Action<Playlist>[] = [
                             :alt="row.title"
                             class="h-full w-full object-cover"
                         />
-                        <div v-else class="flex h-full w-full items-center justify-center bg-muted">
-                            <svg class="h-6 w-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <div
+                            v-else
+                            class="flex h-full w-full items-center justify-center bg-muted"
+                        >
+                            <svg
+                                class="h-6 w-6 text-muted-foreground"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
                             </svg>
                         </div>
                     </div>
@@ -149,7 +159,9 @@ const actions: Action<Playlist>[] = [
                 <template #cell-title="{ row }">
                     <div>
                         <p class="font-medium">{{ row.title }}</p>
-                        <p class="text-sm text-muted-foreground line-clamp-1">{{ row.description }}</p>
+                        <p class="line-clamp-1 text-sm text-muted-foreground">
+                            {{ row.description }}
+                        </p>
                     </div>
                 </template>
 
@@ -161,7 +173,11 @@ const actions: Action<Playlist>[] = [
                 <!-- Status Cell -->
                 <template #cell-is_published="{ row }">
                     <span
-                        :class="row.is_published ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'"
+                        :class="
+                            row.is_published
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                        "
                         class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
                     >
                         {{ row.is_published ? 'Published' : 'Draft' }}
@@ -173,6 +189,20 @@ const actions: Action<Playlist>[] = [
                     <span class="text-sm text-muted-foreground">
                         {{ new Date(row.created_at).toLocaleDateString() }}
                     </span>
+                </template>
+
+                <!-- Actions -->
+                <template #actions="{ row }">
+                    <div class="flex gap-2">
+                        <Link :href="`/admin/playlists/${row.slug}/edit`">
+                            <Button variant="outline">
+                                <EditIcon class="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <Button variant="outline" @click="deletePlaylist(row)">
+                            <TrashIcon class="h-4 w-4" />
+                        </Button>
+                    </div>
                 </template>
             </DataTable>
         </div>

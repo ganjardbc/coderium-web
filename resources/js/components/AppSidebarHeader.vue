@@ -6,6 +6,7 @@ import type { BreadcrumbItemType } from '@/types';
 withDefaults(
     defineProps<{
         breadcrumbs?: BreadcrumbItemType[];
+        isBack?: boolean;
     }>(),
     {
         breadcrumbs: () => [],
@@ -20,7 +21,7 @@ withDefaults(
         <div class="flex items-center gap-2">
             <SidebarTrigger class="-ml-1" />
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
-                <Breadcrumbs :breadcrumbs="breadcrumbs" />
+                <Breadcrumbs :breadcrumbs="breadcrumbs" :is-back="isBack" />
             </template>
         </div>
     </header>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
-import { Link } from '@inertiajs/vue3';
-import { PlaySquare, ChevronLeft, ChevronRight } from 'lucide-vue-next';
-import emblaCarouselVue from 'embla-carousel-vue';
 import { Button } from '@/components/ui/button';
+import { Link } from '@inertiajs/vue3';
+import emblaCarouselVue from 'embla-carousel-vue';
+import { ChevronLeft, ChevronRight, PlaySquare } from 'lucide-vue-next';
+import { ref, watchEffect } from 'vue';
 
 interface Playlist {
     id: number;
@@ -55,10 +55,7 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
 </script>
 
 <template>
-    <section
-        id="playlists"
-        class="py-8"
-    >
+    <section id="playlists" class="py-8">
         <div class="container mx-auto px-4">
             <div class="mb-4 flex flex-row items-center justify-between gap-2">
                 <h2 class="text-xl font-bold">Our Playlists</h2>
@@ -68,7 +65,7 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
                     <Button
                         size="lg"
                         variant="outline"
-                        class="px-0 w-[40px] rounded-full"
+                        class="w-[40px] rounded-full px-0"
                         :disabled="!canScrollLeft"
                         @click="scrollPlaylists('left')"
                     >
@@ -77,7 +74,7 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
                     <Button
                         size="lg"
                         variant="outline"
-                        class="px-0 w-[40px] rounded-full"
+                        class="w-[40px] rounded-full px-0"
                         :disabled="!canScrollRight"
                         @click="scrollPlaylists('right')"
                     >
@@ -86,44 +83,49 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
                 </div>
             </div>
 
-            <div
-                v-if="playlists.length > 0"
-                class="relative"
-            >
+            <div v-if="playlists.length > 0" class="relative">
                 <div ref="emblaRef" class="overflow-hidden">
-                    <div class="flex gap-4 touch-pan-y">
+                    <div class="flex touch-pan-y gap-4">
                         <div
                             v-for="playlist in playlists"
                             :key="playlist.id"
-                            class="flex-[0_0_auto] min-w-0"
+                            class="min-w-0 flex-[0_0_auto]"
                         >
                             <Button
                                 :as="Link"
                                 :href="`/playlists/${playlist.slug}`"
                                 size="lg"
                                 variant="outline"
-                                class="flex flex-row w-auto !py-6"
+                                class="flex w-auto flex-row !py-6"
                             >
-                                <PlaySquare class="h-10 w-10 mr-2" />
-                                <span class="text-md font-medium">{{ playlist.title }}</span>
-                                <span class="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground transition-colors group-hover:bg-primary/10">
+                                <PlaySquare class="mr-2 h-10 w-10" />
+                                <span class="text-md font-medium">{{
+                                    playlist.title
+                                }}</span>
+                                <span
+                                    class="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground transition-colors group-hover:bg-primary/10"
+                                >
                                     {{ playlist.posts_count }}
                                 </span>
                             </Button>
                         </div>
-                        <div class="flex-[0_0_auto] min-w-0">
+                        <div class="min-w-0 flex-[0_0_auto]">
                             <Button
                                 :as="Link"
                                 href="/playlists"
                                 size="lg"
                                 variant="outline"
-                                class="flex flex-row w-auto !py-6 bg-gray-50 dark:bg-gray-800"
+                                class="flex w-auto flex-row bg-gray-50 !py-6 dark:bg-gray-800"
                             >
                                 <span class="text-md font-medium">
                                     Browse Playlists
                                 </span>
-                                <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary ml-4">
-                                    <ChevronRight class="h-4 w-4 text-white dark:text-black" />
+                                <div
+                                    class="ml-4 flex h-6 w-6 items-center justify-center rounded-full bg-primary"
+                                >
+                                    <ChevronRight
+                                        class="h-4 w-4 text-white dark:text-black"
+                                    />
                                 </div>
                             </Button>
                         </div>

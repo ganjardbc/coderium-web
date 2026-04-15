@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { X, Upload, Image as ImageIcon, Film } from 'lucide-vue-next';
 import axios from 'axios';
+import { Film, Image as ImageIcon, Upload, X } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Media {
     id: number;
@@ -46,7 +46,7 @@ const formatFileSize = (bytes: number): string => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
 const validateFile = (file: File): string | null => {
@@ -81,21 +81,28 @@ const uploadFiles = async (fileList: FileList | File[]) => {
         const formData = new FormData();
 
         if (props.multiple) {
-            validFiles.forEach(file => {
+            validFiles.forEach((file) => {
                 formData.append('files[]', file);
             });
             formData.append('collection', 'posts');
 
-            const response = await axios.post('/api/v1/media/upload-multiple', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
+            const response = await axios.post(
+                '/api/v1/media/upload-multiple',
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            uploadProgress.value = Math.round(
+                                (progressEvent.loaded * 100) /
+                                    progressEvent.total,
+                            );
+                        }
+                    },
                 },
-                onUploadProgress: (progressEvent) => {
-                    if (progressEvent.total) {
-                        uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                    }
-                },
-            });
+            );
 
             const uploadedMedia = response.data.media;
             files.value = [...files.value, ...uploadedMedia];
@@ -103,16 +110,23 @@ const uploadFiles = async (fileList: FileList | File[]) => {
             formData.append('file', validFiles[0]);
             formData.append('collection', 'posts');
 
-            const response = await axios.post('/api/v1/media/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
+            const response = await axios.post(
+                '/api/v1/media/upload',
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            uploadProgress.value = Math.round(
+                                (progressEvent.loaded * 100) /
+                                    progressEvent.total,
+                            );
+                        }
+                    },
                 },
-                onUploadProgress: (progressEvent) => {
-                    if (progressEvent.total) {
-                        uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                    }
-                },
-            });
+            );
 
             const uploadedMedia = response.data.media;
             files.value = [uploadedMedia];
@@ -170,9 +184,11 @@ const openFilePicker = () => {
             @dragover.prevent="handleDragOver"
             @dragleave="handleDragLeave"
             :class="[
-                'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors cursor-pointer',
-                isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50',
-                disabled ? 'opacity-50 cursor-not-allowed' : '',
+                'relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors',
+                isDragging
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted-foreground/25 hover:border-primary/50',
+                disabled ? 'cursor-not-allowed opacity-50' : '',
                 isUploading ? 'pointer-events-none' : '',
             ]"
         >
@@ -192,13 +208,17 @@ const openFilePicker = () => {
                 </div>
                 <p class="text-sm font-medium">Uploading...</p>
                 <div class="mt-2 w-64">
-                    <div class="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                        class="h-2 w-full overflow-hidden rounded-full bg-secondary"
+                    >
                         <div
                             class="h-full bg-primary transition-all duration-300"
                             :style="{ width: `${uploadProgress}%` }"
                         ></div>
                     </div>
-                    <p class="mt-1 text-xs text-muted-foreground">{{ uploadProgress }}%</p>
+                    <p class="mt-1 text-xs text-muted-foreground">
+                        {{ uploadProgress }}%
+                    </p>
                 </div>
             </div>
 
@@ -206,11 +226,19 @@ const openFilePicker = () => {
                 <Upload class="mx-auto h-12 w-12 text-muted-foreground" />
                 <div class="mt-4">
                     <p class="text-sm font-medium">
-                        {{ isDragging ? 'Drop files here' : 'Click to upload or drag and drop' }}
+                        {{
+                            isDragging
+                                ? 'Drop files here'
+                                : 'Click to upload or drag and drop'
+                        }}
                     </p>
                     <p class="mt-1 text-xs text-muted-foreground">
                         {{ accept.includes('image') ? 'Images' : '' }}
-                        {{ accept.includes('image') && accept.includes('video') ? ' and ' : '' }}
+                        {{
+                            accept.includes('image') && accept.includes('video')
+                                ? ' and '
+                                : ''
+                        }}
                         {{ accept.includes('video') ? 'Videos' : '' }}
                         up to {{ maxSize }}MB
                     </p>
@@ -220,7 +248,9 @@ const openFilePicker = () => {
 
         <!-- Uploaded Files Preview -->
         <div v-if="files.length > 0" class="space-y-2">
-            <p class="text-sm font-medium">Uploaded Files ({{ files.length }})</p>
+            <p class="text-sm font-medium">
+                Uploaded Files ({{ files.length }})
+            </p>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div
                     v-for="(file, index) in files"
@@ -240,38 +270,58 @@ const openFilePicker = () => {
                             :src="file.url"
                             class="h-full w-full object-cover"
                         ></video>
-                        <div v-else class="flex h-full items-center justify-center">
+                        <div
+                            v-else
+                            class="flex h-full items-center justify-center"
+                        >
                             <Film class="h-12 w-12 text-muted-foreground" />
                         </div>
                     </div>
 
                     <!-- Info -->
                     <div class="p-3">
-                        <p class="truncate text-sm font-medium" :title="file.name">{{ file.name }}</p>
-                        <p class="text-xs text-muted-foreground">{{ formatFileSize(file.size) }}</p>
+                        <p
+                            class="truncate text-sm font-medium"
+                            :title="file.name"
+                        >
+                            {{ file.name }}
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                            {{ formatFileSize(file.size) }}
+                        </p>
                     </div>
 
                     <!-- Remove Button -->
                     <button
                         v-if="!disabled"
                         @click="removeFile(index)"
-                        class="absolute right-2 top-2 rounded-full bg-destructive p-1 text-destructive-foreground opacity-0 transition-opacity hover:bg-destructive/90 group-hover:opacity-100"
+                        class="absolute top-2 right-2 rounded-full bg-destructive p-1 text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/90"
                         type="button"
                     >
                         <X class="h-4 w-4" />
                     </button>
 
                     <!-- Type Badge -->
-                    <div class="absolute left-2 top-2">
+                    <div class="absolute top-2 left-2">
                         <span
                             :class="[
                                 'inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold',
-                                file.type === 'image' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '',
-                                file.type === 'video' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : '',
+                                file.type === 'image'
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                    : '',
+                                file.type === 'video'
+                                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                                    : '',
                             ]"
                         >
-                            <ImageIcon v-if="file.type === 'image'" class="h-3 w-3" />
-                            <Film v-else-if="file.type === 'video'" class="h-3 w-3" />
+                            <ImageIcon
+                                v-if="file.type === 'image'"
+                                class="h-3 w-3"
+                            />
+                            <Film
+                                v-else-if="file.type === 'video'"
+                                class="h-3 w-3"
+                            />
                             {{ file.type }}
                         </span>
                     </div>

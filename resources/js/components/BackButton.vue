@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { ArrowLeft as ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft } from 'lucide-vue-next';
 
 const onBackClick = () => {
     window.history.back();
@@ -8,8 +8,10 @@ const onBackClick = () => {
 </script>
 <template>
     <!-- Back Button -->
-    <section class="border-b bg-card/50 h-16">
-        <div class="container mx-auto px-4 flex justify-between items-center gap-4 h-full">
+    <section class="h-16 border-b bg-card/50">
+        <div
+            class="container mx-auto flex h-full items-center justify-between gap-4 px-4"
+        >
             <slot name="prepend">
                 <Button
                     variant="ghost"
@@ -18,9 +20,7 @@ const onBackClick = () => {
                     @click="onBackClick"
                 >
                     <ArrowLeft class="h-4 w-4" />
-                    <span class="text-md font-semibold">
-                        Back
-                    </span>
+                    <span class="text-md font-semibold"> Back </span>
                 </Button>
             </slot>
 

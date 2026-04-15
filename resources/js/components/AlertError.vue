@@ -4,7 +4,7 @@ import { AlertCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
-    errors: string[];
+    errors: string[] | Record<string, string | string[]>;
     title?: string;
 }
 
@@ -12,7 +12,23 @@ const props = withDefaults(defineProps<Props>(), {
     title: 'Something went wrong.',
 });
 
-const uniqueErrors = computed(() => Array.from(new Set(props.errors)));
+const uniqueErrors = computed(() => {
+    if (Array.isArray(props.errors)) {
+        return Array.from(new Set(props.errors));
+    }
+
+    // Handle object format (Inertia form errors)
+    const errorMessages: string[] = [];
+    for (const [field, messages] of Object.entries(props.errors)) {
+        if (Array.isArray(messages)) {
+            errorMessages.push(...messages);
+        } else if (typeof messages === 'string') {
+            errorMessages.push(messages);
+        }
+    }
+
+    return Array.from(new Set(errorMessages));
+});
 </script>
 
 <template>

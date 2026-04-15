@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
-import { PlaySquare, ChevronLeft, ChevronRight } from 'lucide-vue-next';
-import emblaCarouselVue from 'embla-carousel-vue';
 import { Button } from '@/components/ui/button';
+import { Link, router } from '@inertiajs/vue3';
+import emblaCarouselVue from 'embla-carousel-vue';
+import { ChevronLeft, ChevronRight, PlaySquare } from 'lucide-vue-next';
+import { ref, watchEffect } from 'vue';
 
-import PostCard from '@/components/PostCard.vue';
 import Pagination from '@/components/Pagination.vue';
+import PostCard from '@/components/PostCard.vue';
 import Searchbar from '@/components/Searchbar.vue';
 
 interface Post {
@@ -81,29 +81,34 @@ const props = defineProps<{
 const searchQuery = ref(props.filters?.search || '');
 
 const handleSearch = (query: string) => {
-    router.get('/', {
-        q: query || undefined,
-        // sort: 'recent',
-        // type: 'all',
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/',
+        {
+            q: query || undefined,
+            // sort: 'recent',
+            // type: 'all',
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const handleClearSearch = () => {
-    router.get('/', {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 </script>
 
 <template>
-    <section
-        id="posts"
-        class="py-8 border-t"
-    >
+    <section id="posts" class="border-t py-8">
         <div class="container mx-auto px-4">
             <div class="mb-4 flex flex-row items-center justify-between gap-2">
                 <h2 class="text-xl font-bold">{{ title || 'Posts' }}</h2>
@@ -113,7 +118,7 @@ const handleClearSearch = () => {
                     <Button
                         size="lg"
                         variant="outline"
-                        class="px-0 w-[40px] rounded-full"
+                        class="w-[40px] rounded-full px-0"
                         :disabled="!canScrollLeft"
                         @click="scrollPosts('left')"
                     >
@@ -122,7 +127,7 @@ const handleClearSearch = () => {
                     <Button
                         size="lg"
                         variant="outline"
-                        class="px-0 w-[40px] rounded-full"
+                        class="w-[40px] rounded-full px-0"
                         :disabled="!canScrollRight"
                         @click="scrollPosts('right')"
                     >
@@ -132,10 +137,7 @@ const handleClearSearch = () => {
             </div>
 
             <!-- Search Posts -->
-            <div
-                v-if="ENABLE_POST_SEARCH"
-                class="mb-8"
-            >
+            <div v-if="ENABLE_POST_SEARCH" class="mb-8">
                 <Searchbar
                     v-model="searchQuery"
                     placeholder="Search posts..."
@@ -144,32 +146,33 @@ const handleClearSearch = () => {
                 />
             </div>
 
-            <div
-                v-if="posts.length > 0"
-                class="relative"
-            >
+            <div v-if="posts.length > 0" class="relative">
                 <div ref="emblaRef" class="overflow-hidden">
-                    <div class="flex gap-4 touch-pan-y">
+                    <div class="flex touch-pan-y gap-4">
                         <PostCard
                             v-for="post in posts"
                             :key="post.id"
                             :post="post"
                             :show-tags="true"
-                            class="!min-w-[310px] !max-w-[310px]"
+                            class="!max-w-[310px] !min-w-[310px]"
                         />
-                        <div class="flex-[0_0_auto] min-w-0">
+                        <div class="min-w-0 flex-[0_0_auto]">
                             <Button
                                 :as="Link"
                                 :href="`/explore?q=${props.filters?.search || ''}&sort=${props.filters?.sort || ''}&type=all`"
                                 size="lg"
                                 variant="outline"
-                                class="flex flex-col !py-6 !min-w-[310px] !max-w-[310px] h-full bg-gray-50 dark:bg-gray-800"
+                                class="flex h-full !max-w-[310px] !min-w-[310px] flex-col bg-gray-50 !py-6 dark:bg-gray-800"
                             >
-                                <span class="mb-2 font-medium text-lg">
+                                <span class="mb-2 text-lg font-medium">
                                     Explore Posts
                                 </span>
-                                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary">
-                                    <ChevronRight class="h-5 w-5 text-white dark:text-black" />
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-primary"
+                                >
+                                    <ChevronRight
+                                        class="h-5 w-5 text-white dark:text-black"
+                                    />
                                 </div>
                             </Button>
                         </div>
@@ -177,10 +180,7 @@ const handleClearSearch = () => {
                 </div>
             </div>
 
-            <div
-                v-else
-                class="py-12 text-center text-muted-foreground"
-            >
+            <div v-else class="py-12 text-center text-muted-foreground">
                 <PlaySquare class="mx-auto mb-4 h-12 w-12" />
                 <p>No posts available yet</p>
             </div>

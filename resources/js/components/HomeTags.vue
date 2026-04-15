@@ -15,11 +15,9 @@ defineProps<{
 </script>
 
 <template>
-    <section class="py-8 border-t">
-        <div class="container max-w-6xl mx-auto px-4">
-            <h2 class="text-xl font-bold text-center mb-4">
-                Popular Tags
-            </h2>
+    <section class="border-t py-8">
+        <div class="container mx-auto max-w-6xl px-4">
+            <h2 class="mb-4 text-center text-xl font-bold">Popular Tags</h2>
 
             <div class="flex flex-wrap justify-center gap-3">
                 <Button
@@ -31,9 +29,11 @@ defineProps<{
                     size="lg"
                     class="group relative overflow-hidden rounded-full transition-all hover:scale-105"
                 >
-                    <Tag class="h-4 w-4 mr-2" />
+                    <Tag class="mr-2 h-4 w-4" />
                     <span class="font-medium">{{ tag.name }}</span>
-                    <span class="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground transition-colors group-hover:bg-primary/10">
+                    <span
+                        class="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground transition-colors group-hover:bg-primary/10"
+                    >
                         {{ tag.count }}
                     </span>
                 </Button>

@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
-import { LogIn, HomeIcon, CompassIcon, PlaySquareIcon, BookOpenIcon, LayoutDashboardIcon } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
-import ThemeToggle from '@/components/ThemeToggle.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import ThemeToggle from '@/components/ThemeToggle.vue';
+import { Button } from '@/components/ui/button';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    BookOpenIcon,
+    CompassIcon,
+    HomeIcon,
+    LayoutDashboardIcon,
+    LogIn,
+    PlaySquareIcon,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const ENABLE_DARK_MODE = true;
 const ENABLE_EXPLORE = true;
 const ENABLE_PLAYLISTS = true;
-const ENABLE_COURSE = false;
+const ENABLE_COURSE = true;
 
 const $page = usePage();
 const isAuth = computed(() => {
@@ -39,7 +46,7 @@ const listOfMenus = computed(() => {
         {
             label: 'Course',
             icon: BookOpenIcon,
-            route: '/course',
+            route: '/courses',
             isVisible: ENABLE_COURSE,
         },
     ];
@@ -69,15 +76,16 @@ const listOfMenus = computed(() => {
                                 :href="menu.route"
                                 :class="[
                                     'layout__menu-item',
-                                    $page.url === menu.route || $page.url.startsWith(menu.route + '/')
+                                    $page.url === menu.route ||
+                                    $page.url.startsWith(menu.route + '/')
                                         ? 'layout__menu-item--active'
-                                        : 'layout__menu-item--inactive'
+                                        : 'layout__menu-item--inactive',
                                 ]"
                             >
                                 <div class="layout__menu-icon">
                                     <component
                                         :is="menu.icon"
-                                        style="width: 20px;"
+                                        style="width: 20px"
                                     />
                                 </div>
                                 <div class="layout__menu-label">
@@ -93,8 +101,7 @@ const listOfMenus = computed(() => {
                             :as="Link"
                             href="/admin/dashboard"
                             variant="default"
-                            size="lg"
-                            class="w-[40px] h-[40px] rounded-full"
+                            class="h-[44px] w-[44px] rounded-full !px-3"
                         >
                             <LayoutDashboardIcon class="inline-block h-4 w-4" />
                         </Button>
@@ -103,8 +110,7 @@ const listOfMenus = computed(() => {
                             :as="Link"
                             href="/login"
                             variant="default"
-                            size="lg"
-                            class="w-[40px] h-[40px] rounded-full"
+                            class="h-[44px] w-[44px] rounded-full !px-3"
                         >
                             <LogIn class="inline-block h-4 w-4" />
                         </Button>
@@ -125,13 +131,14 @@ const listOfMenus = computed(() => {
                 <!-- Front Append -->
                 <slot name="front-append" />
 
-                <footer class="layout__footer">
+                <!-- <footer class="layout__footer">
                     <div class="layout__footer-content">
                         <div class="layout__footer-text">
-                            © {{ new Date().getFullYear() }} Coderium. All rights reserved.
+                            © {{ new Date().getFullYear() }} Coderium. All
+                            rights reserved.
                         </div>
                     </div>
-                </footer>
+                </footer> -->
             </div>
         </div>
     </div>

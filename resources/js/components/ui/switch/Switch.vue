@@ -2,20 +2,28 @@
 import { SwitchRoot, SwitchThumb, type SwitchRootEmits, type SwitchRootProps } from 'radix-vue';
 import { cn } from '@/lib/utils';
 
-const props = defineProps<SwitchRootProps & { class?: string }>();
-const emits = defineEmits<SwitchRootEmits>();
+interface Props extends SwitchRootProps {
+    class?: string;
+    modelValue?: boolean;
+}
 
-const forwarded = (emit: any) => emit;
+interface Emits extends SwitchRootEmits {
+    'update:modelValue': [value: boolean];
+}
+
+const props = defineProps<Props>();
+const emits = defineEmits<Emits>();
 </script>
 
 <template>
     <SwitchRoot
         v-bind="props"
+        :checked="props.modelValue"
         :class="cn(
             'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
             props.class
         )"
-        @update:checked="(value) => emits('update:checked', value)"
+        @update:checked="(value) => emits('update:modelValue', value)"
     >
         <SwitchThumb
             :class="cn(

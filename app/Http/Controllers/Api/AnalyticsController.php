@@ -47,8 +47,12 @@ class AnalyticsController extends Controller
             ->get();
 
         // Posts created per month (last 6 months)
+        $dateFormat = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : 'DATE_FORMAT(created_at, "%Y-%m")';
+
         $postsPerMonth = Post::select(
-                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                DB::raw($dateFormat . ' as month'),
                 DB::raw('count(*) as count')
             )
             ->where('created_at', '>=', now()->subMonths(6))

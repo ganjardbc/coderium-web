@@ -28,7 +28,7 @@ class PostController extends Controller
                 });
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
         return Inertia::render('admin/posts/Index', [
@@ -112,6 +112,26 @@ class PostController extends Controller
 
         return redirect()->route('admin.posts.index')
             ->with('success', 'Post created successfully.');
+    }
+
+    /**
+     * Display the specified post.
+     */
+    public function show(string $slug): Response
+    {
+        $post = Post::with(['user', 'media', 'playlists', 'views', 'likes'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        // Parse tags from JSON string to array
+        $postData = $post->toArray();
+        if (isset($postData['tags']) && is_string($postData['tags'])) {
+            $postData['tags'] = json_decode($postData['tags'], true) ?? [];
+        }
+
+        return Inertia::render('admin/posts/Show', [
+            'post' => $postData,
+        ]);
     }
 
     /**

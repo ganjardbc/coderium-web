@@ -14,9 +14,5 @@ defineProps<Props>();
 </script>
 
 <template>
-    <img
-        :src="LogoFill"
-        :class="className"
-        alt="Coderium"
-    />
+    <img :src="LogoFill" :class="className" alt="Coderium" />
 </template>

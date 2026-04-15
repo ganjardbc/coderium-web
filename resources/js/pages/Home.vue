@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { PlaySquare, Tag } from 'lucide-vue-next';
-import FrontLayout from '@/layouts/FrontLayout.vue';
-import PostCard from '@/components/PostCard.vue';
-import PlaylistCard from '@/components/PlaylistCard.vue';
-import Pagination from '@/components/Pagination.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
+import Pagination from '@/components/Pagination.vue';
+import PlaylistCard from '@/components/PlaylistCard.vue';
+import PostCard from '@/components/PostCard.vue';
 import Searchbar from '@/components/Searchbar.vue';
 import { Button } from '@/components/ui/button';
+import FrontLayout from '@/layouts/FrontLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { PlaySquare, Tag } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 interface Post {
     id: number;
@@ -70,19 +70,27 @@ const props = defineProps<Props>();
 const searchQuery = ref(props.filters?.search || '');
 
 const handleSearch = (query: string) => {
-    router.get('/', {
-        q: query || undefined,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/',
+        {
+            q: query || undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const handleClearSearch = () => {
-    router.get('/', {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 </script>
 
@@ -94,17 +102,29 @@ const handleClearSearch = () => {
         <section class="py-4 lg:py-8">
             <div class="w-full px-4">
                 <!-- Two Column Layout -->
-                <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
+                <div class="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
                     <!-- Main Column: Posts List (Second on mobile, first on desktop) -->
-                    <div class="flex-1 max-w-xl mx-auto space-y-6 ">
+                    <div class="mx-auto max-w-xl flex-1 space-y-6">
                         <!-- Hero Section -->
-                        <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12 rounded-lg">
+                        <section
+                            class="rounded-lg border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12"
+                        >
                             <div class="container mx-auto px-4 text-center">
-                                <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                                    The <span class="font-extrabold text-white">Code Heroes</span> Journey
+                                <h1
+                                    class="text-2xl font-bold tracking-tight text-white md:text-3xl"
+                                >
+                                    The
+                                    <span class="font-extrabold text-white"
+                                        >Code Heroes</span
+                                    >
+                                    Journey
                                 </h1>
-                                <p class="mx-auto max-w-3xl text-md md:text-lg text-white mt-2">
-                                    Discover tutorials, code snippets, and development insights shared by the community.
+                                <p
+                                    class="text-md mx-auto mt-2 max-w-3xl text-white md:text-lg"
+                                >
+                                    Discover tutorials, code snippets, and
+                                    development insights shared by the
+                                    community.
                                 </p>
                             </div>
                         </section>
@@ -140,7 +160,10 @@ const handleClearSearch = () => {
 
                         <!-- Pagination -->
                         <Pagination
-                            v-if="recentPosts.last_page > 1 && ENABLE_POST_PAGINATION"
+                            v-if="
+                                recentPosts.last_page > 1 &&
+                                ENABLE_POST_PAGINATION
+                            "
                             :current-page="recentPosts.current_page"
                             :last-page="recentPosts.last_page"
                             :links="recentPosts.links"
@@ -148,15 +171,19 @@ const handleClearSearch = () => {
                     </div>
 
                     <!-- Sidebar Column: Sticky Content (First on mobile, second on desktop) -->
-                    <aside class="flex-1 max-w-xl mx-auto hidden xl:block">
-                        <div class="xl:sticky xl:top-8 space-y-6">
+                    <aside class="mx-auto hidden max-w-xl flex-1 xl:block">
+                        <div class="space-y-6 xl:sticky xl:top-8">
                             <!-- Featured Playlists Card -->
                             <div
                                 v-if="ENABLE_PLAYLIST && playlists.length > 0"
                                 class="w-full"
                             >
-                                <div class="mb-4 flex items-center justify-between">
-                                    <h3 class="text-lg font-semibold">Featured Playlists</h3>
+                                <div
+                                    class="mb-4 flex items-center justify-between"
+                                >
+                                    <h3 class="text-lg font-semibold">
+                                        Featured Playlists
+                                    </h3>
                                     <Button
                                         :as="Link"
                                         href="/playlists"
@@ -178,10 +205,15 @@ const handleClearSearch = () => {
 
                             <!-- Popular Tags Card -->
                             <div
-                                v-if="ENABLE_POPULAR_TAGS && popularTags.length > 0"
+                                v-if="
+                                    ENABLE_POPULAR_TAGS &&
+                                    popularTags.length > 0
+                                "
                                 class="w-full"
                             >
-                                <h3 class="mb-4 text-lg font-semibold">Popular Tags</h3>
+                                <h3 class="mb-4 text-lg font-semibold">
+                                    Popular Tags
+                                </h3>
                                 <div class="flex flex-wrap gap-2">
                                     <Button
                                         v-for="tag in popularTags.slice(0, 12)"
@@ -192,13 +224,15 @@ const handleClearSearch = () => {
                                         size="sm"
                                         class="group rounded-full text-xs"
                                     >
-                                        <Tag class="h-3 w-3 mr-1" />
+                                        <Tag class="mr-1 h-3 w-3" />
                                         {{ tag.name }}
-                                        <span class="ml-1 text-muted-foreground">
+                                        <span
+                                            class="ml-1 text-muted-foreground"
+                                        >
                                             {{ tag.count }}
                                         </span>
                                     </Button>
-                                     <Button
+                                    <Button
                                         v-if="popularTags.length > 4"
                                         :as="Link"
                                         href="/explore"

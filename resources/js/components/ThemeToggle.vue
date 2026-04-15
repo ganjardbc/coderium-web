@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import { useAppearance } from '@/composables/useAppearance';
 import { Monitor, Moon, Sun } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
 
 const { appearance, updateAppearance } = useAppearance();
 
@@ -32,8 +32,7 @@ const getTitle = () => {
     <Button
         @click="toggleTheme"
         variant="outline"
-        size="lg"
-        class="w-[40px] h-[40px] rounded-full"
+        class="w-[44px] h-[44px] rounded-full"
         :title="getTitle()"
     >
         <component :is="getCurrentIcon()" class="h-5 w-5" />

@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Eye, Heart, Clock, PlaySquare, FileText, Image as ImageIcon, Video } from 'lucide-vue-next';
+import {
+    Clock,
+    Eye,
+    FileText,
+    Heart,
+    Image as ImageIcon,
+    PlaySquare,
+    Video,
+} from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
 
 interface Post {
     id: number;
@@ -8,7 +17,7 @@ interface Post {
     title: string;
     subtitle: string;
     cover: string;
-    type: 'article'  | 'carousel' | 'video' | 'stack_gallery';
+    type: 'article' | 'carousel' | 'video' | 'stack_gallery';
     tags?: string[];
     views_count: number;
     likes_count: number;
@@ -42,6 +51,21 @@ const formatNumber = (num: number) => {
     return num.toString();
 };
 
+const getPostTypeVariant = (type: string) => {
+    switch (type) {
+        case 'article':
+            return 'blue';
+        case 'carousel':
+            return 'success';
+        case 'video':
+            return 'purple';
+        case 'stack_gallery':
+            return 'yellow';
+        default:
+            return 'default';
+    }
+};
+
 const getPostTags = (post: Post): string[] => {
     try {
         return JSON.parse(post.tags as unknown as string) as string[];
@@ -68,37 +92,38 @@ const getPostTags = (post: Post): string[] => {
             </div>
 
             <!-- Type Badge -->
-            <div class="absolute left-3 top-3">
-                <span
-                    :class="[
-                        'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm',
-                        post.type === 'article' ? 'bg-blue-500/90 text-white' : '',
-                        post.type === 'carousel' ? 'bg-green-500/90 text-white' : '',
-                        post.type === 'video' ? 'bg-purple-500/90 text-white' : '',
-                        post.type === 'stack_gallery' ? 'bg-yellow-500/90 text-white' : '',
-                    ]"
-                >
+            <div class="absolute top-3 left-3">
+                <Badge :variant="getPostTypeVariant(post.type)" class="backdrop-blur-sm">
                     <FileText v-if="post.type === 'article'" class="h-3 w-3" />
                     <ImageIcon v-if="post.type === 'carousel'" class="h-3 w-3" />
                     <Video v-if="post.type === 'video'" class="h-3 w-3" />
                     <ImageIcon v-if="post.type === 'stack_gallery'" class="h-3 w-3" />
                     {{ post.type.charAt(0).toUpperCase() + post.type.slice(1).replace('_', ' ') }}
-                </span>
+                </Badge>
             </div>
         </div>
 
-        <div class="p-5 flex flex-col justify-between">
-            <div class="flex flex-col min-h-[124px]">
-                <h3 class="mb-2 text-md font-semibold truncate group-hover:text-primary transition-colors">
+        <div class="flex flex-col justify-between p-5">
+            <div class="flex min-h-[124px] flex-col">
+                <h3
+                    class="text-md mb-2 truncate font-semibold transition-colors group-hover:text-primary"
+                >
                     {{ post.title }}
                 </h3>
-                <p v-if="post.subtitle" class="mb-4 line-clamp-1 text-sm text-muted-foreground">
+                <p
+                    v-if="post.subtitle"
+                    class="mb-4 line-clamp-1 text-sm text-muted-foreground"
+                >
                     {{ post.subtitle }}
                 </p>
 
                 <!-- Tags -->
                 <div
-                    v-if="showTags && getPostTags(post) && getPostTags(post).length > 0"
+                    v-if="
+                        showTags &&
+                        getPostTags(post) &&
+                        getPostTags(post).length > 0
+                    "
                     class="mb-3 flex flex-wrap gap-1"
                 >
                     <span
@@ -117,7 +142,9 @@ const getPostTags = (post: Post): string[] => {
                 </div>
             </div>
 
-            <div class="flex items-center justify-between text-xs text-muted-foreground">
+            <div
+                class="flex items-center justify-between text-xs text-muted-foreground"
+            >
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-1">
                         <Eye class="h-3.5 w-3.5" />
