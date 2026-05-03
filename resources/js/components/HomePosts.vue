@@ -102,9 +102,9 @@ const handleClearSearch = () => {
 <template>
     <section
         id="posts"
-        class="py-8 border-t"
+        class="w-full py-8 border-t"
     >
-        <div class="container mx-auto px-4">
+        <div class="w-full mx-auto px-4">
             <div class="mb-4 flex flex-row items-center justify-between gap-2">
                 <h2 class="text-xl font-bold">{{ title || 'Posts' }}</h2>
 

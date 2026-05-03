@@ -103,7 +103,7 @@ class PostController extends Controller
             $relatedPosts = $relatedPosts->merge($additionalPosts);
         }
 
-        return Inertia::render('PostDetail', [
+        return Inertia::render('posts/PostDetail', [
             'post' => [
                 'id' => $post->id,
                 'slug' => $post->slug,

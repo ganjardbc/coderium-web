@@ -27,7 +27,7 @@ class PlaylistController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return Inertia::render('Playlists', [
+        return Inertia::render('playlists/Playlists', [
             'playlists' => $playlists,
             'filters' => [
                 'search' => $search,
@@ -76,7 +76,7 @@ class PlaylistController extends Controller
             }),
         ];
 
-        return Inertia::render('PlaylistDetail', [
+        return Inertia::render('playlists/PlaylistDetail', [
             'playlist' => $playlistData,
         ]);
     }

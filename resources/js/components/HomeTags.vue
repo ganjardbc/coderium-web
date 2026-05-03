@@ -16,7 +16,7 @@ defineProps<{
 
 <template>
     <section class="py-8 border-t">
-        <div class="container max-w-6xl mx-auto px-4">
+        <div class="w-full max-w-6xl mx-auto px-4">
             <h2 class="text-xl font-bold text-center mb-4">
                 Popular Tags
             </h2>

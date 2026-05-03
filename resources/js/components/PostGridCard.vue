@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Eye, Heart, PlaySquare, FileText, Image as ImageIcon, Video } from 'lucide-vue-next';
+import { Eye, Heart, PlaySquare } from 'lucide-vue-next';
+import PostBadge from '@/components/PostBadge.vue';
 
 interface Post {
     id: number;
@@ -60,25 +61,10 @@ const formatNumber = (num: number) => {
             </div>
 
             <!-- Type Badge -->
-            <div class="absolute left-2 top-2">
-                <span
-                    :class="[
-                        'inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold backdrop-blur-sm',
-                        post.type === 'article' ? 'bg-blue-500/90 text-white' : '',
-                        post.type === 'carousel' ? 'bg-green-500/90 text-white' : '',
-                        post.type === 'video' ? 'bg-purple-500/90 text-white' : '',
-                        post.type === 'stack_gallery' ? 'bg-yellow-500/90 text-white' : '',
-                    ]"
-                >
-                    <FileText v-if="post.type === 'article'" class="h-3 w-3" />
-                    <ImageIcon v-if="post.type === 'carousel'" class="h-3 w-3" />
-                    <Video v-if="post.type === 'video'" class="h-3 w-3" />
-                    <ImageIcon v-if="post.type === 'stack_gallery'" class="h-3 w-3" />
-                    <span class="hidden md:block">
-                        {{ post.type.charAt(0).toUpperCase() + post.type.slice(1).replace('_', ' ') }}
-                    </span>
-                </span>
-            </div>
+            <PostBadge
+                :post-type="post.type"
+                class="absolute top-3 left-3"
+            />
         </div>
 
         <div class="absolute bottom-0 w-full p-2 hidden md:block">

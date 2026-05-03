@@ -59,7 +59,7 @@ const scrollPlaylists = (direction: 'left' | 'right') => {
         id="playlists"
         class="py-8"
     >
-        <div class="container mx-auto px-4">
+        <div class="w-full mx-auto px-4">
             <div class="mb-4 flex flex-row items-center justify-between gap-2">
                 <h2 class="text-xl font-bold">Our Playlists</h2>
 

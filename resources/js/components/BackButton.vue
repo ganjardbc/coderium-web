@@ -8,7 +8,7 @@ const onBackClick = () => {
 </script>
 <template>
     <!-- Back Button -->
-    <section class="border-b bg-card/50 h-16">
+    <section class="sticky top-0 z-100 border-b bg-card h-16">
         <div class="container mx-auto px-4 flex justify-between items-center gap-4 h-full">
             <slot name="prepend">
                 <Button

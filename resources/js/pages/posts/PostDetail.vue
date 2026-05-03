@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
-import { Clock, Eye, Heart, Tag, Share2, ChevronLeft, ChevronRight, User } from 'lucide-vue-next';
-import emblaCarouselVue from 'embla-carousel-vue';
-import FrontLayout from '@/layouts/FrontLayout.vue';
 import BackButton from '@/components/BackButton.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
 import PostCard from '@/components/PostCard.vue';
+import PostCarousel from '@/components/PostCarousel.vue';
+import PostVideo from '@/components/PostVideo.vue';
+import PostGallery from '@/components/PostGallery.vue';
 import { Button } from '@/components/ui/button';
+import FrontLayout from '@/layouts/FrontLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
+import {
+    Clock,
+    Eye,
+    Heart,
+    Share2,
+    Tag,
+    User,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Media {
     id: number;
@@ -40,29 +49,19 @@ interface Props {
     relatedPosts: Post[];
 }
 
+const PostType = {
+    ARTICLE: 'article',
+    CAROUSEL: 'carousel',
+    VIDEO: 'video',
+    STACK_GALLERY: 'stack_gallery',
+};
+
 const ENABLE_DISCOVER_MODE = false;
 
 const props = defineProps<Props>();
 
-const [emblaRef, emblaApi] = emblaCarouselVue();
-const currentImageIndex = ref(0);
 const isLiked = ref(props.isLiked);
 const likesCount = ref(props.post.likes_count);
-
-// Update current index when carousel scrolls
-watchEffect(() => {
-    if (emblaApi.value) {
-        const onSelect = () => {
-            currentImageIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
-        };
-
-        emblaApi.value.on('select', onSelect);
-        emblaApi.value.on('reInit', onSelect);
-
-        // Initialize the index
-        onSelect();
-    }
-});
 
 const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -82,27 +81,11 @@ const formatNumber = (num: number) => {
     return num.toString();
 };
 
-const nextImage = () => {
-    if (emblaApi.value) {
-        emblaApi.value.scrollNext();
-    }
-};
-
-const prevImage = () => {
-    if (emblaApi.value) {
-        emblaApi.value.scrollPrev();
-    }
-};
-
-const goToImage = (index: number) => {
-    if (emblaApi.value) {
-        emblaApi.value.scrollTo(index);
-    }
-};
-
 const toggleLike = async () => {
     try {
-        const response = await axios.post(`/api/v1/posts/${props.post.slug}/like`);
+        const response = await axios.post(
+            `/api/v1/posts/${props.post.slug}/like`,
+        );
         isLiked.value = response.data.is_liked;
         likesCount.value = response.data.likes_count;
     } catch (error) {
@@ -133,7 +116,7 @@ const getTags = () => {
 };
 
 const showPostCover = computed(() => {
-    const listOfTypes = ['article'];
+    const listOfTypes = [PostType.ARTICLE];
     return listOfTypes.includes(props.post.type) && !!props.post.cover;
 });
 
@@ -146,10 +129,7 @@ const carouselPostMedia = computed(() => {
             url: props.post.cover,
             type: 'image',
         };
-        listOfMedia = [
-            mediaCover,
-            ...listOfMedia,
-        ]
+        listOfMedia = [mediaCover, ...listOfMedia];
     }
 
     return listOfMedia;
@@ -161,9 +141,12 @@ const carouselPostMedia = computed(() => {
         <title>{{ post.title }}</title>
         <meta name="description" :content="post.subtitle || post.title" />
         <meta property="og:title" :content="post.title" />
-        <meta property="og:description" :content="post.subtitle || post.title" />
+        <meta
+            property="og:description"
+            :content="post.subtitle || post.title"
+        />
         <meta property="og:image" :content="post.cover" />
-        <meta property="og:type" content="article" />
+        <meta property="og:type" :content="post.type" />
         <meta name="twitter:card" content="summary_large_image" />
     </Head>
 
@@ -172,14 +155,16 @@ const carouselPostMedia = computed(() => {
         <BackButton>
             <template #append>
                 <!-- Type Badge -->
-                <div class="flex justify-end items-center gap-2">
+                <div class="flex items-center justify-end gap-2">
                     <Button
                         @click="toggleLike"
                         size="lg"
                         :variant="isLiked ? 'default' : 'outline'"
                         class="rounded-full !px-3"
                     >
-                        <Heart :class="['h-5 w-5', isLiked ? 'fill-current' : '']" />
+                        <Heart
+                            :class="['h-5 w-5', isLiked ? 'fill-current' : '']"
+                        />
                         <span class="hidden md:block">
                             {{ isLiked ? 'Liked' : 'Like' }}
                         </span>
@@ -191,9 +176,7 @@ const carouselPostMedia = computed(() => {
                         class="rounded-full !px-3"
                     >
                         <Share2 class="h-5 w-5" />
-                        <span class="hidden md:block">
-                            Share
-                        </span>
+                        <span class="hidden md:block"> Share </span>
                     </Button>
                 </div>
             </template>
@@ -202,136 +185,63 @@ const carouselPostMedia = computed(() => {
         <!-- Article Content -->
         <article class="container mx-auto max-w-3xl px-0 lg:px-4">
             <!-- Article: Single Cover Image -->
-            <div
-                v-if="showPostCover"
-                class="overflow-hidden aspect-video"
-            >
+            <div v-if="showPostCover" class="aspect-video overflow-hidden">
                 <img
                     :src="post.cover"
                     :alt="post.title"
-                    class="w-full object-cover aspect-video"
+                    class="aspect-video w-full object-cover"
                 />
             </div>
 
-            <div
-                v-if="post.type === 'video' && post.media.length > 0"
-                class="overflow-hidden bg-muted"
-            >
-                <video
-                    :src="post.media[0].url"
-                    controls
-                    class="w-full h-auto aspect-video"
-                >
-                    Your browser does not support the video tag.
-                </video>
-            </div>
+            <!-- Video: Post Video -->
+            <PostVideo
+                v-if="post.type === PostType.VIDEO && post.media.length > 0"
+                :url="post.media[0].url"
+            />
 
             <!-- Carousel: Multiple Images -->
-            <div
-                v-if="post.type === 'carousel' && carouselPostMedia.length > 0"
-                class="relative overflow-hidden"
-            >
-                <div ref="emblaRef" class="h-full">
-                    <div class="flex h-full touch-pan-y">
-                        <div
-                            v-for="(media, index) in carouselPostMedia"
-                            :key="index"
-                            class="flex-[0_0_100%] min-w-0 bg-muted flex items-center justify-center"
-                        >
-                            <img
-                                :src="media.url"
-                                :alt="`${post.title} - Image ${index + 1}`"
-                                class="max-w-full h-full object-contain"
-                            />
-                        </div>
-                    </div>
-                </div>
+            <PostCarousel
+                v-if="post.type === PostType.CAROUSEL && carouselPostMedia.length > 0"
+                :medias="carouselPostMedia"
+            />
 
-                <!-- Navigation Arrows -->
-                <Button
-                    v-if="carouselPostMedia.length > 1"
-                    @click="prevImage"
-                    :disabled="currentImageIndex === 0"
-                    variant="default"
-                    class="absolute left-4 bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
-                >
-                    <ChevronLeft class="h-5 w-5" />
-                </Button>
-                <Button
-                    v-if="carouselPostMedia.length > 1"
-                    @click="nextImage"
-                    :disabled="currentImageIndex === carouselPostMedia.length - 1"
-                    variant="default"
-                    class="absolute right-4 bottom-1/2 -translate-y-1/2 rounded-full w-[32px] h-[32px]"
-                >
-                    <ChevronRight class="h-5 w-5" />
-                </Button>
-
-                <!-- Image Counter -->
-                <div class="absolute top-2 right-2 rounded-full bg-black/50 px-3 py-1.5 text-sm text-white backdrop-blur-md shadow-lg shadow-inner-lg">
-                    {{ currentImageIndex + 1 }} / {{ carouselPostMedia.length }}
-                </div>
-
-                <!-- Dot Indicators -->
-                <div v-if="carouselPostMedia.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-2 backdrop-blur-sm rounded-full px-3 py-2 bg-black/50 shadow-lg shadow-inner-lg">
-                    <button
-                        v-for="(_, index) in carouselPostMedia"
-                        :key="index"
-                        @click="goToImage(index)"
-                        :class="[
-                            'h-2 rounded-full transition-all',
-                            index === currentImageIndex
-                                ? 'w-8 bg-primary'
-                                : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                        ]"
-                    />
-                </div>
-            </div>
-
-            <div class="px-4 lg:px-0 py-8">
+            <div class="px-4 py-8 lg:px-0">
                 <div class="mx-auto max-w-3xl">
                     <div class="flex flex-col gap-4">
                         <!-- Title -->
-                        <h1 class="text-xl lg:text-3xl font-bold tracking-tight">
+                        <h1
+                            class="text-xl font-bold tracking-tight lg:text-3xl"
+                        >
                             {{ post.title }}
                         </h1>
 
                         <!-- Subtitle -->
                         <p
                             v-if="post.subtitle"
-                            class="text-sm lg:text-lg text-muted-foreground"
+                            class="text-sm text-muted-foreground lg:text-lg"
                         >
                             {{ post.subtitle }}
                         </p>
 
                         <!-- Stacked Gallery -->
-                        <div
-                            v-if="post.type === 'stack_gallery' && carouselPostMedia.length > 0"
-                            class="w-full rounded-lg border overflow-hidden"
-                        >
-                            <div
-                                v-for="(media, index) in carouselPostMedia"
-                                :key="index"
-                                class="overflow-hidden"
-                            >
-                                <img
-                                    :src="media.url"
-                                    :alt="`${post.title} - Image ${index + 1}`"
-                                    class="w-full h-full object-cover"
-                                />
-                            </div>
-                        </div>
+                        <PostGallery
+                            v-if="
+                                post.type === PostType.STACK_GALLERY &&
+                                carouselPostMedia.length > 0
+                            "
+                            :medias="carouselPostMedia"
+                        />
 
                         <!-- Content -->
                         <div
-                            class="prose prose-lg dark:prose-invert max-w-none content-html"
+                            class="prose prose-lg dark:prose-invert content-html max-w-none"
                             v-html="post.content"
                         ></div>
 
                         <!-- Tags -->
                         <div
                             v-if="getTags().length > 0"
-                            class="flex items-center flex-wrap gap-2 border-t pt-4"
+                            class="flex flex-wrap items-center gap-2 border-t pt-4"
                         >
                             <Link
                                 v-for="tag in getTags()"
@@ -339,7 +249,9 @@ const carouselPostMedia = computed(() => {
                                 :href="`/explore?q=${encodeURIComponent(tag)}&sort=recent&type=all`"
                                 class="inline-flex items-center rounded-full border px-3 py-1 text-sm transition-colors hover:border-primary hover:bg-accent"
                             >
-                                <Tag class="h-4 w-4 text-muted-foreground mr-2" />
+                                <Tag
+                                    class="mr-2 h-4 w-4 text-muted-foreground"
+                                />
                                 {{ tag }}
                             </Link>
                         </div>
@@ -348,13 +260,17 @@ const carouselPostMedia = computed(() => {
                         <div class="grid grid-cols-2 gap-4 border-t pt-4">
                             <div class="flex flex-col gap-3">
                                 <div class="flex items-center gap-1">
-                                    <User class="h-4 w-4 text-muted-foreground" />
+                                    <User
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
                                     <span class="text-sm text-muted-foreground">
                                         {{ post.user.name }}
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-1">
-                                    <Clock class="h-4 w-4 text-muted-foreground" />
+                                    <Clock
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
                                     <span class="text-sm text-muted-foreground">
                                         {{ formatDate(post.published_at) }}
                                     </span>
@@ -363,13 +279,20 @@ const carouselPostMedia = computed(() => {
 
                             <div class="flex flex-col gap-3">
                                 <div class="flex items-center gap-1">
-                                    <Eye class="h-4 w-4 text-muted-foreground" />
+                                    <Eye
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
                                     <span class="text-sm text-muted-foreground">
-                                        {{ formatNumber(post.views_count) }} views
+                                        {{
+                                            formatNumber(post.views_count)
+                                        }}
+                                        views
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-1">
-                                    <Heart class="h-4 w-4 text-muted-foreground" />
+                                    <Heart
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
                                     <span class="text-sm text-muted-foreground">
                                         {{ formatNumber(likesCount) }} likes
                                     </span>
@@ -382,7 +305,10 @@ const carouselPostMedia = computed(() => {
         </article>
 
         <!-- Related Posts -->
-        <section v-if="props.relatedPosts && props.relatedPosts.length > 0" class="py-8 border-t">
+        <section
+            v-if="props.relatedPosts && props.relatedPosts.length > 0"
+            class="border-t py-8"
+        >
             <div class="container mx-auto px-4">
                 <div class="mx-auto w-full">
                     <h2 class="mb-4 text-2xl font-bold">Related Posts</h2>

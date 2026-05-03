@@ -37,6 +37,7 @@ class HomeController extends Controller
             ->where('is_published', true)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
+            ->with(['user', 'media'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
@@ -46,39 +47,49 @@ class HomeController extends Controller
             })
             ->orderBy('published_at', 'desc')
             ->paginate(8)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(function ($post) {
+                // Get media from relationship (uploaded files)
+                $mediaItems = $post->media()->get()->map(function ($media) {
+                    return [
+                        'id' => $media->id,
+                        'url' => $media->url,
+                        'type' => $media->type,
+                    ];
+                })->values();
 
-        // // Get popular published posts with pagination and search
-        // $popularPosts = Post::query()
-        //     ->where('is_published', true)
-        //     ->whereNotNull('published_at')
-        //     ->where('published_at', '<=', now())
-        //     ->when($search, function ($query, $search) {
-        //         $query->where(function ($q) use ($search) {
-        //             $q->where('title', 'like', "%{$search}%")
-        //                 ->orWhere('subtitle', 'like', "%{$search}%")
-        //                 ->orWhere('content', 'like', "%{$search}%");
-        //         });
-        //     })
-        //     ->orderBy('views_count', 'desc')
-        //     ->paginate(8)
-        //     ->withQueryString();
+                // If no media from relationship, check if carousel/video posts have media in JSON field
+                if ($mediaItems->isEmpty() && $post->type === 'carousel' && !empty($post->getAttributes()['media'])) {
+                    // For backward compatibility: convert JSON media array to expected format
+                    $jsonMedia = $post->getAttributes()['media'];
+                    if (is_array($jsonMedia)) {
+                        $mediaItems = collect($jsonMedia)->map(function ($url, $index) {
+                            return [
+                                'id' => $index,
+                                'url' => $url,
+                                'type' => 'image',
+                            ];
+                        })->values();
+                    }
+                }
 
-        // // Get oldest published posts with pagination and search
-        // $oldestPosts = Post::query()
-        //     ->where('is_published', true)
-        //     ->whereNotNull('published_at')
-        //     ->where('published_at', '<=', now())
-        //     ->when($search, function ($query, $search) {
-        //         $query->where(function ($q) use ($search) {
-        //             $q->where('title', 'like', "%{$search}%")
-        //                 ->orWhere('subtitle', 'like', "%{$search}%")
-        //                 ->orWhere('content', 'like', "%{$search}%");
-        //         });
-        //     })
-        //     ->orderBy('published_at', 'asc')
-        //     ->paginate(8)
-        //     ->withQueryString();
+                return [
+                    'id' => $post->id,
+                    'slug' => $post->slug,
+                    'title' => $post->title,
+                    'subtitle' => $post->subtitle,
+                    'cover' => $post->cover,
+                    'type' => $post->type,
+                    'tags' => $post->tags ?? [],
+                    'views_count' => $post->views_count,
+                    'likes_count' => $post->likes_count,
+                    'published_at' => $post->published_at->toISOString(),
+                    'media' => $mediaItems->toArray(),
+                    'user' => [
+                        'name' => $post->user->name,
+                    ],
+                ];
+            });
 
         // Get popular tags (extract from posts' tags array and count occurrences)
         $allTags = Post::query()
@@ -116,8 +127,6 @@ class HomeController extends Controller
         return Inertia::render('Home', [
             'playlists' => $playlists,
             'recentPosts' => $recentPosts,
-            // 'popularPosts' => $popularPosts,
-            // 'oldestPosts' => $oldestPosts,
             'popularTags' => $popularTags,
             'filters' => [
                 'search' => $search,

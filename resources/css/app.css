@@ -391,7 +391,7 @@
 }
 
 .layout__content {
-    @apply w-full mx-auto;
+    @apply w-full max-w-full mx-auto;
 }
 
 .layout__footer {

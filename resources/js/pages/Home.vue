@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { PlaySquare, Tag } from 'lucide-vue-next';
 import FrontLayout from '@/layouts/FrontLayout.vue';
-import PostCard from '@/components/PostCard.vue';
+import PostListCard from '@/components/PostListCard.vue';
 import PlaylistCard from '@/components/PlaylistCard.vue';
 import Pagination from '@/components/Pagination.vue';
 import DiscoverMode from '@/components/DiscoverMode.vue';
@@ -96,7 +96,7 @@ const handleClearSearch = () => {
                 <!-- Two Column Layout -->
                 <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
                     <!-- Main Column: Posts List (Second on mobile, first on desktop) -->
-                    <div class="flex-1 max-w-xl mx-auto space-y-6 ">
+                    <div class="flex-1 space-y-6">
                         <!-- Hero Section -->
                         <section class="border-b bg-[#004aad] bg-gradient-to-r to-[#cb6ce6] py-12 rounded-lg">
                             <div class="container mx-auto px-4 text-center">
@@ -104,47 +104,49 @@ const handleClearSearch = () => {
                                     The <span class="font-extrabold text-white">Code Heroes</span> Journey
                                 </h1>
                                 <p class="mx-auto max-w-3xl text-md md:text-lg text-white mt-2">
-                                    Discover tutorials, code snippets, and development insights shared by the community.
+                                    Discover tutorials, code snippets, and development insights.
                                 </p>
                             </div>
                         </section>
 
-                        <!-- Search Bar -->
-                        <Searchbar
-                            v-if="ENABLE_POST_SEARCH"
-                            v-model="searchQuery"
-                            placeholder="Search posts..."
-                            @search="handleSearch"
-                            @clear="handleClearSearch"
-                        />
+                        <div class="flex-1 max-w-xl mx-auto space-y-6">
+                            <!-- Search Bar -->
+                            <Searchbar
+                                v-if="ENABLE_POST_SEARCH"
+                                v-model="searchQuery"
+                                placeholder="Search posts..."
+                                @search="handleSearch"
+                                @clear="handleClearSearch"
+                            />
 
-                        <div
-                            v-if="recentPosts.data.length > 0"
-                            class="grid grid-cols-1 gap-6"
-                        >
-                            <PostCard
-                                v-for="post in recentPosts.data"
-                                :key="post.id"
-                                :post="post"
-                                :show-tags="true"
+                            <div
+                                v-if="recentPosts.data.length > 0"
+                                class="grid grid-cols-1 gap-6"
+                            >
+                                <PostListCard
+                                    v-for="post in recentPosts.data"
+                                    :key="post.id"
+                                    :post="post"
+                                    :show-tags="true"
+                                />
+                            </div>
+
+                            <div
+                                v-else
+                                class="py-12 text-center text-muted-foreground"
+                            >
+                                <PlaySquare class="mx-auto mb-4 h-12 w-12" />
+                                <p>No posts available yet</p>
+                            </div>
+
+                            <!-- Pagination -->
+                            <Pagination
+                                v-if="recentPosts.last_page > 1 && ENABLE_POST_PAGINATION"
+                                :current-page="recentPosts.current_page"
+                                :last-page="recentPosts.last_page"
+                                :links="recentPosts.links"
                             />
                         </div>
-
-                        <div
-                            v-else
-                            class="py-12 text-center text-muted-foreground"
-                        >
-                            <PlaySquare class="mx-auto mb-4 h-12 w-12" />
-                            <p>No posts available yet</p>
-                        </div>
-
-                        <!-- Pagination -->
-                        <Pagination
-                            v-if="recentPosts.last_page > 1 && ENABLE_POST_PAGINATION"
-                            :current-page="recentPosts.current_page"
-                            :last-page="recentPosts.last_page"
-                            :links="recentPosts.links"
-                        />
                     </div>
 
                     <!-- Sidebar Column: Sticky Content (First on mobile, second on desktop) -->
